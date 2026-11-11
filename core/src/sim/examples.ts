@@ -3,10 +3,10 @@
 export interface Example {
   id: string;
   title: string;
-  group: "Basics" | "Protocols" | "Tokens" | "Caught by Phil";
+  group: "Basics" | "Protocols" | "Tokens" | "From the Phil repository" | "Caught by Phil";
   blurb: string;
   inputs?: Record<string, string>;
-  expect: "ok" | "linearity" | "contract" | "protocol" | "arithmetic" | "deadlock";
+  expect: "ok" | "linearity" | "contract" | "protocol" | "arithmetic" | "deadlock" | "limit";
   code: string;
 }
 
@@ -272,6 +272,93 @@ architecture Shop {
 }
 
 program main = instantiate Shop;
+`,
+  },
+  {
+    id: "repo-stage2",
+    title: "Ping stage 2: request and reply",
+    group: "From the Phil repository",
+    blurb: "Phil's own second Ping stage: a request goes out and a reply comes back.",
+    inputs: { payload: "42" },
+    expect: "ok",
+    code: `// handoff/phase1/ping/stage2-request-reply.phil from the Phil repository, unmodified (Apache-2.0).
+protocol PingRoundTrip {
+  role Client = send (x : U8) then receive (reply : String) then end Done;
+  role Server = receive (x : U8) then send (reply : String) then end Done;
+}
+component ClientWorker(endpoint : Client[PingRoundTrip], payload : U8) {
+  let awaiting = send payload on endpoint;
+  let (done, reply) = receive String on awaiting;
+  let writeDecision = console_write(reply);
+  close done;
+}
+component ServerWorker(endpoint : Server[PingRoundTrip]) {
+  let (replyEndpoint, request) = receive U8 on endpoint;
+  let done = send "pong" on replyEndpoint;
+  close done;
+}
+architecture RoundTrip {
+  instance client = ClientWorker;
+  instance server = ServerWorker;
+  process client_run = client;
+  process server_run = server;
+  protocol ping = PingRoundTrip;
+  role ping.Client = client;
+  role ping.Server = server;
+  entry payload : U8;
+  bind client.endpoint = ping.Client;
+  bind client.payload = payload;
+  bind server.endpoint = ping.Server;
+}
+program main = instantiate RoundTrip;
+`,
+  },
+  {
+    id: "repo-stage4",
+    title: "Ping stage 4: unbounded",
+    group: "From the Phil repository",
+    blurb: "Phil's own endless Ping. The server receives directly on an endpoint that is waiting for the client's choice. It never finishes, so the simulator stops it.",
+    
+    expect: "limit",
+    code: `// handoff/phase1/ping/stage4-unbounded.phil from the Phil repository, unmodified (Apache-2.0).
+protocol PingLoop {
+  role Client = recursive Loop = select {
+    Ping => send (x : U8) then receive (reply : String) then continue Loop |
+    Done => end Done
+  };
+  role Server = recursive Loop = offer {
+    Ping => receive (x : U8) then send (reply : String) then continue Loop |
+    Done => end Done
+  };
+}
+component ClientLoop(endpoint : Client[PingLoop]) {
+  loop state (currentEndpoint = endpoint) {
+    let selected = select Ping on currentEndpoint;
+    let awaiting = send 42 on selected;
+    let (nextEndpoint, reply) = receive String on awaiting;
+    let writeDecision = console_write(reply);
+    continue (nextEndpoint);
+  };
+}
+component ServerLoop(endpoint : Server[PingLoop]) {
+  loop state (currentEndpoint = endpoint) {
+    let (replyEndpoint, request) = receive U8 on currentEndpoint;
+    let nextEndpoint = send "pong" on replyEndpoint;
+    continue (nextEndpoint);
+  };
+}
+architecture BarePing {
+  instance client = ClientLoop;
+  instance server = ServerLoop;
+  process client_run = client;
+  process server_run = server;
+  protocol ping = PingLoop;
+  role ping.Client = client;
+  role ping.Server = server;
+  bind client.endpoint = ping.Client;
+  bind server.endpoint = ping.Server;
+}
+program main = instantiate BarePing;
 `,
   },
   {

@@ -10,7 +10,7 @@ function load(width, hash = "#token") {
     runScripts: "dangerously", url: "https://example.test/" + hash, pretendToBeVisual: true,
     beforeParse(w) {
       w.addEventListener("error", (e) => errors.push(e.message));
-      w.HTMLElement.prototype.scrollIntoView = () => {}; w.scrollTo = () => {};
+      w.HTMLElement.prototype.scrollIntoView = () => {}; w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
       w.matchMedia = (q) => ({ matches: /max-width: 860px/.test(q) ? width <= 860 : false, addEventListener() {}, removeEventListener() {} });
       w.innerWidth = width;
       Object.defineProperty(w.navigator, "clipboard", { value: { writeText: async (t) => { w.__copied = t; } } });
@@ -131,7 +131,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.querySelector('[data-start="doublespend"]').click();
   check("start button loads the caught-bug example", d.getElementById("ex-title").textContent === "Double spend" && summary().includes("Ownership error") && summary().includes("used exactly once"), summary().slice(0, 160));
   d.getElementById("ex-open").click();
-  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 21 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
+  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 23 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
   d.querySelector('#ex-list [data-ex="ping"]').click();
   check("picking from the browser loads and closes it", d.getElementById("ex-drawer").hidden && d.getElementById("ex-title").textContent.startsWith("Ping") && good());
   d.getElementById("intro-close").click();
@@ -140,6 +140,22 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.getElementById("intro-show").click();
   check("intro can be shown again from About", !d.getElementById("intro").hidden);
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
+
+  // Structure view, Phil's own programs, share links
+  sel.value = "repo-stage2"; sel.dispatchEvent(new w.Event("change"));
+  d.querySelector('.tab[data-tab="structure"]').click();
+  const st = () => d.getElementById("structure").textContent.replace(/\s+/g, " ");
+  check("Phil's stage 2 runs unmodified", good() && code.value.includes("PingRoundTrip"), summary().slice(0, 120));
+  check("structure: architecture and matching roles", !!d.querySelector("#arch svg") && st().includes("ping : PingRoundTrip") && st().includes("the two roles match"), st().slice(0, 200));
+  sel.value = "deadlock"; sel.dispatchEvent(new w.Event("change"));
+  check("structure: non-dual protocol flagged before running", st().includes("do not match") && st().includes("neither can go first") && d.getElementById("structure-count").textContent.trim() === "1", st().slice(0, 240));
+  sel.value = "repo-stage4"; sel.dispatchEvent(new w.Event("change"));
+  check("endless program is stopped calmly", summary().includes("Stopped while still running") && !!d.querySelector("#summary .verdict.warn") && d.querySelector("#sequence svg").textContent.includes("more events not drawn"), summary().slice(0, 140));
+  sel.value = "hello"; sel.dispatchEvent(new w.Event("change"));
+  d.getElementById("share").click(); await wait(50);
+  check("share link copied", /#code=[uz][A-Za-z0-9_-]+$/.test(w.__copied || ""), String(w.__copied).slice(0, 80));
+  const shared = load(1360, "#" + w.__copied.split("#")[1]); await wait(300);
+  check("shared link opens the code", shared.d.getElementById("code").value.includes("The answer is") && shared.d.getElementById("example").value === "scratch" && shared.errors.length === 0, shared.errors.join(";"));
 
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
