@@ -1,0 +1,572 @@
+{
+ "Bool": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Built-in Boolean value type."
+ },
+ "Bytes": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Built-in length-indexed byte-sequence type constructor, as in `Bytes[n]`."
+ },
+ "Effects": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Generic kind for effect-set parameters."
+ },
+ "Frame": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Built-in framed-input type constructor parameterized by a boundary/framing contract."
+ },
+ "Message": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Generic kind for protocol-message parameters."
+ },
+ "Nat": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Generic kind for natural-number/static index parameters."
+ },
+ "Proof": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Evidence type constructor `Proof[P]` for a proposition `P`."
+ },
+ "Session": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Generic kind for session/protocol-state parameters."
+ },
+ "Type": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Generic kind for ordinary value-type parameters."
+ },
+ "Unit": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Built-in one-value type."
+ },
+ "Validated": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Evidence-bearing validated-value type constructor."
+ },
+ "true": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Boolean/static proposition literal for truth."
+ },
+ "false": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Boolean/static proposition literal for falsehood."
+ },
+ "unit": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "The sole ordinary value of `Unit`."
+ },
+ "module": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares the source file's module name."
+ },
+ "import": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Imports names from another module, optionally with an explicit name list."
+ },
+ "record": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a product/record type with named fields."
+ },
+ "data": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a sum/variant type."
+ },
+ "type": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a type alias."
+ },
+ "claim": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a named proposition, optionally with parameters and a transparent body."
+ },
+ "callable": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a callable contract; also appears as a generic kind/requirement category."
+ },
+ "fn": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a named function that explicitly satisfies a callable contract."
+ },
+ "component": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares an executable Phil component."
+ },
+ "protocol": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a two-role protocol family."
+ },
+ "provider": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a provider contract or participates in provider implementation/requirements."
+ },
+ "implementation": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Marks a concrete provider implementation declaration."
+ },
+ "opaque": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Marks a provider implementation whose body is outside ordinary Phil source."
+ },
+ "capability": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares an authority-bearing capability contract."
+ },
+ "boundary": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares a boundary contract; also names boundary generic kinds/requirements."
+ },
+ "architecture": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares an architecture; also names architecture generic kinds/requirements."
+ },
+ "program": {
+  "category": "Source organization and declaration forms",
+  "meaning": "Declares the selected root program."
+ },
+ "mode": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces an explicit structural mode on a declaration or closure."
+ },
+ "unrestricted": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Structural mode permitting both duplication and discard."
+ },
+ "affine": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Structural mode permitting discard but not duplication."
+ },
+ "linear": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Structural mode permitting neither duplication nor silent discard."
+ },
+ "requires": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces generic prerequisites or a callable/capability proposition requirement, depending on context."
+ },
+ "structural": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces a generic copy/drop permission requirement for an abstract value parameter."
+ },
+ "proposition": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces a logical generic requirement."
+ },
+ "effects": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces an effect set/bound, or an effect-set generic requirement."
+ },
+ "authority": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces required authority in callable/generic/architecture contexts."
+ },
+ "representation": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces representation-related generic requirements, including `boundary representation ...`."
+ },
+ "placement": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces a placement-related generic proposition requirement."
+ },
+ "cost": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces a cost requirement or callable cost expression."
+ },
+ "environment": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces an environment-related generic proposition requirement."
+ },
+ "within": {
+  "category": "Structural modes, generics, and requirements",
+  "meaning": "Introduces an effect upper bound (`effects E within ...`) or scopes an architecture assumption (`assume ... within ...`)."
+ },
+ "captures": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Lists the lexical values explicitly carried by a closure."
+ },
+ "closure": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Constructs a first-class function value."
+ },
+ "satisfies": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Names the contract a function, closure, or provider implementation claims to implement; checking still establishes the claim."
+ },
+ "provides": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Names the public value type presented by a component."
+ },
+ "consumes": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Lists caller-visible resources consumed by a callable contract."
+ },
+ "borrows": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Lists caller-visible resources borrowed by a callable contract."
+ },
+ "outcomes": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Declares the public set of possible callable outcome classes."
+ },
+ "outcome": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces branch-specific residue/state facts for one callable outcome."
+ },
+ "success": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callable outcome class for ordinary successful completion; the caller may continue."
+ },
+ "negative": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callable outcome class for typed negative/non-success completion; the caller may handle the branch and continue."
+ },
+ "terminal": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callable outcome class for declared normal terminal completion; at the checked caller boundary it preserves the exact outcome as `Closed Outcome`."
+ },
+ "fatal": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callable outcome class for declared abnormal terminal completion; at the checked caller boundary it preserves the exact declared identity as `Fatal Outcome`, distinct from term-level `fail` and generic `Failed`."
+ },
+ "state": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces explicit successor-state slots in callable outcomes or loop/join state."
+ },
+ "callee": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces what happens to the callable value itself across an outcome."
+ },
+ "preserve": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callee transition that leaves the callable available."
+ },
+ "consume": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callee transition that consumes the callable value."
+ },
+ "replace": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Callee transition that replaces the current callable with a named successor contract."
+ },
+ "with": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Connective in `replace with ...`."
+ },
+ "ensures": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces a callable/outcome postcondition."
+ },
+ "obligation": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces an explicit residual proof/verification obligation."
+ },
+ "assumes": {
+  "category": "Callable contracts and outcomes",
+  "meaning": "Introduces an explicit callable assumption."
+ },
+ "operation": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Declares or implements a provider operation."
+ },
+ "law": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Declares a provider/capability/boundary law or supplies an implementation proposition."
+ },
+ "lifecycle": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Declares or supplies a provider lifecycle proposition."
+ },
+ "permits": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Lists an operation/contract permitted by a capability."
+ },
+ "canonical": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Marks a boundary representation/encoding as canonical in the boundary contract."
+ },
+ "failure": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Declares the boundary's failure type."
+ },
+ "correspondence": {
+  "category": "Providers, capabilities, and boundary contracts",
+  "meaning": "Introduces the proposition relating boundary-side and semantic representations."
+ },
+ "role": {
+  "category": "Protocols and session communication",
+  "meaning": "Declares a protocol role or binds a protocol role to an architecture participant."
+ },
+ "send": {
+  "category": "Protocols and session communication",
+  "meaning": "In a session declaration, describes a send transition; in term code, sends a value on a live endpoint and advances it."
+ },
+ "receive": {
+  "category": "Protocols and session communication",
+  "meaning": "In a session declaration, describes a receive transition; in term code, receives a typed value from a live endpoint and advances it."
+ },
+ "select": {
+  "category": "Protocols and session communication",
+  "meaning": "Declares/executes active protocol branch selection."
+ },
+ "offer": {
+  "category": "Protocols and session communication",
+  "meaning": "Declares/executes passive protocol branch handling."
+ },
+ "end": {
+  "category": "Protocols and session communication",
+  "meaning": "Declares a terminal session state with a terminal label."
+ },
+ "recursive": {
+  "category": "Protocols and session communication",
+  "meaning": "Introduces guarded session recursion; on a named function, it is the required declaration marker that makes self/mutual recursion eligible for stabilized-contract checking. An unmarked recursive `fn` does not typecheck."
+ },
+ "continue": {
+  "category": "Protocols and session communication",
+  "meaning": "In sessions, jumps to a named recursion variable; in term loops, supplies the next loop-state actuals."
+ },
+ "then": {
+  "category": "Protocols and session communication",
+  "meaning": "Connects a protocol send/receive action to its successor session state."
+ },
+ "using": {
+  "category": "Protocols and session communication",
+  "meaning": "Supplies an explicit contract/evidence value to a protocol, boundary, validation, transport, or exact-I/O form."
+ },
+ "when": {
+  "category": "Protocols and session communication",
+  "meaning": "Introduces a proposition guarding a protocol action/branch."
+ },
+ "send_exact": {
+  "category": "Protocols and session communication",
+  "meaning": "Uses the exact byte-oriented send form on an endpoint."
+ },
+ "receive_exact": {
+  "category": "Protocols and session communication",
+  "meaning": "Receives an exact requested amount/message representation, optionally using evidence."
+ },
+ "receive_frame": {
+  "category": "Protocols and session communication",
+  "meaning": "Receives a raw frame from an endpoint for later recognition/validation."
+ },
+ "commit_receive": {
+  "category": "Protocols and session communication",
+  "meaning": "Commits a previously validated/pending receive using its evidence."
+ },
+ "close": {
+  "category": "Protocols and session communication",
+  "meaning": "Closes a live endpoint that is already at a terminal `end` state."
+ },
+ "instance": {
+  "category": "Architecture and program wiring",
+  "meaning": "Creates a concrete architecture occurrence from a reusable declaration."
+ },
+ "ref": {
+  "category": "Architecture and program wiring",
+  "meaning": "Creates an explicit reference to an already-existing architecture occurrence rather than a new occurrence."
+ },
+ "process": {
+  "category": "Architecture and program wiring",
+  "meaning": "Activates an already-created executable occurrence in the static Phil process network."
+ },
+ "bind": {
+  "category": "Architecture and program wiring",
+  "meaning": "Declares an explicit architecture wiring/binding edge between named semantic ports/resources."
+ },
+ "external": {
+  "category": "Architecture and program wiring",
+  "meaning": "Marks a protocol role as outside the Phil process population."
+ },
+ "entry": {
+  "category": "Architecture and program wiring",
+  "meaning": "Declares a value/resource supplied at an architecture or program entry boundary."
+ },
+ "grant": {
+  "category": "Architecture and program wiring",
+  "meaning": "Declares an explicit architecture authority/value grant."
+ },
+ "originates": {
+  "category": "Architecture and program wiring",
+  "meaning": "Introduces the architecture occurrence at which an authority originates."
+ },
+ "observable": {
+  "category": "Architecture and program wiring",
+  "meaning": "Marks an architecture/program value or event as externally observable."
+ },
+ "constraint": {
+  "category": "Architecture and program wiring",
+  "meaning": "Introduces an architecture-level proposition that must hold."
+ },
+ "assume": {
+  "category": "Architecture and program wiring",
+  "meaning": "Introduces an explicit architecture/program assumption."
+ },
+ "export": {
+  "category": "Architecture and program wiring",
+  "meaning": "Exports an obligation to a named external/architectural target."
+ },
+ "instantiate": {
+  "category": "Architecture and program wiring",
+  "meaning": "Creates/selects the root architecture occurrence of a `program`."
+ },
+ "let": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Binds the result of an expression to a pattern."
+ },
+ "return": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Returns a value from the current component/function/closure block."
+ },
+ "construct": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Constructs a record/sum value with explicit field assignments."
+ },
+ "borrow": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Opens a scoped borrow of a value."
+ },
+ "as": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces the borrow binder or the target type of `accept ... as ...`."
+ },
+ "if": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces conditional control flow."
+ },
+ "else": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces the false branch of an `if`."
+ },
+ "match": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Pattern-matches a value, optionally with an explicit join contract."
+ },
+ "decide": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Branches on a checked decision value/certificate."
+ },
+ "loop": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces an explicit loop with optional state and invariant."
+ },
+ "invariant": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces the logical invariant for a loop or join."
+ },
+ "join": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces an explicit post-branch state/invariant contract."
+ },
+ "break": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Exits a loop and optionally supplies exit-state values."
+ },
+ "release": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Consumes a resource through its unique competent declared release transition; it is not generic `free`."
+ },
+ "accept": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Explicitly accepts/checks a value as a target type at the competent type/refinement boundary."
+ },
+ "prove": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Introduces explicit proof/evidence production/checking for a proposition."
+ },
+ "transport": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Transports a value to a target type using explicit equality evidence."
+ },
+ "recognize": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Recognizes a structured semantic value from raw/framed input using a named recognizer."
+ },
+ "validate": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Validates a value/input using a named validator, optionally at an explicit position/context."
+ },
+ "reject": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Produces typed-negative control flow."
+ },
+ "fail": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Performs the explicit fatal resource/control transition, represented separately as `Failed failureClass detail`; it is not shorthand for selecting a callable's declared `fatal` outcome."
+ },
+ "and": {
+  "category": "Logic and relation words",
+  "meaning": "Logical conjunction in propositions."
+ },
+ "or": {
+  "category": "Logic and relation words",
+  "meaning": "Logical disjunction in propositions; also introduces expression fallback (`or fail` / `or reject`)."
+ },
+ "not": {
+  "category": "Logic and relation words",
+  "meaning": "Logical negation in propositions."
+ },
+ "in": {
+  "category": "Logic and relation words",
+  "meaning": "Finite-collection membership relation in propositions."
+ },
+ "disjoint": {
+  "category": "Logic and relation words",
+  "meaning": "Finite-collection disjointness relation in propositions."
+ },
+ "at": {
+  "category": "Context/connective words",
+  "meaning": "Connective used for authority origin (`originates at`) and validation position/context (`validate ... at ...`)."
+ },
+ "from": {
+  "category": "Context/connective words",
+  "meaning": "Connective in recognition (`recognize ... from ...`)."
+ },
+ "on": {
+  "category": "Context/connective words",
+  "meaning": "Connective naming the endpoint/resource acted on by protocol I/O and failure forms."
+ },
+ "to": {
+  "category": "Context/connective words",
+  "meaning": "Connective naming a transport target type or exported-obligation destination."
+ },
+ "discard": {
+  "category": "Language-defined names that are not reserved keywords",
+  "meaning": "`structural T : discard;` | The admitted structural permission name for weakening: generic code may omit a value of `T`."
+ },
+ "duplicate": {
+  "category": "Language-defined names that are not reserved keywords",
+  "meaning": "`structural T : duplicate;` | The admitted structural permission name for contraction: generic code may make a value of `T` available to more than one use."
+ },
+ "key": {
+  "category": "Language-defined names that are not reserved keywords",
+  "meaning": "`@key(\"...\")` | The currently admitted semantic attribute name for stable top-level declaration lineage. The attribute name is an identifier following `@`, not a reserved keyword."
+ },
+ "Char": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Runtime type of exactly one Unicode scalar; literals use single quotes.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ },
+ "String": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Runtime type of an exact immutable finite Unicode-scalar sequence; literals use double quotes.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ },
+ "F32": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Strict 32-bit floating-point runtime type.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ },
+ "F64": {
+  "category": "Built-in kinds, types, and literals",
+  "meaning": "Strict 64-bit floating-point runtime type.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ },
+ "convert": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Explicit numeric domain/width/signedness conversion: `convert e to T`. Never proves range or admissibility by itself.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ },
+ "invoke": {
+  "category": "Term expressions, control flow, and resource operations",
+  "meaning": "Invokes a statically referenced callable with term arguments: `invoke F[...](args)`.",
+  "note": "Added by the extension from grammar/phase1-surface.ebnf comments; not in the upstream lexicon."
+ }
+}

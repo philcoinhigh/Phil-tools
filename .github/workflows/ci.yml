@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Check generated playground is committed
+        run: git diff --exit-code docs/index.html
+      - name: Checker against the Phil repository
+        run: |
+          git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
+          npm run test:corpus -- ../phil
