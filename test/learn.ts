@@ -7,6 +7,7 @@ import { OTC_SOURCE, BOOK_SOURCE } from "../core/src/sim/otc-source";
 import { buildAst } from "../core/src/sim/ast";
 import { explore } from "../core/src/sim/explore";
 import { CONTRACTS } from "../core/src/sim/contracts";
+import { HACKS } from "../core/src/sim/hacks";
 
 let fails = 0;
 const check = (name: string, ok: boolean, detail = "") => { if (!ok) fails++; console.log(`${ok ? "ok  " : "FAIL"} ${name}${ok ? "" : "  " + detail}`); };
@@ -67,5 +68,14 @@ for (const c of CONTRACTS) {
   }
   const h = explore(buildAst(c.source), c.scenarios[0].inputs, { budgetMs: 2500 });
   check(`${c.id}: hunt finds nothing in ${h.runs} runs`, h.findings.length === 0 && h.runs > 50, JSON.stringify(h.findings[0] ?? {}).slice(0, 300));
+}
+
+// Hacks page: each mistake must be refused for the stated reason, and each fix must run.
+for (const h of HACKS) {
+  const b = runPhil(h.broken, h.inputs ?? {});
+  check(`hack ${h.id}: the mistake is refused as ${h.kind}`, b.kind === h.kind && !!b.span, `${b.kind} ${b.message}`);
+  const f = runPhil(h.fixed, h.fixedInputs ?? h.inputs ?? {});
+  check(`hack ${h.id}: the fix runs`, f.ok, `${f.kind} ${f.message}`);
+  check(`hack ${h.id}: has sources`, h.sources.length >= 2 && h.sources.every((x) => x.url.startsWith("https://")));
 }
 process.exit(fails ? 1 : 0);

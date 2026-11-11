@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Hacks Phil would have stopped</title>
+<meta name="description" content="Four well-known crypto losses, each reduced to the shape of the mistake, written in the Phil language and refused in your browser.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 6px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.top .small { font-size: 14.5px; color: var(--muted); }
+.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+.jump a { border: 1px solid var(--ink); padding: 5px 12px; text-decoration: none; font-weight: 600; font-size: 14px; background: var(--sheet); }
+.jump a span { color: var(--muted); font: 12px var(--font-code); margin-right: 6px; }
+.hack { border-top: 1px solid var(--ink); margin-top: 44px; padding-top: 22px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 36px; align-items: start; scroll-margin-top: 70px; }
+.hack .yr { font: 600 12px var(--font-mark); color: var(--muted); letter-spacing: .03em; }
+.hack h2 { font: 600 clamp(22px, 3.4vw, 30px)/1.12 var(--font-mark); letter-spacing: -.03em; margin: 4px 0 4px; }
+.hack .loss { font: 600 14px var(--font-code); color: var(--bad); margin: 0 0 14px; }
+.hack p { margin: 0 0 12px; }
+.hack .shape { border-left: 3px solid var(--ink); padding: 2px 0 2px 14px; font-weight: 600; font-size: 17px; margin: 16px 0; }
+.hack .src { font-size: 13px; color: var(--muted); } .hack .src a { margin-right: 12px; }
+.hack .label { font: 600 11.5px var(--font-mark); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin: 0 0 8px; }
+.demo pre.code { border-color: var(--ink); border-bottom: 0; max-height: 440px; }
+.demo .ins { border: 1px solid var(--ink); border-bottom: 0; background: var(--sheet); padding: 8px 16px; font: 12.5px var(--font-code); color: var(--muted); overflow-wrap: anywhere; }
+.demo .says { border: 1px solid var(--ink); padding: 12px 16px; background: var(--sheet); font-size: 14.5px; overflow-wrap: anywhere; }
+.demo .says b { display: block; font: 600 12px var(--font-mark); color: var(--bad); margin-bottom: 3px; } .demo .says.good b { color: var(--good); }
+.demo .acts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+.demo .fixnote { font-size: 14px; color: var(--muted); }
+.limits { border-top: 1px solid var(--ink); margin-top: 52px; padding-top: 22px; }
+.limits h2 { font: 600 22px var(--font-mark); letter-spacing: -.02em; margin: 0 0 10px; }
+.limits p { max-width: 68ch; margin: 0 0 12px; }
+.limits ul { margin: 0; padding-left: 20px; max-width: 70ch; } .limits li { margin: 6px 0; }
+@media (max-width: 860px) { .hack { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 34px; } .demo pre.code { max-height: 360px; font-size: 12.5px; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>Hacks Phil would have stopped</h1>
+    <p>Four well-known losses. Each one comes down to a simple kind of mistake. Below, the same mistake is written in Phil and run in your browser, so you can watch it get refused, then see what the working version looks like.</p>
+    <p class="small">These are not the original contracts. They are the shape of each mistake, small enough to read. The claim is that Phil refuses this kind of error, not that it would have rescued that exact project.</p>
+    <nav class="jump" id="jump" aria-label="Exhibits"></nav>
+  </div>
+  <div id="hacks"></div>
+  <section class="limits">
+    <h2>What Phil would not have stopped</h2>
+    <p>Most of the largest recent losses were not coding mistakes of this kind. A language cannot help with these:</p>
+    <ul id="limits"></ul>
+    <p class="small muted" style="margin-top:14px">The programs here run in this project's experimental simulator, which is our own reading of Phil. Real Phil is designed to prove these properties before a program runs; the simulator finds them by running it.</p>
+  </section>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>
