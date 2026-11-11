@@ -1,6 +1,6 @@
-import { generateProtocol, ProtocolSpec, defaultEntry } from "../src/sim/designer";
-import { RESERVED } from "../src/lexer"; import { parse } from "../src/parser"; import { buildAst } from "../src/sim/ast";
-import { run, Simulator } from "../src/sim/interp"; import { explore } from "../src/sim/explore";
+import { generateProtocol, ProtocolSpec, defaultEntry } from "../core/src/sim/designer";
+import { RESERVED } from "../core/src/lexer"; import { parse } from "../core/src/parser"; import { buildAst } from "../core/src/sim/ast";
+import { run, Simulator } from "../core/src/sim/interp"; import { explore } from "../core/src/sim/explore";
 const specs: ProtocolSpec[] = [
   { name: "Order", roleA: "Buyer", roleB: "Seller", repeat: false, steps: [{ from: "a", name: "item", type: "U32" }, { from: "b", name: "price", type: "U64" }, { from: "a", name: "accept", type: "Bool" }] },
   { name: "Chat", roleA: "Client", roleB: "Server", repeat: true, steps: [{ from: "a", name: "question", type: "String" }, { from: "b", name: "answer", type: "String" }] },

@@ -1,130 +1,24 @@
 {
   "name": "phil-tools",
-  "displayName": "Phil Language",
-  "description": "Syntax highlighting, Grammar-v1 syntax checking with error codes, outline, hovers, snippets and formatting for the Phil systems language.",
+  "private": true,
   "version": "0.2.0",
-  "publisher": "phil-community",
+  "description": "Unofficial community tools for the Phil language.",
   "license": "Apache-2.0",
-  "engines": {
-    "vscode": "^1.85.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phillcoinhigh/Phil-tools.git"
   },
-  "categories": [
-    "Programming Languages",
-    "Snippets",
-    "Linters",
-    "Formatters"
-  ],
-  "keywords": [
-    "phil",
-    "systems language",
-    "formal verification",
-    "session types",
-    "linear types"
-  ],
-  "main": "./out/extension.js",
-  "activationEvents": [],
-  "contributes": {
-    "languages": [
-      {
-        "id": "phil",
-        "aliases": [
-          "Phil",
-          "phil"
-        ],
-        "extensions": [
-          ".phil"
-        ],
-        "configuration": "./language-configuration.json",
-        "icon": {
-          "light": "./icon.png",
-          "dark": "./icon.png"
-        }
-      }
-    ],
-    "grammars": [
-      {
-        "language": "phil",
-        "scopeName": "source.phil",
-        "path": "./syntaxes/phil.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "phil",
-        "path": "./snippets/phil.json"
-      }
-    ],
-    "commands": [
-      {
-        "command": "phil.emitLlvm",
-        "title": "Phil: Emit LLVM IR with philc",
-        "category": "Phil"
-      },
-      {
-        "command": "phil.showErrorCodes",
-        "title": "Phil: Show Error Code Reference",
-        "category": "Phil"
-      }
-    ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "phil.emitLlvm",
-          "when": "editorLangId == phil"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Phil",
-      "properties": {
-        "phil.syntax": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "grammar-v1",
-            "legacy"
-          ],
-          "default": "auto",
-          "enumDescriptions": [
-            "Grammar v1, falling back to legacy Phase 0 checks for files with no `;` terminators",
-            "Always check as canonical Grammar v1",
-            "Always treat as legacy Phase 0 syntax (lexical and bracket checks only)"
-          ],
-          "description": "Which Phil surface syntax to check against."
-        },
-        "phil.diagnostics.enable": {
-          "type": "boolean",
-          "default": true,
-          "description": "Check Phil files for Grammar-v1 syntax errors as you type."
-        },
-        "phil.diagnostics.maxErrors": {
-          "type": "number",
-          "default": 10,
-          "minimum": 1,
-          "description": "Maximum number of syntax errors reported per file."
-        },
-        "phil.philc.path": {
-          "type": "string",
-          "default": "philc",
-          "description": "Path to the philc compiler (used by 'Phil: Emit LLVM IR with philc')."
-        },
-        "phil.philc.target": {
-          "type": "string",
-          "default": "x86_64-unknown-linux-gnu",
-          "description": "Target triple passed to philc emit-llvm."
-        },
-        "phil.format.enable": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable the Phil indentation formatter."
-        }
-      }
-    }
+  "bin": {
+    "phil-check": "./out/cli.js",
+    "phil-mcp": "./out/mcp.js"
   },
   "scripts": {
-    "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=out/extension.js --log-level=warning && esbuild src/cli.ts --bundle --platform=node --format=cjs --outfile=out/cli.js --log-level=warning && esbuild src/mcp.ts --bundle --platform=node --format=cjs --outfile=out/mcp.js --log-level=warning && node scripts/build-playground.js",
+    "build": "npm run build:core && npm run build:vscode && npm run build:playground",
+    "build:core": "esbuild core/src/cli.ts --bundle --platform=node --format=cjs --outfile=out/cli.js --log-level=warning && esbuild core/src/mcp.ts --bundle --platform=node --format=cjs --outfile=out/mcp.js --log-level=warning",
+    "build:vscode": "esbuild vscode/src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=vscode/out/extension.js --log-level=warning",
+    "build:playground": "node playground/build.js",
     "typecheck": "tsc --noEmit -p .",
-    "gen": "python3 scripts/gen-grammar.py && esbuild scripts/gen-docs.ts --bundle --platform=node --outfile=out/gen-docs.js --log-level=error && node out/gen-docs.js",
+    "gen": "python3 vscode/scripts/gen-grammar.py && esbuild vscode/scripts/gen-docs.ts --bundle --platform=node --outfile=out/gen-docs.js --log-level=error && node out/gen-docs.js",
     "test": "npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:playground && npm run test:smoke",
     "test:sim": "esbuild test/sim.ts --bundle --platform=node --outfile=out/sim.js --log-level=error && node out/sim.js",
     "test:designer": "esbuild test/designer.ts --bundle --platform=node --outfile=out/designer.js --log-level=error && node out/designer.js",
@@ -132,7 +26,7 @@
     "test:smoke": "esbuild test/smoke.ts --bundle --platform=node --outfile=out/smoke.js --log-level=error --alias:vscode=./test/fake-vscode.ts && node out/smoke.js",
     "test:corpus": "esbuild test/test.ts --bundle --platform=node --outfile=out/test.js --log-level=error && cp node_modules/vscode-oniguruma/release/onig.wasm out/ && node out/test.js",
     "test:conformance": "esbuild test/explore.ts --bundle --platform=node --outfile=out/explore.js --log-level=error && node out/explore.js",
-    "package": "npm run build && vsce package --no-dependencies"
+    "package:vscode": "npm run build:vscode && cd vscode && vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
@@ -143,22 +37,5 @@
     "typescript": "^7.0.2",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"
-  },
-  "icon": "icon.png",
-  "galleryBanner": {
-    "color": "#1C2030",
-    "theme": "dark"
-  },
-  "bin": {
-    "phil-check": "./out/cli.js",
-    "phil-mcp": "./out/mcp.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/phillcoinhigh/Phil-tools.git"
-  },
-  "homepage": "https://github.com/phillcoinhigh/Phil-tools",
-  "bugs": {
-    "url": "https://github.com/phillcoinhigh/Phil-tools/issues"
   }
 }

@@ -1,7 +1,7 @@
 # Generates syntaxes/phil.tmLanguage.json. Every Grammar-v1 reserved word must be
 # assigned to exactly one category; the script fails otherwise.
 import json, sys
-reserved = json.load(open("src/reserved.json"))
+reserved = json.load(open("core/src/reserved.json"))
 I = r"[\p{L}_][\p{L}\p{N}_']*"
 cats = {
   "keyword.control.phil": "if else match decide loop continue break return fail reject",
@@ -111,5 +111,5 @@ g = {
     "invalid": {"patterns": [{"match": r"[^\s]", "name": "invalid.illegal.character.phil"}]},
   },
 }
-json.dump(g, open("syntaxes/phil.tmLanguage.json", "w"), indent=2, ensure_ascii=False)
+json.dump(g, open("vscode/syntaxes/phil.tmLanguage.json", "w"), indent=2, ensure_ascii=False)
 print("ok", len(seen), "keywords")

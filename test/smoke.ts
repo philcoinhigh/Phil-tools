@@ -1,7 +1,7 @@
 // Activates the bundled extension against test/fake-vscode.ts and calls every provider.
 import * as vscode from "vscode";
 import * as fake from "./fake-vscode";
-import { activate } from "../src/extension";
+import { activate } from "../vscode/src/extension";
 
 let fails = 0;
 const check = (name: string, ok: boolean, detail: unknown = "") => { if (!ok) { fails++; console.log("FAIL", name, detail); } else console.log("ok  ", name); };
