@@ -186,6 +186,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .replay { display: flex; align-items: center; gap: 8px; margin: -14px -16px 12px; padding: 10px 16px; position: sticky; top: 0; z-index: 3; background: var(--paper); border-bottom: 1px solid var(--rule); }
 .replay[hidden] { display: none; }
 .replay button { width: 34px; height: 30px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 3px; cursor: pointer; font: 13px var(--font-code); }
+.replay button.play { width: auto; padding: 0 12px; background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; white-space: nowrap; }
+.replay select { height: 30px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 3px; font: 12px var(--font-code); padding: 0 4px; }
 .replay button:hover { border-color: var(--ink); }
 .replay input[type=range] { flex: 1; min-width: 60px; accent-color: var(--ink); }
 .replay-label { font: 12px var(--font-code); color: var(--muted); margin: -6px 0 12px; min-height: 18px; overflow-wrap: anywhere; }
@@ -327,7 +329,9 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   .pane { display: block; }
   .panels { overflow: visible; }
   .tabs { position: sticky; top: 0; z-index: 4; background: var(--paper); }
-  .replay { top: 46px; }
+  .replay { top: 46px; gap: 6px; }
+  .replay #rp-first, .replay #rp-last { display: none; }
+  .replay select { flex: none; }
   #positions { position: static; max-height: none; overflow: visible; }
   .scripts { grid-template-columns: minmax(0, 1fr) !important; } .scripts > div + div { border-left: 0; border-top: 1px solid var(--rule); }
   #editor-wrap { height: 58vh; height: 58dvh; min-height: 260px; }
@@ -409,11 +413,13 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     <div class="panels">
       <div class="panel" id="panel-sequence">
         <div class="replay" id="replay" hidden>
+          <button type="button" id="rp-play" class="play" aria-pressed="false">▶ Play</button>
           <button type="button" id="rp-first" aria-label="First event">⏮</button>
           <button type="button" id="rp-prev" aria-label="Previous event">◀</button>
           <input type="range" id="rp-range" min="0" max="0" value="0" aria-label="Replay position">
           <button type="button" id="rp-next" aria-label="Next event">▶</button>
           <button type="button" id="rp-last" aria-label="Last event">⏭</button>
+          <select id="rp-speed" aria-label="Playback speed"><option value="1300">slow</option><option value="700" selected>normal</option><option value="280">fast</option></select>
         </div>
         <div class="replay-label" id="rp-label"></div>
         <div class="holdings" id="holdings" hidden></div>

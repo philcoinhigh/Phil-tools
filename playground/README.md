@@ -8,7 +8,7 @@ A single-page web app for writing, running and exploring [Phil](https://github.c
 
 - **Editor** with highlighting, live Grammar-v1 syntax errors, one-tap fixes, auto-closing brackets, comment toggle and Format.
 - **Run** executes the program and reports ownership errors, protocol violations, broken contracts, arithmetic traps and deadlocks, pointing at the line.
-- **Sequence diagram and replay:** step through the messages between processes; the source line behind each step is highlighted. Under the diagram, each role's protocol script shows where that side currently stands, so both sides can be watched advancing through their session types in step.
+- **Sequence diagram and replay:** step through the messages between processes; the source line behind each step is highlighted. Under the diagram, each role's protocol script shows where that side currently stands, so both sides can be watched advancing through their session types in step. A Play button animates the whole run at slow, normal or fast speed.
 - **Ownership view:** which process holds each linear or affine value at every step.
 - **Structure:** draws the architecture (which program talks to which, over which protocol) and prints each protocol as two side-by-side scripts, with a check that the two roles match. A mismatch is reported before the program runs.
 - **Programs from the Phil repository:** two of Phil's own Ping stages are included unmodified and run as written.

@@ -167,6 +167,17 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.getElementById("rp-last").click();
   check("positions show both sides closed at the end", d.querySelectorAll("#positions .okmark").length === 2 && d.querySelectorAll("#positions .sl.fin").length === 2, d.getElementById("positions").textContent.slice(0, 120));
 
+  // Play animates the replay and stops at the end
+  d.getElementById("rp-speed").value = "280";
+  d.getElementById("rp-play").click();
+  check("play restarts from the first step", d.getElementById("rp-range").value === "0" && d.getElementById("rp-play").getAttribute("aria-pressed") === "true", d.getElementById("rp-range").value);
+  await new Promise((r) => setTimeout(r, 700));
+  check("play advances on its own", +d.getElementById("rp-range").value >= 1, d.getElementById("rp-range").value);
+  d.getElementById("rp-next").click();
+  const at = d.getElementById("rp-range").value;
+  await new Promise((r) => setTimeout(r, 400));
+  check("stepping by hand pauses play", d.getElementById("rp-range").value === at && d.getElementById("rp-play").getAttribute("aria-pressed") === "false", d.getElementById("rp-range").value);
+
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
   const hold = () => d.getElementById("holdings").textContent.replace(/\s+/g, " ");

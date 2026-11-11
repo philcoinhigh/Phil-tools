@@ -503,6 +503,7 @@ function runProgram(): void {
   lastResult = result;
   runtimeSpan = result.error?.span && result.error.span[1] > result.error.span[0] ? result.error.span : undefined;
   seqEvents = result.trace.filter((t) => t.kind !== "check" && t.kind !== "start" && t.kind !== "assume" && t.kind !== "own");
+  stopPlay();
   replayIdx = seqEvents.length - 1;
   renderSummary(result, ms);
   renderReplay();
@@ -638,6 +639,27 @@ function renderPositions(): void {
     }).join("")}</div>`).join("")}</div>`).join("");
 }
 
+let playTimer: ReturnType<typeof setInterval> | undefined;
+function stopPlay(): void {
+  if (playTimer !== undefined) { clearInterval(playTimer); playTimer = undefined; }
+  const b = $("rp-play");
+  b.textContent = "▶ Play"; b.setAttribute("aria-pressed", "false");
+}
+function startPlay(): void {
+  if (seqEvents.length < 2) return;
+  if (replayIdx >= seqEvents.length - 1) step(0);
+  const b = $("rp-play");
+  b.textContent = "❚❚ Pause"; b.setAttribute("aria-pressed", "true");
+  const every = +$<HTMLSelectElement>("rp-speed").value || 700;
+  playTimer = setInterval(() => {
+    if (replayIdx >= seqEvents.length - 1) { stopPlay(); return; }
+    step(replayIdx + 1);
+    if (replayIdx >= seqEvents.length - 1) stopPlay();
+  }, every);
+}
+$("rp-play").addEventListener("click", () => (playTimer !== undefined ? stopPlay() : startPlay()));
+$("rp-speed").addEventListener("change", () => { if (playTimer !== undefined) { stopPlay(); startPlay(); } });
+
 function step(to: number): void {
   if (!seqEvents.length) return;
   replayIdx = Math.max(0, Math.min(seqEvents.length - 1, to));
@@ -652,11 +674,11 @@ function step(to: number): void {
     else if (r.bottom > bottomEdge) box.scrollTop += r.bottom - bottomEdge;
   }
 }
-$("rp-range").addEventListener("input", (e) => step(+(e.target as HTMLInputElement).value));
-$("rp-first").addEventListener("click", () => step(0));
-$("rp-prev").addEventListener("click", () => step(replayIdx - 1));
-$("rp-next").addEventListener("click", () => step(replayIdx + 1));
-$("rp-last").addEventListener("click", () => step(seqEvents.length - 1));
+$("rp-range").addEventListener("input", (e) => { stopPlay(); step(+(e.target as HTMLInputElement).value); });
+$("rp-first").addEventListener("click", () => { stopPlay(); step(0); });
+$("rp-prev").addEventListener("click", () => { stopPlay(); step(replayIdx - 1); });
+$("rp-next").addEventListener("click", () => { stopPlay(); step(replayIdx + 1); });
+$("rp-last").addEventListener("click", () => { stopPlay(); step(seqEvents.length - 1); });
 
 function renderSequence(r: RunResult, upto: number): void {
   const host = $("sequence");
