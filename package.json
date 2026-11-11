@@ -30,7 +30,8 @@
     "gen:otc": "node scripts/gen-otc.js",
     "build:site": "node site/build.js",
     "test:learn": "esbuild test/learn.ts --bundle --platform=node --outfile=out/learn.js --log-level=error && node out/learn.js",
-    "test:site": "node test/site-dom.js"
+    "test:site": "node test/site-dom.js",
+    "conformance": "esbuild conformance/run.ts --bundle --platform=node --outfile=out/conformance.js --log-level=error && node out/conformance.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

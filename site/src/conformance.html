@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Phil conformance report</title>
+<meta name="description" content="How these community tools compare with the verdicts in the Phil repository's own test programs.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 34px 0 8px; }
+.top h1 { font: 600 clamp(26px, 4.5vw, 38px)/1.1 var(--font-mark); letter-spacing: -.035em; margin: 0 0 12px; }
+.top p { margin: 0 0 10px; max-width: 68ch; }
+.against { font: 13px var(--font-code); color: var(--muted); overflow-wrap: anywhere; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 36px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--sheet); margin-top: 16px; }
+.fig { padding: 16px 18px; } .fig + .fig { border-left: 1px solid var(--rule); }
+.fig .n { font: 600 30px/1 var(--font-code); letter-spacing: -.03em; } .fig .n small { font-size: 16px; color: var(--muted); font-weight: 500; }
+.fig .l { margin-top: 6px; font-size: 14.5px; }
+.bar { display: flex; height: 8px; margin-top: 12px; background: var(--rule); } .bar i { display: block; height: 100%; }
+.bar .ok { background: var(--good); } .bar .mid { background: var(--s-sess); } .bar .rev { background: var(--bad); }
+.key { margin: 8px 0 0; padding: 0; list-style: none; font: 12.5px var(--font-code); color: var(--muted); } .key b { color: var(--ink); font-weight: 600; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+th { font: 600 11.5px var(--font-mark); color: var(--muted); border-bottom-color: var(--ink); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; font-family: var(--font-code); font-size: 13px; overflow-wrap: anywhere; }
+td.z { color: var(--muted); }
+.scroll { overflow-x: auto; }
+details.files { margin-top: 14px; } details.files summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+details.files ul { margin: 8px 0 0; padding: 0; list-style: none; font: 12.5px/1.7 var(--font-code); color: var(--muted); columns: 2; column-gap: 28px; } details.files li { overflow-wrap: anywhere; break-inside: avoid; }
+.note { margin: 14px 0 0; padding: 12px 16px; border-left: 3px solid var(--ink); background: var(--sheet); max-width: 74ch; font-size: 14.5px; }
+@media (max-width: 720px) { .figs { grid-template-columns: minmax(0, 1fr); } .fig + .fig { border-left: 0; border-top: 1px solid var(--rule); } details.files ul { columns: 1; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>Do our tools agree with Phil?</h1>
+    <p>The Phil repository ships its own test programs, each with a verdict: this one must be accepted, that one must be rejected. This page runs every one of them through our checker and simulator and reports where we agree.</p>
+    <p class="against" id="against"></p>
+  </div>
+
+  <h2 class="sec">Reading the grammar</h2>
+  <p class="lead">Phil's grammar fixtures say which files must parse and which must not. Our parser is written from the same grammar file, and drives the playground, the course and the VS Code extension.</p>
+  <div class="figs" id="grammar"></div>
+
+  <h2 class="sec">Running the programs</h2>
+  <p class="lead">Our simulator is an experiment, not Phil's checker. It finds mistakes by running a program on a few inputs and schedules, where Phil proves things before the program runs. So it is expected to miss rejections that need a proof.</p>
+  <div class="figs" id="behaviour"></div>
+  <p class="note" id="review-note" hidden></p>
+
+  <h2 class="sec">By test suite</h2>
+  <div class="scroll"><table id="suites"></table></div>
+  <p class="lead" id="table-note" hidden>Programs under review are left out of this table.</p>
+  <details class="files"><summary id="missed-h"></summary><ul id="missed"></ul></details>
+
+  <h2 class="sec">How this is produced</h2>
+  <p class="lead">A scheduled job checks out <a href="https://github.com/abiggerhammer/phil">abiggerhammer/phil</a> once a day, runs <code>npm run conformance</code>, and commits the result when it changes. The runner and its rules are in <a href="__REPO__/tree/main/conformance">conformance/</a>. Where our tools disagree with Phil, Phil is right until shown otherwise.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

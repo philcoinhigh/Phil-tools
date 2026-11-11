@@ -102,6 +102,17 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("otc: source is shown", p.d.getElementById("src").textContent.includes("protocol Listing"));
   check("otc: no script errors", p.errors.length === 0, p.errors.join("|"));
 
+  // Conformance report
+  p = load("docs/conformance/index.html", "https://example.test/conformance/");
+  const cdata = JSON.parse(fs.readFileSync("conformance/data.json", "utf8"));
+  check("report: names the Phil commit", p.d.getElementById("against").textContent.includes(cdata.phil.commit));
+  check("report: grammar figures match the data", p.d.querySelectorAll("#grammar .fig .n")[0].textContent.startsWith(String(cdata.grammar.accept.agree)) && p.d.querySelectorAll("#grammar .fig .n")[1].textContent.startsWith(String(cdata.grammar.reject.agree)));
+  check("report: grammar agreement is complete", cdata.grammar.accept.agree === cdata.grammar.accept.files && cdata.grammar.reject.agree === cdata.grammar.reject.files, JSON.stringify(cdata.grammar));
+  check("report: one table row per suite", p.d.querySelectorAll("#suites tbody tr").length === cdata.suites.length);
+  check("report: published data does not identify files under review", !JSON.stringify(cdata).includes("review\":1") && cdata.suites.every((s) => !("review" in s)) && !fs.readFileSync("docs/conformance/index.html", "utf8").includes("restricted-source-transfer-v1/accepted"));
+  check("report: lists the rejections we miss", p.d.querySelectorAll("#missed li").length === cdata.missed.length && cdata.missed.length === cdata.behaviour.reject.missed);
+  check("report: no script errors", p.errors.length === 0, p.errors.join("|"));
+
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));
   console.log(fails ? `${fails} failed` : "site: all passed");
