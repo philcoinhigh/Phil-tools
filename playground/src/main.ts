@@ -642,6 +642,15 @@ function step(to: number): void {
   if (!seqEvents.length) return;
   replayIdx = Math.max(0, Math.min(seqEvents.length - 1, to));
   renderReplay();
+  // Keep the current row in view between the pinned controls and the pinned scripts.
+  const row = document.querySelector<SVGElement>("#sequence .row-now");
+  const box = document.querySelector<HTMLElement>(".panels");
+  if (row && box && !mobile() && typeof row.getBoundingClientRect === "function") {
+    const r = row.getBoundingClientRect(), b = box.getBoundingClientRect();
+    const topEdge = b.top + 60, bottomEdge = b.bottom - ($("positions").offsetHeight || 0) - 8;
+    if (r.top < topEdge) box.scrollTop -= topEdge - r.top;
+    else if (r.bottom > bottomEdge) box.scrollTop += r.bottom - bottomEdge;
+  }
 }
 $("rp-range").addEventListener("input", (e) => step(+(e.target as HTMLInputElement).value));
 $("rp-first").addEventListener("click", () => step(0));
@@ -924,6 +933,7 @@ function setView(view: "code" | "results"): void {
   $("view-results").setAttribute("aria-pressed", String(view === "results"));
   if (view === "code") requestAnimationFrame(() => { syncScroll(); highlight(); });
   else if (lastResult) renderSequence(lastResult, replayIdx);
+  if (mobile()) window.scrollTo(0, 0);
 }
 $("view-code").addEventListener("click", () => setView("code"));
 $("view-results").addEventListener("click", () => setView("results"));
