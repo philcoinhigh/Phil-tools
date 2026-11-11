@@ -1,0 +1,11 @@
+0 examples/run/return-42.phil
+0 examples/run/return-unit.phil
+0 examples/run/scalar-binding-42.phil
+1 handoff/phase1/ping/stage1-one-shot.phil
+1 handoff/phase1/ping/stage2-request-reply.phil
+1 handoff/phase1/ping/stage3-bounded.phil
+1 handoff/phase1/ping/stage3-round.phil
+1 handoff/phase1/ping/stage4-unbounded.phil
+1 handoff/phase1/ping/stage5-cancel-on-signal.phil
+1 handoff/phase1/ping/stage5-interruptible.phil
+1 examples/rejected/01-reuse-consumed-endpoint.phil

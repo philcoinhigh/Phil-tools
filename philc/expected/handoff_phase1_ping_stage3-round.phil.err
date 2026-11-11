@@ -1,0 +1,1 @@
+RunnableParseError (ParseDiagnostic {parseDiagnosticPoint = SourcePoint {sourcePointFile = "handoff/phase1/ping/stage3-round.phil", sourcePointLine = 2, sourcePointColumn = 31, sourcePointOffset = 97}, parseDiagnosticMessage = "unexpected '='\nexpecting \"or\", '(', ')', '*', '+', ',', '-', or '.'\n"})
