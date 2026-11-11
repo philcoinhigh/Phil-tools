@@ -1,0 +1,851 @@
+{
+ "phil": {
+  "commit": "7b7c51a527",
+  "date": "2026-11-11",
+  "subject": "FSEM-02: source choice branch End outcome isolation and cross-close rejection (#1733)"
+ },
+ "files": 338,
+ "grammar": {
+  "accept": {
+   "files": 28,
+   "agree": 28
+  },
+  "reject": {
+   "files": 36,
+   "agree": 36
+  }
+ },
+ "behaviour": {
+  "accept": {
+   "files": 55,
+   "ran": 42,
+   "parsedOnly": 11,
+   "review": 2
+  },
+  "reject": {
+   "files": 219,
+   "caught": 123,
+   "missed": 96
+  }
+ },
+ "suites": [
+  {
+   "name": "examples/rejected",
+   "expect": "reject",
+   "grammar": false,
+   "files": 20,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 20
+  },
+  {
+   "name": "examples/run",
+   "expect": "accept",
+   "grammar": false,
+   "files": 3,
+   "agree": 0,
+   "parsedOnly": 3,
+   "missed": 0
+  },
+  {
+   "name": "examples/steve",
+   "expect": "accept",
+   "grammar": false,
+   "files": 4,
+   "agree": 0,
+   "parsedOnly": 4,
+   "missed": 0
+  },
+  {
+   "name": "examples/upload",
+   "expect": "accept",
+   "grammar": false,
+   "files": 2,
+   "agree": 0,
+   "parsedOnly": 2,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-affine-join-scope-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-affine-join-scope-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 14,
+   "agree": 7,
+   "parsedOnly": 0,
+   "missed": 7
+  },
+  {
+   "name": "fsem01-bool-join-telescope-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 4,
+   "agree": 4,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-bool-join-telescope-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 15,
+   "agree": 11,
+   "parsedOnly": 0,
+   "missed": 4
+  },
+  {
+   "name": "fsem01-linear-loop-transfer-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 4,
+   "agree": 4,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-linear-loop-transfer-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 19,
+   "agree": 14,
+   "parsedOnly": 0,
+   "missed": 5
+  },
+  {
+   "name": "fsem01-mixed-affine-linear-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-mixed-affine-linear-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 7,
+   "agree": 3,
+   "parsedOnly": 0,
+   "missed": 4
+  },
+  {
+   "name": "fsem01-nominal-affine-product-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-nominal-affine-product-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 12,
+   "agree": 6,
+   "parsedOnly": 0,
+   "missed": 6
+  },
+  {
+   "name": "fsem01-observation-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 1
+  },
+  {
+   "name": "fsem01-observation-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-scoped-borrow-join-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 4,
+   "agree": 4,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-scoped-borrow-join-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 14,
+   "agree": 7,
+   "parsedOnly": 0,
+   "missed": 7
+  },
+  {
+   "name": "fsem01-scoped-linear-loop-loan-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 3,
+   "agree": 3,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-scoped-linear-loop-loan-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 8,
+   "agree": 5,
+   "parsedOnly": 0,
+   "missed": 3
+  },
+  {
+   "name": "fsem01-source-affine-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 5,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 5
+  },
+  {
+   "name": "fsem01-source-bool-break-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 3,
+   "agree": 3,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-source-bool-break-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 16,
+   "agree": 9,
+   "parsedOnly": 0,
+   "missed": 7
+  },
+  {
+   "name": "fsem01-source-bool-loop-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 5,
+   "agree": 5,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-source-bool-loop-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 13,
+   "agree": 11,
+   "parsedOnly": 0,
+   "missed": 2
+  },
+  {
+   "name": "fsem01-source-branch-join-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-source-branch-join-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 10,
+   "agree": 6,
+   "parsedOnly": 0,
+   "missed": 4
+  },
+  {
+   "name": "fsem01-source-closure-capture-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 17,
+   "agree": 9,
+   "parsedOnly": 0,
+   "missed": 8
+  },
+  {
+   "name": "fsem01-source-product-elimination-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-source-product-elimination-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 14,
+   "agree": 10,
+   "parsedOnly": 0,
+   "missed": 4
+  },
+  {
+   "name": "fsem01-two-bool-join-telescope-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 5,
+   "agree": 5,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-two-bool-join-telescope-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 18,
+   "agree": 15,
+   "parsedOnly": 0,
+   "missed": 3
+  },
+  {
+   "name": "fsem01-two-owner-source-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-two-owner-source-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 5,
+   "agree": 2,
+   "parsedOnly": 0,
+   "missed": 3
+  },
+  {
+   "name": "fsem02-branch-outcome-separation-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-offer-arm-order-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 1
+  },
+  {
+   "name": "fsem02-protocol-progression-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-protocol-progression-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-restricted-source-transfer-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-source-choice-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-source-choice-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 2,
+   "agree": 2,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-source-joint-choice-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 1
+  },
+  {
+   "name": "fsem02-source-offer-replay-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 1,
+   "agree": 0,
+   "parsedOnly": 0,
+   "missed": 1
+  },
+  {
+   "name": "fsem02-source-offer-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-source-offer-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 3,
+   "agree": 3,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "Grammar: accepted",
+   "expect": "accept",
+   "grammar": true,
+   "files": 28,
+   "agree": 28,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "Grammar: rejected",
+   "expect": "reject",
+   "grammar": true,
+   "files": 36,
+   "agree": 36,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "handoff/phase1/ping",
+   "expect": "accept",
+   "grammar": false,
+   "files": 6,
+   "agree": 4,
+   "parsedOnly": 2,
+   "missed": 0
+  }
+ ],
+ "missed": [
+  {
+   "file": "examples/rejected/01-reuse-consumed-endpoint.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/02-drop-live-endpoint.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/03-wrong-protocol-order.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/04-nonexhaustive-offer.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/05-raw-field-access.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/06-parsed-used-as-validated.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/07-unrelated-payload-length.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/08-incompatible-branch-join.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/09-continue-after-fatal-recognition-failure.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/10-accept-before-digest-check.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/11-copy-authority-capability.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/12-ignore-cancellation-cleanup.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/13-commit-unrelated-parsed.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/14-copy-owned-payload.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/15-drop-pending-receive.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/16-escape-shared-loan.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/17-use-evidence-wrong-context.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/18-prove-opaque-digest.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/19-label-does-not-transfer-proof.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "examples/rejected/20-unchecked-wraparound-proof.phil",
+   "suite": "examples/rejected"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/borrowed-branch-unsupported.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/both-local-affine.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/retained-affine.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/unadmitted.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/unjustified.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/unrestricted-local.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-affine-join-scope-v1/wrong-result-width.phil",
+   "suite": "fsem01-affine-join-scope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-bool-join-telescope-v1/missing-invariant.phil",
+   "suite": "fsem01-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-bool-join-telescope-v1/shadow-parameter.phil",
+   "suite": "fsem01-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-bool-join-telescope-v1/wrong-join-use.phil",
+   "suite": "fsem01-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-bool-join-telescope-v1/wrong-return-width.phil",
+   "suite": "fsem01-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-loop-transfer-v1/body-before-continue.phil",
+   "suite": "fsem01-linear-loop-transfer-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-loop-transfer-v1/missing-invariant.phil",
+   "suite": "fsem01-linear-loop-transfer-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-loop-transfer-v1/untyped-header.phil",
+   "suite": "fsem01-linear-loop-transfer-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-loop-transfer-v1/wrong-header-width.phil",
+   "suite": "fsem01-linear-loop-transfer-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-loop-transfer-v1/wrong-result-type.phil",
+   "suite": "fsem01-linear-loop-transfer-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-mixed-affine-linear-v1/escape.phil",
+   "suite": "fsem01-mixed-affine-linear-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-mixed-affine-linear-v1/unjustified.phil",
+   "suite": "fsem01-mixed-affine-linear-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-mixed-affine-linear-v1/wrong-borrow.phil",
+   "suite": "fsem01-mixed-affine-linear-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-mixed-affine-linear-v1/wrong-return.phil",
+   "suite": "fsem01-mixed-affine-linear-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/escape.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/unjustified.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/unknown-named.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/weakened.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/wrong-borrow.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-nominal-affine-product-v1/wrong-width.phil",
+   "suite": "fsem01-nominal-affine-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-observation-v1/escape.phil",
+   "suite": "fsem01-observation-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/borrow-unrestricted.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/escape-alias.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/escape-left.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/escape-right.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/nested-borrow.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/view-shadow-parameter.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-borrow-join-v1/wrong-return-width.phil",
+   "suite": "fsem01-scoped-borrow-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-linear-loop-loan-v1/escape-view-result.phil",
+   "suite": "fsem01-scoped-linear-loop-loan-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-linear-loop-loan-v1/two-borrows.phil",
+   "suite": "fsem01-scoped-linear-loop-loan-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-scoped-linear-loop-loan-v1/unrestricted-borrow.phil",
+   "suite": "fsem01-scoped-linear-loop-loan-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-affine-v1/consume.phil",
+   "suite": "fsem01-source-affine-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-affine-v1/drop.phil",
+   "suite": "fsem01-source-affine-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-affine-v1/escape.phil",
+   "suite": "fsem01-source-affine-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-affine-v1/unjustified.phil",
+   "suite": "fsem01-source-affine-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-affine-v1/weakened.phil",
+   "suite": "fsem01-source-affine-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/break-one-actual.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/missing-invariant.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/unproved-seed.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/unsupported-break-after-statement.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/unsupported-continue-instead-of-break.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/unsupported-two-header-slots.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-break-v1/wrong-return-width.phil",
+   "suite": "fsem01-source-bool-break-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-loop-v1/missing-invariant.phil",
+   "suite": "fsem01-source-bool-loop-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-bool-loop-v1/unsupported-backedge-literal.phil",
+   "suite": "fsem01-source-bool-loop-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-branch-join-v1/terminal-both.phil",
+   "suite": "fsem01-source-branch-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-branch-join-v1/terminal-excluded.phil",
+   "suite": "fsem01-source-branch-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-branch-join-v1/unsupported-branch.phil",
+   "suite": "fsem01-source-branch-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-branch-join-v1/wrong-return-width.phil",
+   "suite": "fsem01-source-branch-join-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/closure-param-shadow.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/direct-derived.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/direct-linear.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/direct-mixed.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/direct-renamed.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/recursive-source.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/weakened-mode.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-closure-capture-v1/wrong-nominal.phil",
+   "suite": "fsem01-source-closure-capture-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-product-elimination-v1/duplicate-successor.phil",
+   "suite": "fsem01-source-product-elimination-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-product-elimination-v1/return-both.phil",
+   "suite": "fsem01-source-product-elimination-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-product-elimination-v1/unjustified.phil",
+   "suite": "fsem01-source-product-elimination-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-source-product-elimination-v1/wrong-result-width.phil",
+   "suite": "fsem01-source-product-elimination-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-bool-join-telescope-v1/missing-invariant.phil",
+   "suite": "fsem01-two-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-bool-join-telescope-v1/wrong-post-join-use.phil",
+   "suite": "fsem01-two-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-bool-join-telescope-v1/wrong-return-width.phil",
+   "suite": "fsem01-two-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-owner-source-v1/escape.phil",
+   "suite": "fsem01-two-owner-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-owner-source-v1/reversed-return.phil",
+   "suite": "fsem01-two-owner-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-two-owner-source-v1/wrong-product-width.phil",
+   "suite": "fsem01-two-owner-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-offer-arm-order-v1/reordered.phil",
+   "suite": "fsem02-offer-arm-order-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-source-joint-choice-v1/client-cancel.phil",
+   "suite": "fsem02-source-joint-choice-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-source-offer-replay-v1/wrong-body.phil",
+   "suite": "fsem02-source-offer-replay-v1"
+  }
+ ]
+}

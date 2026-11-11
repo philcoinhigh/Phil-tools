@@ -25,7 +25,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("home: demo reports the double spend", /Ownership error, line 17/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
-  check("home: links to all three pages", ["playground/", "learn/", "otc/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
+  check("home: links to all three pages", ["playground/", "learn/", "otc/", "library/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -101,6 +101,40 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("book: switching back restores the single listing", /Sold out/.test(res()) && !p.d.getElementById("terms-single").hidden);
   check("otc: source is shown", p.d.getElementById("src").textContent.includes("protocol Listing"));
   check("otc: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Conformance report
+  p = load("docs/conformance/index.html", "https://example.test/conformance/");
+  const cdata = JSON.parse(fs.readFileSync("conformance/data.json", "utf8"));
+  check("report: names the Phil commit", p.d.getElementById("against").textContent.includes(cdata.phil.commit));
+  check("report: grammar figures match the data", p.d.querySelectorAll("#grammar .fig .n")[0].textContent.startsWith(String(cdata.grammar.accept.agree)) && p.d.querySelectorAll("#grammar .fig .n")[1].textContent.startsWith(String(cdata.grammar.reject.agree)));
+  check("report: grammar agreement is complete", cdata.grammar.accept.agree === cdata.grammar.accept.files && cdata.grammar.reject.agree === cdata.grammar.reject.files, JSON.stringify(cdata.grammar));
+  check("report: one table row per suite", p.d.querySelectorAll("#suites tbody tr").length === cdata.suites.length);
+  check("report: published data does not identify files under review", !JSON.stringify(cdata).includes("review\":1") && cdata.suites.every((s) => !("review" in s)) && !fs.readFileSync("docs/conformance/index.html", "utf8").includes("restricted-source-transfer-v1/accepted"));
+  check("report: lists the rejections we miss", p.d.querySelectorAll("#missed li").length === cdata.missed.length && cdata.missed.length === cdata.behaviour.reject.missed);
+  check("report: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Contract library
+  p = load("docs/library/index.html", "https://example.test/library/");
+  const lres = () => p.d.getElementById("result").textContent;
+  check("library: four contracts, vesting first", p.d.querySelectorAll("#picker button").length === 4 && p.d.getElementById("c-title").textContent === "Vesting with revocation" && /beneficiary holds 1000/.test(lres()), lres());
+  p.d.querySelector('[data-scenario="1"]').click();
+  check("library: a scenario button reruns", /grantor revoked after 1 periods/.test(lres()) && /beneficiary holds 250/.test(lres()) && /hands Grantor 750 tokens/.test(lres()), lres());
+  p.d.querySelector('[data-id="multisig"]').click();
+  check("library: treasury pays with two approvals", /approvals: 2 of 3/.test(lres()) && /payee received 300/.test(lres()) && p.d.getElementById("f-alice_approves").checked && !p.d.getElementById("f-carol_approves").checked, lres());
+  p.d.getElementById("f-bob_approves").checked = false; p.d.getElementById("run").click();
+  check("library: unticking a signer denies the payment", /approvals: 1 of 3/.test(lres()) && /payment denied/.test(lres()), lres());
+  p.d.querySelector('[data-id="auction"]').click();
+  check("library: auction moves the item once", /won the item for 150/.test(lres()) && (lres().match(/the item/g) || []).length >= 2, lres());
+  type(p.w, p.d.getElementById("f-reserve"), "500"); p.d.getElementById("run").click();
+  check("library: reserve not met returns everything", /no sale/.test(lres()) && /refunded 150/.test(lres()) && /refunded 120/.test(lres()), lres());
+  p.d.querySelector('[data-id="launch"]').click();
+  check("library: launch graduates", /graduated with a reserve of 509500/.test(lres()) && p.d.getElementById("pg-link").getAttribute("href") === "../playground/#launch" && p.d.getElementById("gh-link").href.endsWith("/blob/main/contracts/launch.phil"), lres() + p.d.getElementById("gh-link").href);
+  type(p.w, p.d.getElementById("f-slope"), "99999"); p.d.getElementById("run").click();
+  check("library: an out-of-range input is refused", /violates the refinement/.test(lres()), lres());
+  p.d.querySelector('[data-scenario="0"]').click();
+  p.d.getElementById("hunt").click(); await wait(3600);
+  check("library: hunt finds nothing", /runs, no failure found/.test(p.d.getElementById("hunt-out").textContent), p.d.getElementById("hunt-out").textContent);
+  check("library: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));

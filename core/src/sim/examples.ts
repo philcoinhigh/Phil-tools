@@ -1,11 +1,12 @@
 import { OTC_SOURCE, BOOK_SOURCE } from "./otc-source";
+import { CONTRACTS } from "./contracts";
 
 // Playground examples. Each one is also a test: `expect` is the outcome the simulator must produce.
 
 export interface Example {
   id: string;
   title: string;
-  group: "Basics" | "Protocols" | "Tokens" | "From the Phil repository" | "Caught by Phil";
+  group: "Basics" | "Protocols" | "Tokens" | "Contracts" | "From the Phil repository" | "Caught by Phil";
   blurb: string;
   inputs?: Record<string, string>;
   expect: "ok" | "linearity" | "contract" | "protocol" | "arithmetic" | "deadlock" | "limit";
@@ -294,6 +295,7 @@ program main = instantiate Shop;
     expect: "ok",
     code: BOOK_SOURCE,
   },
+  ...CONTRACTS.map((c): Example => ({ id: c.id, title: c.title, group: "Contracts", blurb: c.summary, inputs: c.scenarios[0].inputs, expect: "ok", code: c.source })),
   {
     id: "repo-stage2",
     title: "Ping stage 2: request and reply",
