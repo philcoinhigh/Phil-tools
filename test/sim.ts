@@ -1,7 +1,7 @@
-import { parse } from "../src/parser";
-import { buildAst } from "../src/sim/ast";
-import { run } from "../src/sim/interp";
-import { EXAMPLES } from "../src/sim/examples";
+import { parse } from "../core/src/parser";
+import { buildAst } from "../core/src/sim/ast";
+import { run } from "../core/src/sim/interp";
+import { EXAMPLES } from "../core/src/sim/examples";
 let fails = 0;
 for (const ex of EXAMPLES) {
   const syn = parse(ex.code, { syntax: "grammar-v1" }).diagnostics.filter(d => d.severity === "error");

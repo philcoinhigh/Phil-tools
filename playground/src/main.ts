@@ -1,16 +1,16 @@
 // Phil Playground: browser UI around the extension's checker and the experimental simulator.
-import { lex } from "../lexer";
-import { parse, ParseDiagnostic } from "../parser";
-import { formatText } from "../format";
-import { buildAst } from "../sim/ast";
-import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } from "../sim/interp";
-import { explore, ExploreResult } from "../sim/explore";
-import { generateProtocol, Step, STEP_TYPES } from "../sim/designer";
-import { RESERVED } from "../lexer";
-import { EXAMPLES, Example } from "../sim/examples";
-import { CODES, CODE_MAP } from "../codes";
+import { lex } from "../../core/src/lexer";
+import { parse, ParseDiagnostic } from "../../core/src/parser";
+import { formatText } from "../../core/src/format";
+import { buildAst } from "../../core/src/sim/ast";
+import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } from "../../core/src/sim/interp";
+import { explore, ExploreResult } from "../../core/src/sim/explore";
+import { generateProtocol, Step, STEP_TYPES } from "../../core/src/sim/designer";
+import { RESERVED } from "../../core/src/lexer";
+import { EXAMPLES, Example } from "../../core/src/sim/examples";
+import { CODES, CODE_MAP } from "../../core/src/codes";
 import kwcats from "./kwcats.json";
-import keywordDocs from "../keywords.json";
+import keywordDocs from "../../core/src/keywords.json";
 
 const KW = kwcats as Record<string, string>;
 const KWDOCS = keywordDocs as Record<string, { category: string; meaning: string }>;

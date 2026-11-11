@@ -8,7 +8,7 @@ export async function loadGrammar(): Promise<vsctm.IGrammar> {
   await oniguruma.loadWASM(wasm);
   const registry = new vsctm.Registry({
     onigLib: Promise.resolve({ createOnigScanner: (p: string[]) => new oniguruma.OnigScanner(p), createOnigString: (s: string) => new oniguruma.OnigString(s) }),
-    loadGrammar: async () => vsctm.parseRawGrammar(fs.readFileSync(path.join(__dirname, "../syntaxes/phil.tmLanguage.json"), "utf8"), "phil.tmLanguage.json"),
+    loadGrammar: async () => vsctm.parseRawGrammar(fs.readFileSync(path.join(__dirname, "../vscode/syntaxes/phil.tmLanguage.json"), "utf8"), "phil.tmLanguage.json"),
   });
   return (await registry.loadGrammar("source.phil"))!;
 }

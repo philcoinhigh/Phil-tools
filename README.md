@@ -1,22 +1,20 @@
+<p align="center"><img src="assets/banner.png" alt="Phil Tools: community tools for the Phil language" width="820"></p>
+
 # Phil Tools
 
 Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a systems language where architecture is executable and implementation is replaceable.
 
 > **Unofficial.** This project is not part of, or endorsed by, the Phil project or its authors. Phil's own checker and documents are the authority on the language. Where these tools disagree with Phil, Phil is right and the disagreement is a bug here (please [open an issue](https://github.com/phillcoinhigh/Phil-tools/issues)).
 
-## What is in here
+## Projects
 
-| Tool | What it does | Where |
+| Project | What it is | Folder |
 | --- | --- | --- |
-| **VS Code extension** | Highlighting, live Grammar-v1 syntax errors with codes and quick fixes, hovers, outline, go to definition, completion, snippets, indentation formatter | `src/extension.ts`, `syntaxes/`, `snippets/` |
-| **Command-line checker** | The same syntax checker for terminals and CI | `src/cli.ts` |
-| **Simulator** | Experimental interpreter that runs Phil programs and checks ownership, protocol steps, contracts and non-wrapping arithmetic while they run | `src/sim/interp.ts` |
-| **Bug hunter** | Bounded search over boundary inputs, schedules and peer choices; reports each distinct failure with a small failing input | `src/sim/explore.ts` |
-| **Protocol designer** | Generates a complete runnable program from a list of messages between two roles | `src/sim/designer.ts` |
-| **Playground** | Single-page web app combining all of the above, with replay, an ownership view, examples and puzzles | `src/playground/`, built to `docs/index.html` |
-| **MCP server** | Lets AI assistants check, format, run and bug-hunt Phil code | `src/mcp.ts` |
+| **Phil for VS Code** | Editor extension: highlighting, live syntax errors with codes and quick fixes, hovers, outline, snippets, formatting | [`vscode/`](vscode) |
+| **Phil Playground** | Web app to write, run, replay and bug-hunt Phil programs, with examples and puzzles | [`playground/`](playground) |
+| **Phil core** | The shared checker and experimental simulator, plus the command-line checker and the MCP server for AI assistants | [`core/`](core) |
 
-Everything shares one lexer and parser (`src/lexer.ts`, `src/parser.ts`), written from Phil's normative grammar, `grammar/phase1-surface.ebnf`.
+Each folder has its own README. They live in one repository because all three use the same lexer and parser, written from Phil's normative grammar `grammar/phase1-surface.ebnf`; a grammar fix lands in every tool at once.
 
 ## Quick start
 
@@ -40,19 +38,19 @@ Exit status is 0 with no errors, 1 with syntax errors, 2 on usage errors.
 
 ### Playground
 
-`npm run build` writes a self-contained page to `docs/index.html`. Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
+`npm run build` writes a self-contained page to `docs/index.html`. See [playground/README.md](playground/README.md). Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
 
 ### VS Code extension
 
 ```sh
-npm run package        # writes phil-tools-<version>.vsix
+npm run package:vscode   # writes vscode/phil-language-<version>.vsix
 ```
 
-Install it from the Extensions panel: **⋯ → Install from VSIX…**. Error codes are listed in [ERROR_CODES.md](ERROR_CODES.md).
+Install it from the Extensions panel: **⋯ → Install from VSIX…**. See [vscode/README.md](vscode/README.md); error codes are in [vscode/ERROR_CODES.md](vscode/ERROR_CODES.md).
 
 ### MCP server for AI assistants
 
-Register the command `node /absolute/path/to/out/mcp.js` in an MCP client. Tools: `phil_check`, `phil_format`, `phil_run`, `phil_hunt`, `phil_keyword`, `phil_generate_protocol`.
+Register the command `node /absolute/path/to/out/mcp.js` in an MCP client. See [core/README.md](core/README.md). Tools: `phil_check`, `phil_format`, `phil_run`, `phil_hunt`, `phil_keyword`, `phil_generate_protocol`.
 
 ## How it is tested
 

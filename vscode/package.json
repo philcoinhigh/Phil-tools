@@ -1,0 +1,138 @@
+{
+  "name": "phil-language",
+  "displayName": "Phil Language",
+  "description": "Syntax highlighting, Grammar-v1 syntax checking with error codes, outline, hovers, snippets and formatting for the Phil systems language.",
+  "version": "0.2.0",
+  "publisher": "phil-community",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "phil",
+    "systems language",
+    "formal verification",
+    "session types",
+    "linear types"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "phil",
+        "aliases": [
+          "Phil",
+          "phil"
+        ],
+        "extensions": [
+          ".phil"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "phil",
+        "scopeName": "source.phil",
+        "path": "./syntaxes/phil.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "phil",
+        "path": "./snippets/phil.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "phil.emitLlvm",
+        "title": "Phil: Emit LLVM IR with philc",
+        "category": "Phil"
+      },
+      {
+        "command": "phil.showErrorCodes",
+        "title": "Phil: Show Error Code Reference",
+        "category": "Phil"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "phil.emitLlvm",
+          "when": "editorLangId == phil"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Phil",
+      "properties": {
+        "phil.syntax": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "grammar-v1",
+            "legacy"
+          ],
+          "default": "auto",
+          "enumDescriptions": [
+            "Grammar v1, falling back to legacy Phase 0 checks for files with no `;` terminators",
+            "Always check as canonical Grammar v1",
+            "Always treat as legacy Phase 0 syntax (lexical and bracket checks only)"
+          ],
+          "description": "Which Phil surface syntax to check against."
+        },
+        "phil.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check Phil files for Grammar-v1 syntax errors as you type."
+        },
+        "phil.diagnostics.maxErrors": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "description": "Maximum number of syntax errors reported per file."
+        },
+        "phil.philc.path": {
+          "type": "string",
+          "default": "philc",
+          "description": "Path to the philc compiler (used by 'Phil: Emit LLVM IR with philc')."
+        },
+        "phil.philc.target": {
+          "type": "string",
+          "default": "x86_64-unknown-linux-gnu",
+          "description": "Target triple passed to philc emit-llvm."
+        },
+        "phil.format.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Phil indentation formatter."
+        }
+      }
+    }
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1C2030",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phillcoinhigh/Phil-tools.git",
+    "directory": "vscode"
+  },
+  "homepage": "https://github.com/phillcoinhigh/Phil-tools",
+  "bugs": {
+    "url": "https://github.com/phillcoinhigh/Phil-tools/issues"
+  }
+}

@@ -1,7 +1,7 @@
-// Drives dist/playground.html in jsdom like a user would.
+// Drives docs/index.html in jsdom like a user would.
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
-const html = fs.readFileSync("dist/playground.html", "utf8");
+const html = fs.readFileSync("docs/index.html", "utf8");
 const { EXAMPLES } = require("../out/examples.cjs");
 
 function load(width, hash = "#token") {
