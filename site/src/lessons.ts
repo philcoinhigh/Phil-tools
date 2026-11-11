@@ -266,17 +266,20 @@ export const LESSONS: Lesson[] = [
   {
     "id": "otc",
     "chapter": "Real things",
-    "title": "An escrow swap",
+    "title": "An escrow desk",
     "text": [
-      "This is the Phil OTC desk: the program behind the OTC page on this site. A maker locks tokens with a desk and names a price. A taker pays that price or walks away.",
-      "Read the two protocols first. Every path through them ends with each coin in exactly one pair of hands. The desk cannot keep the tokens, because Phil would reject a desk that did.",
-      "Run it with a wallet of 400, then with a wallet of 100 to see the refund path."
+      "This is the Phil OTC desk: the program behind the OTC page on this site. A maker lists tokens with a desk at a price per token. Round by round a taker buys some, or passes.",
+      "The listing ends in one of three ways: it sells out, it expires after a number of rounds, or the maker cancels after a fill. Read the two protocols first. On every path each coin ends in exactly one pair of hands.",
+      "Run it. Then set `cancel_after` to 1 to cancel after the first fill, or `expires_after` to 2 to let it expire part-filled."
     ],
     "inputs": {
       "selling": "1000",
-      "price": "250",
-      "wallet": "400",
-      "fee_bps": "100"
+      "unit_price": "2",
+      "want": "400",
+      "wallet": "5000",
+      "fee_bps": "100",
+      "expires_after": "10",
+      "cancel_after": "0"
     },
     "code": OTC_SOURCE,
     "starts": "ok"
