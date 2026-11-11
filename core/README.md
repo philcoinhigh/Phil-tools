@@ -12,6 +12,7 @@ The shared engine behind the [VS Code extension](../vscode) and the [playground]
 | `src/sim/interp.ts` | Experimental simulator: ownership, protocols, contracts, non-wrapping arithmetic, process scheduling, deadlock detection |
 | `src/sim/explore.ts` | Bounded bug hunter |
 | `src/sim/designer.ts` | Protocol program generator |
+| `src/sim/inspect.ts` | Static views: protocol scripts, role duality check, architecture wiring |
 | `src/sim/examples.ts` | Example programs that double as tests |
 | `src/cli.ts` | `phil-check` command-line checker |
 | `src/mcp.ts` | `phil-mcp` server for AI assistants |
@@ -45,7 +46,7 @@ Register `node /absolute/path/to/out/mcp.js` as a stdio server in an MCP client.
 Phil establishes these statically; the simulator checks them while a program runs.
 
 - **Ownership:** `linear` values are used exactly once, `affine` at most once. `Bytes` and protocol endpoints are linear. Borrowed views cannot escape or move their owner.
-- **Protocols:** every `send`, `receive`, `select`, `offer` and `close` must match the role's next step; an `offer` must cover every branch.
+- **Protocols:** every `send`, `receive`, `select`, `offer` and `close` must match the role's next step; an `offer` must cover every branch. As in Phil's own Ping stages, a process may perform a branch's first action directly on an endpoint that is waiting at an `offer`.
 - **Contracts:** `requires`, `ensures`, refinement types, loop and join invariants, `prove(...)`.
 - **Arithmetic:** fixed-width integers never wrap; no implicit width conversion.
 - **Processes:** synchronous rendezvous under a deterministic scheduler, with deadlock detection.

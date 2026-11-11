@@ -7,6 +7,7 @@ import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } fr
 import { explore, ExploreResult } from "../../core/src/sim/explore";
 import { generateProtocol, Step, STEP_TYPES } from "../../core/src/sim/designer";
 import { RESERVED } from "../../core/src/lexer";
+import { protocolViews, architectureView } from "../../core/src/sim/inspect";
 import { EXAMPLES, Example } from "../../core/src/sim/examples";
 import { CODES, CODE_MAP } from "../../core/src/codes";
 import kwcats from "./kwcats.json";
@@ -49,6 +50,8 @@ const PUZZLES: Example[] = EXAMPLES.filter((e) => GOALS[e.id]).map((e) => ({ ...
 const ALL: Example[] = [...EXAMPLES, ...PUZZLES, SCRATCH];
 const TRY: Record<string, string> = {
   hello: "Change 40 to 4294967295 and run again.",
+  "repo-stage2": "Open the Structure tab to see how the two programs are wired together.",
+  "repo-stage4": "Look at ServerLoop: it receives without an explicit offer, and the simulator follows Phil in allowing that.",
   loop: "Set n to 0 and run: the type of n rejects it. Then press Hunt bugs to find the input that overflows.",
   contract: "Set fee higher than amount and run.",
   ping: "Step through the run with the arrows above the diagram.",
@@ -63,7 +66,7 @@ const EXPLAIN: Record<string, string> = {
   arithmetic: "A number went outside the range of its type. Phil never wraps numbers around.",
   deadlock: "Every program is waiting for another one, so nothing can happen.",
   wiring: "The architecture does not connect the parts correctly.",
-  limit: "The run was stopped because it went on too long.",
+  limit: "This program has no end, either by design or by mistake. The simulator stopped it; everything up to that point is shown below.",
   unsupported: "This is valid Phil that the simulator cannot run yet.",
 };
 const solved = new Set<string>();
@@ -356,6 +359,7 @@ function checkSyntax(): void {
     : `<span class="ok">syntax OK</span>`;
   renderProblems();
   refreshInputs();
+  renderStructure();
 }
 
 // ------------------------------------------------------------------ symbol keys (touch)
@@ -463,7 +467,7 @@ function revealOffset(offset: number, switchToCode = false): void {
 
 const KIND_LABEL: Record<string, string> = {
   linearity: "Ownership error", contract: "Contract violated", protocol: "Protocol violation", arithmetic: "Arithmetic trap",
-  deadlock: "Deadlock", wiring: "Wiring problem", runtime: "Runtime error", unsupported: "Not supported yet", limit: "Limit reached",
+  deadlock: "Deadlock", wiring: "Wiring problem", runtime: "Runtime error", unsupported: "Not supported yet", limit: "Stopped while still running",
 };
 
 function doRun(): void {
@@ -494,7 +498,7 @@ function runProgram(): void {
     return;
   }
   const t0 = performance.now();
-  const result = run(buildAst(editor.value), inputValues, runOpts);
+  const result = run(buildAst(editor.value), inputValues, { stepLimit: 40_000, ...runOpts });
   const ms = performance.now() - t0;
   lastResult = result;
   runtimeSpan = result.error?.span && result.error.span[1] > result.error.span[0] ? result.error.span : undefined;
@@ -523,7 +527,7 @@ function renderSummary(r: RunResult, ms: number): void {
   } else {
     const e = r.error!;
     const where = e.span && e.span[1] > 0 ? `<button class="loc" type="button" data-off="${e.span[0]}">line ${lineCol(e.span[0])}</button>` : "";
-    summary.innerHTML = `<div class="verdict bad">${KIND_LABEL[e.kind] ?? "Error"}<span class="where">${e.process ? esc(e.process) : ""}${e.process && where ? " · " : ""}${where}</span></div>
+    summary.innerHTML = `<div class="verdict ${e.kind === "limit" ? "warn" : "bad"}">${KIND_LABEL[e.kind] ?? "Error"}<span class="where">${e.process ? esc(e.process) : ""}${e.process && where ? " · " : ""}${where}</span></div>
       ${EXPLAIN[e.kind] ? `<div class="explain">${EXPLAIN[e.kind]}</div>` : ""}
       <div class="headline">${md(e.message)}</div>
       ${e.hint ? `<div class="hint">${md(e.hint)}</div>` : ""}
@@ -632,12 +636,15 @@ function renderSequence(r: RunResult, upto: number): void {
   const lanes = r.processes.map((p) => p.name);
   $("legend").hidden = !lanes.length;
   if (!lanes.length) { host.innerHTML = `<p class="empty">No processes ran.</p>`; return; }
-  const events = seqEvents;
+  const MAX_ROWS = 120;
+  const events = seqEvents.slice(0, MAX_ROWS);
+  const clipped = seqEvents.length - events.length;
+  upto = Math.min(upto, events.length - 1 + (clipped ? 0 : 0));
   const compact = mobile();
   const laneW = compact ? Math.max(118, Math.min(170, (window.innerWidth - 40) / Math.max(lanes.length, 1))) : Math.max(130, Math.min(200, 560 / lanes.length));
   const left = 28, top = 64, rowH = compact ? 36 : 40;
   const width = left + 8 + laneW * lanes.length + 150;
-  const rows = events.length + (r.error ? 1 : 0);
+  const rows = events.length + (r.error || clipped ? 1 : 0);
   const height = top + rows * rowH + 34;
   const x = (name: string) => left + laneW * Math.max(0, lanes.indexOf(name)) + laneW / 2;
   const parts: string[] = [];
@@ -679,7 +686,10 @@ function renderSequence(r: RunResult, upto: number): void {
     }
     parts.push(`<g${fut}>${g.join("")}</g>`);
   });
-  if (r.error) {
+  if (clipped) {
+    const y = top + events.length * rowH + rowH / 2;
+    parts.push(`<text x="${left}" y="${y + 4}" class="note">… ${clipped.toLocaleString()} more events not drawn (see Steps)</text>`);
+  } else if (r.error) {
     const y = top + events.length * rowH + rowH / 2;
     const cx = r.error.process && lanes.includes(r.error.process) ? x(r.error.process) : left + laneW / 2;
     const fut = upto < events.length - 1 ? ' class="future"' : "";
@@ -778,6 +788,91 @@ $("dz-go").addEventListener("click", () => {
   $("blurb").textContent = "Generated by the protocol designer. Edit it freely; it lives in the scratch pad.";
   showTab("sequence");
   toast("Program generated and run");
+});
+
+// ------------------------------------------------------------------ structure: architecture and protocols
+
+function renderStructure(): void {
+  const host = $("structure");
+  const count = $("structure-count");
+  if (syntaxDiags.some((d) => d.severity === "error")) { host.innerHTML = `<p class="empty">Fix the syntax errors to see the structure.</p>`; count.hidden = true; return; }
+  let html = "";
+  let bad = 0;
+  try {
+    const ast = buildAst(editor.value);
+    const arch = architectureView(ast);
+    if (arch) {
+      const owners = [...arch.instances.map((i) => i.name)];
+      const hasExt = arch.sessions.some((x) => x.ends.some((e) => e.owner === "external"));
+      if (hasExt) owners.push("external");
+      const bw = 168, gap = 56, left = 8, bh = 62;
+      const cx = (o: string) => left + owners.indexOf(o) * (bw + gap) + bw / 2;
+      const width = left * 2 + owners.length * bw + (owners.length - 1) * gap;
+      const height = bh + 34 + arch.sessions.length * 44;
+      const parts: string[] = [];
+      arch.sessions.forEach((x, i) => {
+        const y = bh + 40 + i * 44;
+        const ends = x.ends.filter((e) => owners.includes(e.owner));
+        const xs = ends.map((e) => cx(e.owner));
+        if (xs.length === 2) {
+          parts.push(`<path d="M${xs[0]},${bh + 8} V${y} H${xs[1]} V${bh + 8}" class="a-wire"/>`);
+          parts.push(`<text x="${(xs[0] + xs[1]) / 2}" y="${y - 6}" class="a-wlabel">${esc(x.name)} : ${esc(x.protocol)}</text>`);
+          ends.forEach((e, k) => parts.push(`<circle cx="${xs[k]}" cy="${y}" r="3" class="a-dot"/><text x="${xs[k] + (xs[k] <= xs[1 - k] ? 7 : -7)}" y="${y + 15}" class="a-role" text-anchor="${xs[k] <= xs[1 - k] ? "start" : "end"}">${esc(e.role)}</text>`));
+        }
+      });
+      owners.forEach((o) => {
+        const inst = arch.instances.find((i) => i.name === o);
+        const entries = arch.entries.filter((e) => e.to.includes(o)).map((e) => e.name);
+        const x = cx(o) - bw / 2;
+        parts.push(`<rect x="${x}" y="8" width="${bw}" height="${bh}" rx="3" class="a-box${inst ? "" : " ext"}"/>`);
+        parts.push(`<text x="${cx(o)}" y="30" class="a-name">${esc(o)}</text>`);
+        parts.push(`<text x="${cx(o)}" y="45" class="a-sub">${esc(inst ? inst.component + (inst.process ? "" : " (not started)") : "played by the simulator")}</text>`);
+        if (entries.length) parts.push(`<text x="${cx(o)}" y="60" class="a-sub">gets ${esc(entries.join(", "))}</text>`);
+      });
+      html += `<div class="st-h">Architecture ${esc(arch.name)}</div><p class="st-note">Each box is a running program. Each line is a conversation that follows the named protocol.</p><div id="arch"><svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Architecture diagram">${parts.join("")}</svg></div>`;
+    }
+    for (const p of protocolViews(ast)) {
+      bad += p.mismatches.length;
+      html += `<div class="st-h">Protocol ${esc(p.name)} ${p.roles.length === 2 ? (p.mismatches.length ? '<span class="badmark">the two roles do not match</span>' : '<span class="okmark">the two roles match</span>') : ""}</div>`;
+      html += p.mismatches.map((m) => `<p class="st-bad">${md(m)}</p>`).join("");
+      html += `<div class="scripts">${p.roles.map((r) => `<div><h4>${esc(r.name)}</h4>${r.lines.map((l) => `<div class="sl ${l.kind}">${"  ".repeat(l.depth)}${esc(l.text)}</div>`).join("")}</div>`).join("")}</div>`;
+    }
+  } catch (err) {
+    html = `<p class="empty">Could not read the structure: ${esc(String((err as Error).message))}</p>`;
+  }
+  host.innerHTML = html || `<p class="empty">This program has no architecture or protocol. Try the Ping example to see one.</p>`;
+  count.hidden = bad === 0;
+  count.textContent = bad ? ` ${bad}` : "";
+}
+
+// ------------------------------------------------------------------ share links
+
+const b64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64url = (text: string) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+async function pipe(bytes: Uint8Array, stream: { readable: ReadableStream; writable: WritableStream }): Promise<Uint8Array> {
+  const w = stream.writable.getWriter();
+  void w.write(bytes); void w.close();
+  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
+}
+async function encodeShare(code: string): Promise<string> {
+  const raw = new TextEncoder().encode(code);
+  try { if (typeof CompressionStream !== "undefined") return "z" + b64url(await pipe(raw, new CompressionStream("deflate-raw"))); } catch { /* fall back */ }
+  return "u" + b64url(raw);
+}
+async function decodeShare(text: string): Promise<string | undefined> {
+  try {
+    const bytes = unb64url(text.slice(1));
+    if (bytes.length > 400_000) return undefined;
+    if (text[0] === "z") return new TextDecoder().decode(await pipe(bytes, new DecompressionStream("deflate-raw")));
+    if (text[0] === "u") return new TextDecoder().decode(bytes);
+  } catch { /* not a share link */ }
+  return undefined;
+}
+$("share").addEventListener("click", async () => {
+  const link = location.href.split("#")[0] + "#code=" + (await encodeShare(editor.value));
+  if (link.length > 60_000) { toast("This program is too long for a link"); return; }
+  try { await navigator.clipboard.writeText(link); toast("Link to this code copied"); }
+  catch { toast("Copy is blocked here"); }
 });
 
 // ------------------------------------------------------------------ docs
@@ -975,3 +1070,10 @@ window.addEventListener("resize", () => {
 buildExampleMenu();
 const initial = location.hash.slice(1);
 loadExample(ALL.some((e) => e.id === initial) ? initial : "token");
+if (initial.startsWith("code=")) {
+  void decodeShare(initial.slice(5)).then((code) => {
+    if (code === undefined) return;
+    loadExample("scratch", true, code.replace(/\r\n?/g, "\n"));
+    $("blurb").textContent = "Opened from a shared link. It lives in your scratch pad now.";
+  });
+}

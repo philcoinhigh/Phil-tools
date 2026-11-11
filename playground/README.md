@@ -10,9 +10,12 @@ A single-page web app for writing, running and exploring [Phil](https://github.c
 - **Run** executes the program and reports ownership errors, protocol violations, broken contracts, arithmetic traps and deadlocks, pointing at the line.
 - **Sequence diagram and replay:** step through the messages between processes; the source line behind each step is highlighted.
 - **Ownership view:** which process holds each linear or affine value at every step.
+- **Structure:** draws the architecture (which program talks to which, over which protocol) and prints each protocol as two side-by-side scripts, with a check that the two roles match. A mismatch is reported before the program runs.
+- **Programs from the Phil repository:** two of Phil's own Ping stages are included unmodified and run as written.
+- **Share:** copies a link that carries the code in the editor.
 - **Hunt:** tries boundary inputs, several schedules and peer choices, and lists each distinct way the program can fail, with a Replay button. A bounded search, not a proof.
 - **Design:** list the messages between two roles and get a complete program whose two sides match by construction.
-- **Examples and puzzles:** 13 examples and 7 "fix it" puzzles. A puzzle is solved when it runs and a hunt finds nothing.
+- **Examples and puzzles:** 15 examples and 7 "fix it" puzzles. A puzzle is solved when it runs and a hunt finds nothing.
 - **Docs:** searchable reference for every keyword, error code and host operation.
 - **Phone layout:** Code/Results switch, a Run bar and a row of symbol keys.
 

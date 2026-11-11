@@ -550,7 +550,7 @@ export class Simulator {
       }
       case "send": {
         const value = yield* this.evalExpr(ctx, e.value);
-        const ep = yield* this.evalEndpoint(ctx, e.on, "send");
+        const ep = yield* this.narrowOffer(ctx, yield* this.evalEndpoint(ctx, e.on, "send"), "send", e.span);
         const state = this.unfold(ep);
         if (state.state.k !== "send") throw this.protocolError(ctx, ep, state.state, "send", e.span);
         const coerced = yield* this.coerce(ctx, value, state.state.param.type, `Message \`${state.state.param.name}\` of ${ep.session.name}.${ep.role}`, e.span);
@@ -558,7 +558,7 @@ export class Simulator {
         return this.successor(ep, state.state.cont, state.rec);
       }
       case "receive": {
-        const ep = yield* this.evalEndpoint(ctx, e.on, "receive");
+        const ep = yield* this.narrowOffer(ctx, yield* this.evalEndpoint(ctx, e.on, "receive"), "receive", e.span);
         const state = this.unfold(ep);
         if (state.state.k !== "receive") throw this.protocolError(ctx, ep, state.state, "receive", e.span);
         const declared = renderType(this.resolveAlias(state.state.param.type));
@@ -1178,6 +1178,26 @@ export class Simulator {
     const v = yield* this.evalExpr(ctx, e);
     if (v.k !== "endpoint") throw new SimError("protocol", `\`${op}\` needs a protocol endpoint, got ${describeVal(v)}.`, e.span, ctx.proc);
     return v;
+  }
+
+  /**
+   * Phil lets a process perform a branch's first action directly on an endpoint that is at an
+   * `offer` step (the Phil repository's own Ping stages do this). The peer's selection is taken
+   * first; it must be a branch that starts with the attempted action.
+   */
+  *narrowOffer(ctx: Ctx, ep: Extract<Val, { k: "endpoint" }>, action: "send" | "receive", span: Span): Gen<Extract<Val, { k: "endpoint" }>> {
+    const st = this.unfold(ep);
+    if (st.state.k !== "offer") return ep;
+    const heads = st.state.branches.map((b) => ({ b, head: this.unfold({ ...ep, state: b.cont, rec: st.rec }).state }));
+    const fitting = heads.filter((h) => h.head.k === action && h.b.params.length === 0);
+    if (!fitting.length) return ep;
+    const got = (yield { op: "offer", ep, span }) as { label: string; args: Val[] };
+    const hit = fitting.find((h) => h.b.label === got.label);
+    if (!hit) {
+      throw new SimError("protocol", `The peer selected \`${got.label}\` on ${ep.session.name}.${ep.role}, but this code goes straight to \`${action}\`, which only fits ${fitting.map((h) => "`" + h.b.label + "`").join(", ")}.`, span, ctx.proc,
+        `Handle every branch with \`offer … { ${st.state.branches.map((b) => b.label + " => { … }").join(" ")} }\`.`);
+    }
+    return this.successor(ep, hit.b.cont, st.rec) as Extract<Val, { k: "endpoint" }>;
   }
 
   unfold(ep: Extract<Val, { k: "endpoint" }>): { state: Session; rec: Map<string, Session> } {
