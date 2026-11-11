@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/banner.png" alt="Phil Tools: community tools for the Phil language" width="820"></p>
+
 # Phil Tools
 
 Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a systems language where architecture is executable and implementation is replaceable.
