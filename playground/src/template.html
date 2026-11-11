@@ -183,7 +183,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .panel { padding: 14px 16px 24px; }
 .empty { color: var(--muted); margin: 0; }
 
-.replay { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.replay { display: flex; align-items: center; gap: 8px; margin: -14px -16px 12px; padding: 10px 16px; position: sticky; top: 0; z-index: 3; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.replay[hidden] { display: none; }
 .replay button { width: 34px; height: 30px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 3px; cursor: pointer; font: 13px var(--font-code); }
 .replay button:hover { border-color: var(--ink); }
 .replay input[type=range] { flex: 1; min-width: 60px; accent-color: var(--ink); }
@@ -234,6 +235,12 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .scripts > div { padding: 10px 12px; min-width: 0; overflow-x: auto; } .scripts > div + div { border-left: 1px solid var(--rule); }
 .scripts h4 { margin: 0 0 6px; font: 700 12.5px var(--font-code); }
 .sl { font: 12.5px/1.6 var(--font-code); white-space: pre; }
+.sl.cur { background: var(--now-hi); box-shadow: inset 3px 0 0 var(--accent); font-weight: 700; margin: 0 -12px; padding: 0 12px; }
+.sl.fin { background: var(--line-hi); margin: 0 -12px; padding: 0 12px; }
+#positions { position: sticky; bottom: -24px; z-index: 3; background: var(--paper); margin: 16px -16px -24px; padding: 0 16px 24px; border-top: 1px solid var(--ink); max-height: 46vh; overflow: auto; }
+#positions:empty { display: none; }
+#positions .st-h { margin-top: 12px; }
+.scripts h4 .muted { font-weight: 400; } .scripts h4 .okmark { color: var(--good); font-weight: 600; margin-left: 6px; }
 .sl.send { color: var(--s-sess); } .sl.receive { color: var(--s-decl); } .sl.select, .sl.offer { color: var(--s-ctl); } .sl.branch { font-weight: 700; } .sl.end, .sl.continue, .sl.loop { color: var(--muted); }
 #arch { overflow-x: auto; } #arch svg { display: block; font-family: var(--font-code); }
 .a-box { fill: var(--sheet); stroke: var(--ink); } .a-box.ext { stroke: var(--muted); stroke-dasharray: 4 3; }
@@ -313,6 +320,18 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   .mobilebar .more { justify-self: end; display: flex; gap: 14px; }
   .credit { padding-bottom: 8px; }
   .tab { padding: 12px 0 11px; }
+  /* Phones: the page itself scrolls; nothing is trapped in a short inner box. */
+  html, body { height: auto; }
+  body { display: block; min-height: 100vh; min-height: 100dvh; padding-bottom: calc(62px + var(--safe-b)); }
+  main { display: block; }
+  .pane { display: block; }
+  .panels { overflow: visible; }
+  .tabs { position: sticky; top: 0; z-index: 4; background: var(--paper); }
+  .replay { top: 46px; }
+  #positions { position: static; max-height: none; overflow: visible; }
+  .scripts { grid-template-columns: minmax(0, 1fr) !important; } .scripts > div + div { border-left: 0; border-top: 1px solid var(--rule); }
+  #editor-wrap { height: 58vh; height: 58dvh; min-height: 260px; }
+  .mobilebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 </style>
@@ -400,6 +419,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <div class="holdings" id="holdings" hidden></div>
         <div id="sequence"></div>
         <p class="legend" id="legend" hidden><span>arrow: a message</span><span>dashed arrow: a choice</span><span>square: connection closed</span><span>paw print: finished</span><span>red mark: stopped here</span></p>
+        <div id="positions"></div>
       </div>
       <div class="panel" id="panel-structure" hidden><div id="structure"></div></div>
       <div class="panel" id="panel-console" hidden><div id="console"></div></div>

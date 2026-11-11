@@ -7,7 +7,7 @@ import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } fr
 import { explore, ExploreResult } from "../../core/src/sim/explore";
 import { generateProtocol, Step, STEP_TYPES } from "../../core/src/sim/designer";
 import { RESERVED } from "../../core/src/lexer";
-import { protocolViews, architectureView } from "../../core/src/sim/inspect";
+import { protocolViews, architectureView, protocolPositions } from "../../core/src/sim/inspect";
 import { EXAMPLES, Example } from "../../core/src/sim/examples";
 import { CODES, CODE_MAP } from "../../core/src/codes";
 import kwcats from "./kwcats.json";
@@ -593,6 +593,7 @@ function renderReplay(): void {
   const span = t && "span" in t ? t.span : undefined;
   nowSpan = replayIdx < seqEvents.length - 1 && span ? span : undefined;
   renderHoldings();
+  renderPositions();
   if (lastResult) renderSequence(lastResult, replayIdx);
   highlight();
   if (nowSpan) revealOffset(nowSpan[0]);
@@ -620,10 +621,36 @@ function renderHoldings(): void {
   }).join("");
 }
 
+/** Where each role stands in its protocol at the current replay step. */
+function renderPositions(): void {
+  const box = $("positions");
+  const r = lastResult;
+  box.innerHTML = "";
+  if (!r || !seqEvents.length) return;
+  let upto = replayIdx >= seqEvents.length - 1 ? r.trace.length - 1 : r.trace.indexOf(seqEvents[replayIdx]);
+  if (upto < 0) upto = r.trace.length - 1;
+  let sessions: ReturnType<typeof protocolPositions> = [];
+  try { sessions = protocolPositions(buildAst(editor.value), r.trace, upto); } catch { return; }
+  box.innerHTML = sessions.map((x) => `<div class="st-h">Where each side is in ${esc(x.session)} : ${esc(x.protocol)}</div>
+    <div class="scripts">${x.roles.map((role) => `<div><h4>${esc(role.owner)} <span class="muted">as ${esc(role.role)}</span>${role.closed ? ' <span class="okmark">closed</span>' : ""}</h4>${role.lines.map((l, i) => {
+      const cur = i === role.current;
+      return `<div class="sl ${l.kind}${cur ? (role.closed ? " fin" : " cur") : ""}">${cur && !role.closed ? "▸ " : "  "}${"  ".repeat(l.depth)}${esc(l.text)}</div>`;
+    }).join("")}</div>`).join("")}</div>`).join("");
+}
+
 function step(to: number): void {
   if (!seqEvents.length) return;
   replayIdx = Math.max(0, Math.min(seqEvents.length - 1, to));
   renderReplay();
+  // Keep the current row in view between the pinned controls and the pinned scripts.
+  const row = document.querySelector<SVGElement>("#sequence .row-now");
+  const box = document.querySelector<HTMLElement>(".panels");
+  if (row && box && !mobile() && typeof row.getBoundingClientRect === "function") {
+    const r = row.getBoundingClientRect(), b = box.getBoundingClientRect();
+    const topEdge = b.top + 60, bottomEdge = b.bottom - ($("positions").offsetHeight || 0) - 8;
+    if (r.top < topEdge) box.scrollTop -= topEdge - r.top;
+    else if (r.bottom > bottomEdge) box.scrollTop += r.bottom - bottomEdge;
+  }
 }
 $("rp-range").addEventListener("input", (e) => step(+(e.target as HTMLInputElement).value));
 $("rp-first").addEventListener("click", () => step(0));
@@ -906,6 +933,7 @@ function setView(view: "code" | "results"): void {
   $("view-results").setAttribute("aria-pressed", String(view === "results"));
   if (view === "code") requestAnimationFrame(() => { syncScroll(); highlight(); });
   else if (lastResult) renderSequence(lastResult, replayIdx);
+  if (mobile()) window.scrollTo(0, 0);
 }
 $("view-code").addEventListener("click", () => setView("code"));
 $("view-results").addEventListener("click", () => setView("results"));
