@@ -10,7 +10,7 @@ function load(width, hash = "#token") {
     runScripts: "dangerously", url: "https://example.test/" + hash, pretendToBeVisual: true,
     beforeParse(w) {
       w.addEventListener("error", (e) => errors.push(e.message));
-      w.HTMLElement.prototype.scrollIntoView = () => {};
+      w.HTMLElement.prototype.scrollIntoView = () => {}; w.scrollTo = () => {};
       w.matchMedia = (q) => ({ matches: /max-width: 860px/.test(q) ? width <= 860 : false, addEventListener() {}, removeEventListener() {} });
       w.innerWidth = width;
       Object.defineProperty(w.navigator, "clipboard", { value: { writeText: async (t) => { w.__copied = t; } } });
@@ -123,6 +123,23 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.querySelector('.tab[data-tab="trace"]').click();
   d.querySelector("#trace [data-span]").click();
   check("trace click marks source line", !!d.querySelector("#highlight .ln.now"));
+
+  // Intro, example browser and guidance
+  check("intro shown on first visit", !d.getElementById("intro").hidden && d.querySelectorAll("[data-start]").length === 4);
+  sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
+  check("example heading and try hint", d.getElementById("ex-heading").textContent === "Linear token payment" && d.getElementById("try").textContent.includes("Set price to 150"));
+  d.querySelector('[data-start="doublespend"]').click();
+  check("start button loads the caught-bug example", d.getElementById("ex-title").textContent === "Double spend" && summary().includes("Ownership error") && summary().includes("used exactly once"), summary().slice(0, 160));
+  d.getElementById("ex-open").click();
+  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 21 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
+  d.querySelector('#ex-list [data-ex="ping"]').click();
+  check("picking from the browser loads and closes it", d.getElementById("ex-drawer").hidden && d.getElementById("ex-title").textContent.startsWith("Ping") && good());
+  d.getElementById("intro-close").click();
+  check("intro can be hidden", d.getElementById("intro").hidden);
+  d.querySelector('.navtab[data-tab="about"]').click();
+  d.getElementById("intro-show").click();
+  check("intro can be shown again from About", !d.getElementById("intro").hidden);
+  sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
 
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));

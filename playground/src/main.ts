@@ -47,6 +47,25 @@ const GOALS: Record<string, string> = {
 };
 const PUZZLES: Example[] = EXAMPLES.filter((e) => GOALS[e.id]).map((e) => ({ ...e, id: "fix-" + e.id, blurb: "Puzzle: " + GOALS[e.id] + " Solved when it runs and a hunt finds nothing." }));
 const ALL: Example[] = [...EXAMPLES, ...PUZZLES, SCRATCH];
+const TRY: Record<string, string> = {
+  hello: "Change 40 to 4294967295 and run again.",
+  loop: "Set n to 0 and run: the type of n rejects it. Then press Hunt bugs to find the input that overflows.",
+  contract: "Set fee higher than amount and run.",
+  ping: "Step through the run with the arrows above the diagram.",
+  pingpong: "Set rounds to 0, then to 5.",
+  token: "Set price to 150 and run. Then press Hunt bugs to see every way this program can fail.",
+  scratch: "Write anything. Design can generate a starting program for you.",
+};
+const EXPLAIN: Record<string, string> = {
+  linearity: "A value that must be used exactly once was used twice, or never used.",
+  contract: "A promise written in the code turned out to be false.",
+  protocol: "A program did something its conversation script does not allow at this point.",
+  arithmetic: "A number went outside the range of its type. Phil never wraps numbers around.",
+  deadlock: "Every program is waiting for another one, so nothing can happen.",
+  wiring: "The architecture does not connect the parts correctly.",
+  limit: "The run was stopped because it went on too long.",
+  unsupported: "This is valid Phil that the simulator cannot run yet.",
+};
 const solved = new Set<string>();
 try { for (const id of JSON.parse(localStorage.getItem("phil-playground-solved") ?? "[]")) solved.add(id); } catch { /* storage unavailable */ }
 let runOpts: RunOptions = {};
@@ -505,6 +524,7 @@ function renderSummary(r: RunResult, ms: number): void {
     const e = r.error!;
     const where = e.span && e.span[1] > 0 ? `<button class="loc" type="button" data-off="${e.span[0]}">line ${lineCol(e.span[0])}</button>` : "";
     summary.innerHTML = `<div class="verdict bad">${KIND_LABEL[e.kind] ?? "Error"}<span class="where">${e.process ? esc(e.process) : ""}${e.process && where ? " · " : ""}${where}</span></div>
+      ${EXPLAIN[e.kind] ? `<div class="explain">${EXPLAIN[e.kind]}</div>` : ""}
       <div class="headline">${md(e.message)}</div>
       ${e.hint ? `<div class="hint">${md(e.hint)}</div>` : ""}
       <div class="stats">${stats}</div>`;
@@ -514,6 +534,8 @@ function renderSummary(r: RunResult, ms: number): void {
 
 function renderConsole(r: RunResult): void {
   const lines = r.trace.filter((t): t is Extract<TraceEvent, { kind: "console" }> => t.kind === "console");
+  $("console-count").hidden = lines.length === 0;
+  $("console-count").textContent = lines.length ? ` ${lines.length}` : "";
   $("console").innerHTML = lines.length
     ? lines.map((l) => `<div class="console-line"><span class="console-proc">${esc(l.proc)}</span>${esc(l.text)}</div>`).join("")
     : `<p class="empty">No console output. Call <code>console_write(...)</code> to print.</p>`;
@@ -608,6 +630,7 @@ $("rp-last").addEventListener("click", () => step(seqEvents.length - 1));
 function renderSequence(r: RunResult, upto: number): void {
   const host = $("sequence");
   const lanes = r.processes.map((p) => p.name);
+  $("legend").hidden = !lanes.length;
   if (!lanes.length) { host.innerHTML = `<p class="empty">No processes ran.</p>`; return; }
   const events = seqEvents;
   const compact = mobile();
@@ -828,6 +851,12 @@ function loadExample(id: string, runNow = true, codeOverride?: string): void {
   $("hunt-count").hidden = true;
   inputsBox.innerHTML = "";
   $("blurb").textContent = ex.blurb + (draft && !codeOverride ? " (Edited; Reset restores the original.)" : "");
+  $("ex-title").textContent = ex.title;
+  $("ex-heading").textContent = ex.title;
+  const hint = TRY[ex.id] ?? (ex.id.startsWith("fix-") ? "" : GOALS[ex.id] ? "Read the error on the right, then try to fix the code. This one is also a puzzle." : "");
+  $("try").hidden = !hint;
+  $("try").innerHTML = hint ? `<b>Try</b>${esc(hint)}` : "";
+  renderExampleList();
   try { if (location.hash.slice(1) !== ex.id) history.replaceState(null, "", "#" + ex.id); } catch { /* sandboxed */ }
   checkSyntax();
   highlight();
@@ -859,10 +888,49 @@ function readText(f: File): Promise<string> {
     r.readAsText(f);
   });
 }
+// ------------------------------------------------------------------ example browser and intro
+
+function renderExampleList(): void {
+  const groups: [string, Example[]][] = [];
+  for (const ex of EXAMPLES) { let g = groups.find((x) => x[0] === ex.group); if (!g) groups.push(g = [ex.group, []]); g[1].push(ex); }
+  groups.push(["Puzzles: fix it", PUZZLES], ["Your code", [SCRATCH]]);
+  const note: Record<string, string> = { "Caught by Phil": "Programs with a mistake, to show what Phil reports", "Puzzles: fix it": `${solved.size} of ${PUZZLES.length} solved` };
+  $("ex-list").innerHTML = groups.map(([g, list]) => `<div class="ex-group">${esc(g)}${note[g] ? ` · ${esc(note[g])}` : ""}</div>` + list.map((e) => {
+    const tag = e.id.startsWith("fix-") ? (solved.has(e.id) ? '<i class="tag ok">solved</i>' : "") : e.expect !== "ok" ? `<i class="tag">${esc(KIND_LABEL[e.expect] ?? e.expect)}</i>` : "";
+    return `<button type="button" class="ex-item${e.id === current.id ? " current" : ""}" data-ex="${e.id}"><b>${esc(e.title)}${tag}</b><span>${esc(e.blurb.replace(/ Solved when it runs and a hunt finds nothing\.$/, ""))}</span></button>`;
+  }).join("")).join("");
+  $("ex-list").querySelectorAll<HTMLButtonElement>("[data-ex]").forEach((b) => b.addEventListener("click", () => {
+    $("ex-drawer").hidden = true;
+    loadExample(b.dataset.ex!);
+    showTab("sequence");
+    if (mobile()) setView("code");
+  }));
+}
+$("ex-open").addEventListener("click", () => { renderExampleList(); $("ex-drawer").hidden = false; $("ex-list").querySelector<HTMLElement>(".current")?.scrollIntoView({ block: "center" }); });
+$("ex-close").addEventListener("click", () => { $("ex-drawer").hidden = true; });
+$("ex-drawer").addEventListener("click", (e) => { if (e.target === e.currentTarget) $("ex-drawer").hidden = true; });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("ex-drawer").hidden = true; });
+
+function setIntro(show: boolean): void {
+  $("intro").hidden = !show;
+  try { localStorage.setItem("phil-playground-intro", show ? "1" : "0"); } catch { /* storage unavailable */ }
+}
+$("intro-close").addEventListener("click", () => setIntro(false));
+$("intro-show").addEventListener("click", () => { setIntro(true); window.scrollTo(0, 0); });
+document.querySelectorAll<HTMLButtonElement>("[data-start]").forEach((b) => b.addEventListener("click", () => {
+  const id = b.dataset.start!;
+  if (id === "@design") { showTab("design"); if (mobile()) setView("results"); return; }
+  loadExample(id);
+  showTab("sequence");
+  if (mobile()) setView(id === "token" ? "results" : "code");
+}));
+let introSeen = "1";
+try { introSeen = localStorage.getItem("phil-playground-intro") ?? "1"; } catch { /* storage unavailable */ }
+$("intro").hidden = introSeen === "0";
+
 const fileInput = $<HTMLInputElement>("file-input");
 const openFile = () => fileInput.click();
 $("open-file").addEventListener("click", openFile);
-$("open-m").addEventListener("click", openFile);
 fileInput.addEventListener("change", async () => {
   const f = fileInput.files?.[0];
   fileInput.value = "";
@@ -878,7 +946,6 @@ fileInput.addEventListener("change", async () => {
 });
 
 $("format").addEventListener("click", doFormat);
-$("format-m").addEventListener("click", doFormat);
 $("reset").addEventListener("click", () => {
   try { localStorage.removeItem(draftKey(current.id)); } catch { /* ignore */ }
   loadExample(current.id);
@@ -892,7 +959,7 @@ document.querySelectorAll<HTMLButtonElement>(".copy-ca").forEach((b) => b.addEve
   try { await navigator.clipboard.writeText(CONTRACT); toast("Contract address copied"); }
   catch { toast("Copy is blocked here; the address is in the About tab"); }
 }));
-$("about-link").addEventListener("click", () => { showTab("about"); if (mobile()) setView("results"); });
+document.querySelectorAll<HTMLButtonElement>(".navtab").forEach((b) => b.addEventListener("click", () => { if (mobile()) setView("results"); }));
 $("host-ops").innerHTML = Object.values(HOST_OPERATIONS).map((d) => `<li><code>${esc(d.split(" — ")[0])}</code> ${esc(d.split(" — ")[1] ?? "")}</li>`).join("");
 
 window.addEventListener("hashchange", () => {
