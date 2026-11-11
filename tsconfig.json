@@ -21,6 +21,7 @@
     "vscode/src",
     "vscode/scripts",
     "playground/src",
+    "site/src",
     "test"
   ]
 }

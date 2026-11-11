@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Phil OTC desk</title>
+<meta name="description" content="A token swap through an escrow desk, written in the Phil language. Simulation only: no real tokens move.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 34px 0 8px; }
+.top h1 { font: 600 clamp(26px, 4.5vw, 38px)/1.1 var(--font-mark); letter-spacing: -.035em; margin: 0 0 12px; }
+.top p { margin: 0 0 10px; max-width: 66ch; }
+.sim { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--bad); color: var(--bad); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 36px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.terms { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.terms label { display: block; padding: 12px 16px; } .terms label + label { border-left: 1px solid var(--rule); }
+.terms span { display: block; font-size: 13px; color: var(--muted); } .terms small { display: block; font-size: 12px; color: var(--muted); min-height: 1.4em; }
+.terms input { width: 100%; border: 0; border-bottom: 1px solid var(--ink); background: none; font: 600 20px var(--font-code); padding: 4px 0; border-radius: 0; }
+.go { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0 0; }
+.verdict { margin: 22px 0 0; padding: 14px 16px; border: 1px solid var(--ink); background: var(--sheet); }
+.verdict b { font: 600 13px var(--font-mark); display: block; margin-bottom: 3px; } .verdict.good b { color: var(--good); } .verdict.bad b { color: var(--bad); } .verdict.mid b { color: var(--s-sess); }
+.parties { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--ink); border-top: 0; }
+.party { padding: 14px 16px; } .party + .party { border-left: 1px solid var(--rule); }
+.party h3 { margin: 0 0 8px; font: 600 13px var(--font-mark); }
+.party dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font: 13.5px var(--font-code); }
+.party dt { color: var(--muted); } .party dd { margin: 0; text-align: right; }
+.party .was { color: var(--muted); text-decoration: line-through; margin-right: 6px; }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; border: 1px solid var(--rule); border-top: 0; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); padding: 7px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; }
+.steps li::before { content: counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 2px; }
+.steps .coin { font-family: var(--font-code); font-size: 13px; border: 1px solid var(--ink); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
+.hunt { margin-top: 14px; padding: 12px 16px; border: 1px solid var(--rule); background: var(--sheet); font-size: 14.5px; } .hunt:empty { display: none; }
+details.src { margin-top: 18px; } details.src summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+.road { list-style: none; margin: 0; padding: 0; }
+.road li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 13px 0; border-bottom: 1px solid var(--rule); }
+.road .n { font: 12px var(--font-code); color: var(--muted); } .road b { display: block; } .road span.d { color: var(--muted); font-size: 14.5px; }
+.road .tag { font: 11.5px var(--font-code); border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; white-space: nowrap; color: var(--muted); } .road .tag.live { border-color: var(--good); color: var(--good); }
+@media (max-width: 720px) {
+  .terms { grid-template-columns: repeat(2, minmax(0, 1fr)); } .terms label:nth-child(3) { border-left: 0; } .terms label:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .parties { grid-template-columns: minmax(0, 1fr); } .party + .party { border-left: 0; border-top: 1px solid var(--rule); }
+}
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="sim">Simulation · no real tokens move</span>
+    <h1>An OTC desk written in Phil</h1>
+    <p>A maker locks tokens with the desk and names a price. A taker pays that price or walks away. The desk passes each coin on and keeps only its fee.</p>
+    <p class="muted">Tokens and cash are linear values in the program, so Phil rejects any desk that keeps, copies or loses one. Set the terms and run the real program below.</p>
+  </div>
+  <div class="terms">
+    <label><span>Maker sells (tokens)</span><input id="t-selling" inputmode="numeric" value="1000" autocomplete="off"><small></small></label>
+    <label><span>Asking price (cash)</span><input id="t-price" inputmode="numeric" value="250" autocomplete="off"><small></small></label>
+    <label><span>Taker's wallet (cash)</span><input id="t-wallet" inputmode="numeric" value="400" autocomplete="off"><small></small></label>
+    <label><span>Desk fee (basis points)</span><input id="t-fee" inputmode="numeric" value="100" autocomplete="off"><small id="fee-pct"></small></label>
+  </div>
+  <div class="go"><button type="button" class="btn" id="trade">Run the trade</button><button type="button" class="btn ghost" id="hunt">Try to break it</button></div>
+  <div id="result"></div>
+  <div class="hunt" id="hunt-out" aria-live="polite"></div>
+  <details class="src"><summary>Read the Phil program</summary><pre class="code" id="src"></pre><p><a href="../playground/#otc">Open it in the playground</a> to replay it step by step, or <a href="../learn/#otc">read it as a lesson</a>.</p></details>
+
+  <h2 class="sec">From simulation to a real desk</h2>
+  <ol class="road">
+    <li><span class="n">01</span><div><b>The swap, written and checked in Phil</b><span class="d">Two protocols, three programs, every path ends with each coin in one pair of hands.</span></div><span class="tag live">done</span></li>
+    <li><span class="n">02</span><div><b>Partial fills, expiry and cancel</b><span class="d">The cases a real desk needs, added to the same protocols.</span></div><span class="tag">next</span></li>
+    <li><span class="n">03</span><div><b>An on-chain escrow that follows the same script</b><span class="d">Phil cannot deploy to a chain yet. Until it can, the escrow would be a conventional on-chain program held to this specification, and audited before it touches real tokens.</span></div><span class="tag">not started</span></li>
+    <li><span class="n">04</span><div><b>Wallets and listings for higher.fun tokens</b><span class="d">The part people use: connect, list, fill.</span></div><span class="tag">not started</span></li>
+  </ol>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

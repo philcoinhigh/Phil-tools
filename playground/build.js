@@ -4,9 +4,9 @@ const out = esbuild.buildSync({ entryPoints: ["playground/src/main.ts"], bundle:
 const js = out.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
 const dog = fs.readFileSync("playground/src/dogmark.svg", "utf8").trim();
 const html = fs.readFileSync("playground/src/template.html", "utf8").replace("__DOGMARK__", () => dog).replace("/*__BUNDLE__*/", () => js);
-fs.mkdirSync("docs", { recursive: true });
-fs.writeFileSync("docs/index.html", html);
+fs.mkdirSync("docs/playground", { recursive: true });
+fs.writeFileSync("docs/playground/index.html", html);
 const ex = esbuild.buildSync({ stdin: { contents: 'export { EXAMPLES } from "./core/src/sim/examples";', resolveDir: ".", loader: "ts" }, bundle: true, format: "cjs", write: false });
 fs.mkdirSync("out", { recursive: true });
 fs.writeFileSync("out/examples.cjs", ex.outputFiles[0].text);
-console.log("docs/index.html", (html.length / 1024).toFixed(1), "KiB");
+console.log("docs/playground/index.html", (html.length / 1024).toFixed(1), "KiB");

@@ -1,7 +1,7 @@
-// Drives docs/index.html in jsdom like a user would.
+// Drives docs/playground/index.html in jsdom like a user would.
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
-const html = fs.readFileSync("docs/index.html", "utf8");
+const html = fs.readFileSync("docs/playground/index.html", "utf8");
 const { EXAMPLES } = require("../out/examples.cjs");
 
 function load(width, hash = "#token") {
@@ -131,7 +131,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.querySelector('[data-start="doublespend"]').click();
   check("start button loads the caught-bug example", d.getElementById("ex-title").textContent === "Double spend" && summary().includes("Ownership error") && summary().includes("used exactly once"), summary().slice(0, 160));
   d.getElementById("ex-open").click();
-  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 23 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
+  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 24 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
   d.querySelector('#ex-list [data-ex="ping"]').click();
   check("picking from the browser loads and closes it", d.getElementById("ex-drawer").hidden && d.getElementById("ex-title").textContent.startsWith("Ping") && good());
   d.getElementById("intro-close").click();
@@ -166,6 +166,17 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   check("positions advance with the message", JSON.stringify(pos()) === JSON.stringify(["receive reply : String", "send reply : String"]), JSON.stringify(pos()));
   d.getElementById("rp-last").click();
   check("positions show both sides closed at the end", d.querySelectorAll("#positions .okmark").length === 2 && d.querySelectorAll("#positions .sl.fin").length === 2, d.getElementById("positions").textContent.slice(0, 120));
+
+  // Play animates the replay and stops at the end
+  d.getElementById("rp-speed").value = "280";
+  d.getElementById("rp-play").click();
+  check("play restarts from the first step", d.getElementById("rp-range").value === "0" && d.getElementById("rp-play").getAttribute("aria-pressed") === "true", d.getElementById("rp-range").value);
+  await new Promise((r) => setTimeout(r, 700));
+  check("play advances on its own", +d.getElementById("rp-range").value >= 1, d.getElementById("rp-range").value);
+  d.getElementById("rp-next").click();
+  const at = d.getElementById("rp-range").value;
+  await new Promise((r) => setTimeout(r, 400));
+  check("stepping by hand pauses play", d.getElementById("rp-range").value === at && d.getElementById("rp-play").getAttribute("aria-pressed") === "false", d.getElementById("rp-range").value);
 
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));

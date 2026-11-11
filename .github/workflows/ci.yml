@@ -17,7 +17,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: Check generated playground is committed
-        run: git diff --exit-code docs/index.html
+        run: git diff --exit-code docs
       - name: Checker against the Phil repository
         run: |
           git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
