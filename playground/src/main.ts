@@ -10,6 +10,7 @@ import { RESERVED } from "../../core/src/lexer";
 import { protocolViews, architectureView, protocolPositions } from "../../core/src/sim/inspect";
 import { EXAMPLES, Example } from "../../core/src/sim/examples";
 import { CODES, CODE_MAP } from "../../core/src/codes";
+import { loadPhilc, runPhilc, readPhilcError, PHILC_TARGETS, PHILC_SAMPLE, PhilcBuild } from "./philc";
 import kwcats from "./kwcats.json";
 import keywordDocs from "../../core/src/keywords.json";
 
@@ -485,7 +486,12 @@ function runProgram(): void {
   nowSpan = undefined;
   const errs = syntaxDiags.filter((d) => d.severity === "error");
   if (errs.length) {
-    summary.innerHTML = `<div class="verdict bad">Not run <span class="where">${errs.length} syntax error${errs.length > 1 ? "s" : ""}</span></div>
+    const earlier = parse(editor.value, { syntax: "auto" }).legacy;
+    summary.innerHTML = earlier
+      ? `<div class="verdict">Not run by the simulator <span class="where">earlier syntax</span></div>
+      <div class="headline">This is Phil's earlier syntax, without semicolons.</div>
+      <div class="hint">The simulator reads the newer grammar, where this would be: ${md(errs[0].message)} (line ${lineCol(errs[0].start)}).${philcBuild ? " Phil's own compiler still reads this form: open the Phil's compiler tab." : ""}</div>`
+      : `<div class="verdict bad">Not run <span class="where">${errs.length} syntax error${errs.length > 1 ? "s" : ""}</span></div>
       <div class="headline">${md(errs[0].message)}</div>
       <div class="hint">Line ${lineCol(errs[0].start)}. Fix it in the editor or from the Problems tab, then run again.</div>`;
     lastResult = undefined;
@@ -807,6 +813,63 @@ function checkPuzzle(result: RunResult): void {
   summary.insertAdjacentHTML("afterbegin", `<div class="verdict good" style="margin-bottom:8px">Puzzle solved. Good dog. ${solved.size} of ${PUZZLES.length} done.</div>`);
   toast("Puzzle solved");
 }
+
+// ------------------------------------------------------------------ Phil's own compiler
+// philc.wasm is built from the Phil repository by a scheduled workflow. The tab only appears
+// when a build is published next to this page.
+let philcBuild: PhilcBuild | undefined;
+async function initPhilc(): Promise<void> {
+  try {
+    const r = await fetch("philc.json", { cache: "no-cache" });
+    if (!r.ok) return;
+    philcBuild = (await r.json()) as PhilcBuild;
+  } catch { return; }
+  if (!philcBuild?.commit) return;
+  $("philc-tab").hidden = false;
+  $("philc-build").textContent = `Built from Phil commit ${philcBuild.commit.slice(0, 10)} of ${philcBuild.date} with GHC ${philcBuild.ghc} · ${(philcBuild.bytes / 1048576).toFixed(1)} MB, downloaded the first time you press the button`;
+  $("philc-target").innerHTML = PHILC_TARGETS.map((t) => `<option>${t}</option>`).join("");
+}
+async function doPhilc(): Promise<void> {
+  const out = $("philc-out"), btn = $<HTMLButtonElement>("philc-run");
+  const src = editor.value;
+  btn.disabled = true;
+  out.innerHTML = `<p class="philc-both">Loading Phil's compiler…</p>`;
+  try {
+    const module = await loadPhilc("philc.wasm");
+    out.innerHTML = `<p class="philc-both">Compiling…</p>`;
+    await new Promise((r) => setTimeout(r, 20));
+    const r = await runPhilc(module, src, $<HTMLSelectElement>("philc-target").value);
+    const legacy = parse(src, { syntax: "auto" }).legacy;
+    const ours = legacy ? "reads the newer grammar with semicolons, so it does not run this earlier syntax"
+      : syntaxDiags.length ? "could not parse it"
+      : lastResult ? (lastResult.ok ? "ran it to completion" : `stopped it with “${KIND_LABEL[lastResult.error!.kind] ?? lastResult.error!.kind}”`) : "has not run it yet";
+    if (r.accepted) {
+      const lines = r.stdout.split("\n").length;
+      out.innerHTML = `<div class="philc-verdict good"><b>philc accepted this program</b>It emitted ${lines} lines of LLVM IR in ${r.ms} ms.</div>`
+        + `<p class="philc-both">Our simulator ${esc(ours)}.</p>`
+        + `<div class="philc-irh"><span>LLVM IR from philc</span><button type="button" id="philc-copy">Copy</button></div><pre class="philc-ir">${esc(r.stdout.length > 200000 ? r.stdout.slice(0, 200000) + "\n; … cut here" : r.stdout)}</pre>`;
+      $("philc-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(r.stdout); toast("LLVM IR copied"); } catch { toast("Select the text to copy it"); } });
+    } else {
+      const m = readPhilcError(r.stderr || `It exited with status ${r.exit} and printed nothing.`);
+      const where = m.line ? `Line ${m.line}${m.col ? `, column ${m.col}` : ""}: ` : "";
+      out.innerHTML = `<div class="philc-verdict bad"><b>philc did not accept this program</b>${esc(where + m.text)}`
+        + (m.expecting ? `<details><summary>What it expected there</summary><pre>${esc(m.expecting)}</pre></details>` : "") + `</div>`
+        + `<p class="philc-both">Our simulator ${esc(ours)}. philc compiles only a small part of the language so far, so a refusal here usually means “not supported yet”, not “wrong”. <button type="button" class="linklike" id="philc-sample">Load a program it accepts</button></p>`;
+      $("philc-sample").addEventListener("click", loadPhilcSample);
+    }
+  } catch (e) {
+    out.innerHTML = `<div class="philc-verdict bad"><b>Phil's compiler could not be loaded</b>${esc(String((e as Error).message ?? e))}</div>`;
+  }
+  btn.disabled = false;
+}
+function loadPhilcSample(): void {
+  loadExample("scratch", true, PHILC_SAMPLE);
+  showTab("philc");
+  void doPhilc();
+}
+$("philc-run").addEventListener("click", () => { void doPhilc(); });
+$("philc-try").addEventListener("click", loadPhilcSample);
+void initPhilc();
 
 // ------------------------------------------------------------------ protocol designer
 

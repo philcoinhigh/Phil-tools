@@ -1,0 +1,1 @@
+RunnableParseError (ParseDiagnostic {parseDiagnosticPoint = SourcePoint {sourcePointFile = "handoff/phase1/ping/stage2-request-reply.phil", sourcePointLine = 1, sourcePointColumn = 1, sourcePointOffset = 0}, parseDiagnosticMessage = "unexpected \"protocol \"\nexpecting \"component\"\n"})

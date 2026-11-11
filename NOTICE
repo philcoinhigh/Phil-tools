@@ -10,6 +10,14 @@ This product includes material derived from the Phil project
   written from grammar/phase1-surface.ebnf.
 - The "Ping" example follows the program in Phil's tutorial.
 
+- docs/playground/philc.wasm: the `philc` executable from the Phil repository, compiled
+  unmodified to WebAssembly by .github/workflows/philc-wasm.yml. The exact Phil commit is
+  recorded in philc/build.json. The binary also contains the GHC runtime and the Haskell
+  libraries philc depends on (base, text, containers, bytestring, megaparsec,
+  cryptohash-sha256 and their dependencies), each under its own BSD-style licence.
+
+The playground bundles @bjorn3/browser_wasi_shim (MIT OR Apache-2.0) to run that binary.
+
 This project is not affiliated with or endorsed by the Phil project or its authors.
 
 The collie logo (assets/, playground/src/dogmark.svg, vscode/icon.png) is original

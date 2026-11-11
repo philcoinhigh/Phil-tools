@@ -267,6 +267,18 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .problem-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font: 12.5px var(--font-code); color: var(--muted); }
 .code-chip { color: var(--bad); font-weight: 700; }
 .problem.warning .code-chip { color: var(--s-sess); }
+.philc-build { font: 12px var(--font-code); color: var(--muted); margin: -4px 0 12px; overflow-wrap: anywhere; }
+.philc-go { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.philc-go select { height: 34px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 3px; font: 12.5px var(--font-code); padding: 0 6px; }
+.philc-verdict { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); background: var(--sheet); font-size: 14.5px; }
+.philc-verdict b { display: block; font: 600 12px var(--font-mark); margin-bottom: 3px; } .philc-verdict.good b { color: var(--good); } .philc-verdict.bad b { color: var(--bad); }
+.philc-verdict pre { margin: 6px 0 0; font: 12.5px/1.55 var(--font-code); white-space: pre-wrap; overflow-wrap: anywhere; }
+.linklike { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 14px; }
+.philc-verdict details { margin-top: 6px; } .philc-verdict summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
+.philc-both { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+.philc-ir { margin: 12px 0 0; padding: 12px 14px; border: 1px solid var(--rule); background: var(--code-bg); font: 12px/1.55 var(--font-code); overflow: auto; max-height: 420px; white-space: pre; }
+.philc-irh { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0 0; font: 600 11.5px var(--font-mark); color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.philc-irh button { background: none; border: 0; padding: 0; font: 12px var(--font-body); color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-transform: none; letter-spacing: 0; cursor: pointer; }
 .fix { align-self: flex-start; background: none; border: 1px solid var(--ink); border-radius: 3px; padding: 5px 12px; cursor: pointer; font-size: 13px; margin-top: 4px; }
 .fix:hover { background: var(--ink); color: var(--paper); }
 
@@ -410,6 +422,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
       <button class="tab" data-tab="trace" role="tab" type="button">Steps</button>
       <button class="tab" data-tab="problems" role="tab" type="button">Problems<span id="problems-count" class="count" hidden></span></button>
       <button class="tab" data-tab="hunt" role="tab" type="button">Hunt<span id="hunt-count" class="count" hidden></span></button>
+      <button class="tab" data-tab="philc" role="tab" type="button" id="philc-tab" hidden>Phil's compiler</button>
     </div>
     <div class="panels">
       <div class="panel" id="panel-sequence">
@@ -439,6 +452,12 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <p class="lead">Run the program on boundary inputs, different schedules and peer choices, and list every distinct way it can fail. A bounded search, not a proof.</p>
         <button type="button" class="act" id="hunt-run">Hunt for bugs</button>
         <div id="hunt-out"></div>
+      </div>
+      <div class="panel" id="panel-philc" hidden>
+        <p class="lead">This runs <code>philc</code>, Phil's own compiler, on the program in the editor. It is the unmodified program from the Phil repository, compiled to WebAssembly so it can run here. Everything else on this page is our simulator; this is the real thing.</p>
+        <p class="philc-build" id="philc-build"></p>
+        <div class="philc-go"><button type="button" class="act" id="philc-run">Compile with philc</button><select id="philc-target" aria-label="Target"></select><button type="button" class="linklike" id="philc-try">Load a program it accepts</button></div>
+        <div id="philc-out"></div>
       </div>
       <div class="panel" id="panel-design" hidden>
         <p class="lead">Describe a conversation between two roles. The designer writes the protocol, both components and the architecture, with the two sides guaranteed to match.</p>

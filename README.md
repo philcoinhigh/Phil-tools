@@ -11,7 +11,7 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | Project | What it is | Folder |
 | --- | --- | --- |
 | **Phil for VS Code** | Editor extension: highlighting, live syntax errors with codes and quick fixes, hovers, outline, snippets, formatting | [`vscode/`](vscode) |
-| **Phil Playground** | Web app to write, run, replay and bug-hunt Phil programs, with examples and puzzles | [`playground/`](playground) |
+| **Phil Playground** | Web app to write, run, replay and bug-hunt Phil programs, with examples and puzzles. Also runs Phil's own `philc` compiler, built to WebAssembly ([`philc/`](philc)) | [`playground/`](playground) |
 | **Learn Phil** | A course of fifteen short lessons with code you run and fix in the page | [`site/`](site) |
 | **Phil OTC desk** | An escrow desk and a two-listing order book, written in Phil. Simulation only: no real tokens move | [`otc/`](otc) |
 | **Contract library** | Vesting, a 2-of-3 treasury, an auction and a bonding-curve launch, written in Phil. Simulation only | [`contracts/`](contracts) |

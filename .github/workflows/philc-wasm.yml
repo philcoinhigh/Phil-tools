@@ -1,0 +1,86 @@
+name: Build Phil's compiler for the browser
+# Compiles the unmodified `philc` executable from abiggerhammer/phil to WebAssembly (wasm32-wasi)
+# so the playground can run Phil's own compiler next to our simulator.
+on:
+  push:
+    branches: [philc-wasm]
+    paths: [".github/workflows/philc-wasm.yml"]
+  schedule:
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out Phil
+        run: |
+          git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
+          git -C ../phil rev-parse HEAD
+      - name: Skip if this Phil commit is already built
+        id: fresh
+        run: |
+          want=$(git -C ../phil rev-parse HEAD)
+          have=$(jq -r .commit philc/build.json 2>/dev/null || true)
+          if [ "$want" = "$have" ] && [ -f docs/playground/philc.wasm ] && [ "${{ github.event_name }}" = "schedule" ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Install the GHC WebAssembly toolchain
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          curl -fsSL https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/raw/master/bootstrap.sh | FLAVOUR=9.10 sh 2>&1 | tail -40
+          ~/.ghc-wasm/add_to_github_path.sh
+      - name: Build philc
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          set -o pipefail
+          mkdir -p philc
+          cd ../phil
+          {
+            wasm32-wasi-ghc --version
+            wasm32-wasi-cabal update
+            wasm32-wasi-cabal build exe:philc
+          } 2>&1 | tee "$GITHUB_WORKSPACE/philc/build.log" | tail -200
+          cp "$(wasm32-wasi-cabal list-bin exe:philc)" "$GITHUB_WORKSPACE/philc/philc.raw.wasm"
+          ls -l "$GITHUB_WORKSPACE/philc/philc.raw.wasm"
+      - name: Shrink it
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          wasm-opt -Oz --strip-debug philc/philc.raw.wasm -o docs/playground/philc.wasm || cp philc/philc.raw.wasm docs/playground/philc.wasm
+          rm philc/philc.raw.wasm
+          ls -l docs/playground/philc.wasm
+      - name: Run it on Phil's own examples
+        if: steps.fresh.outputs.skip != '1'
+        continue-on-error: true
+        run: |
+          wasm="$GITHUB_WORKSPACE/docs/playground/philc.wasm"
+          out="$GITHUB_WORKSPACE/philc/expected"
+          rm -rf "$out"; mkdir -p "$out"
+          cd ../phil
+          for f in examples/run/*.phil handoff/phase1/ping/*.phil examples/rejected/01-reuse-consumed-endpoint.phil; do
+            name=$(echo "$f" | tr '/' '_')
+            code=0
+            wasmtime run --dir . "$wasm" emit-llvm --target x86_64-unknown-linux-gnu "$f" > "$out/$name.out" 2> "$out/$name.err" || code=$?
+            echo "$code $f" | tee -a "$out/index.txt"
+          done
+      - name: Record what was built
+        if: steps.fresh.outputs.skip != '1'
+        run: |
+          jq -n --arg commit "$(git -C ../phil rev-parse HEAD)" --arg date "$(git -C ../phil log -1 --format=%cs)" \
+             --arg ghc "$(wasm32-wasi-ghc --numeric-version)" --argjson bytes "$(stat -c %s docs/playground/philc.wasm)" \
+             '{commit: $commit, date: $date, ghc: $ghc, bytes: $bytes}' > philc/build.json
+          cp philc/build.json docs/playground/philc.json
+          cat philc/build.json
+      - name: Commit the result (or the log, if the build failed)
+        if: always() && steps.fresh.outputs.skip != '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tail -c 200000 philc/build.log > philc/build.tail.log 2>/dev/null || true
+          rm -f philc/build.log
+          git add -A philc docs/playground/philc.wasm docs/playground/philc.json 2>/dev/null || git add -A philc
+          if git diff --cached --quiet; then echo "Nothing to commit."; else
+            git commit -m "philc for the browser: Phil $(git -C ../phil rev-parse --short=10 HEAD)"
+            git push
+          fi
