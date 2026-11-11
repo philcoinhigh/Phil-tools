@@ -66,6 +66,42 @@ button { -webkit-tap-highlight-color: transparent; }
 .mark svg { width: 24px; height: 24px; }
 .wordmark { font: 600 15px var(--font-mark); letter-spacing: -.02em; white-space: nowrap; }
 .wordmark span { color: var(--muted); font-weight: 500; }
+.exbtn { display: inline-flex; align-items: baseline; gap: 8px; background: none; border: 1px solid var(--rule); border-radius: 4px; padding: 6px 10px; cursor: pointer; min-width: 0; max-width: 46vw; }
+.exbtn:hover { border-color: var(--ink); }
+.exbtn .exlabel { font-size: 12px; color: var(--muted); }
+.exbtn b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exbtn .chev { color: var(--muted); font-size: 12px; }
+.nav { display: flex; gap: 16px; }
+.bar .navtab { border: 0; margin: 0; padding: 6px 0; font-size: 13.5px; }
+.bar .navtab.active { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
+.ghostbtn { background: none; border: 1px solid var(--ink); border-radius: 3px; padding: 7px 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ghostbtn:hover { background: var(--line-hi); }
+.intro { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 20px 32px; align-items: center; padding: 18px 52px 18px 16px; border-bottom: 1px solid var(--ink); background: var(--sheet); flex: none; }
+.intro[hidden], .drawer-back[hidden] { display: none; }
+.intro h1 { font: 600 19px var(--font-mark); letter-spacing: -.02em; margin: 0 0 6px; }
+.intro p { margin: 0; color: var(--muted); font-size: 14px; max-width: 58ch; }
+.intro p b { color: var(--ink); }
+.starts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.starts button { text-align: left; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+.starts button:hover { border-color: var(--ink); }
+.starts b { font-size: 14px; } .starts span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.intro-close { position: absolute; top: 8px; right: 10px; background: none; border: 0; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer; padding: 6px 8px; }
+.drawer-back { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); z-index: 30; display: flex; }
+.drawer { background: var(--sheet); width: min(440px, 100%); height: 100%; overflow: auto; border-right: 1px solid var(--ink); padding-bottom: calc(16px + var(--safe-b)); }
+.drawer-head { position: sticky; top: 0; background: var(--sheet); display: flex; align-items: center; padding: calc(14px + var(--safe-t)) 16px 12px; border-bottom: 1px solid var(--rule); font: 600 13px var(--font-mark); }
+.drawer-head .intro-close { top: auto; }
+.ex-group { font: 600 11.5px var(--font-mark); color: var(--muted); padding: 16px 16px 6px; }
+.ex-item { display: block; width: 100%; text-align: left; background: none; border: 0; border-left: 3px solid transparent; padding: 9px 16px 9px 13px; cursor: pointer; }
+.ex-item:hover { background: var(--line-hi); }
+.ex-item.current { border-left-color: var(--ink); background: var(--line-hi); }
+.ex-item b { display: block; font-size: 14.5px; } .ex-item span { display: block; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.ex-item .tag { display: inline; font: 11px var(--font-code); margin-left: 6px; color: var(--bad); } .ex-item .tag.ok { color: var(--good); }
+.try { margin: 6px 0 0; font-size: 13.5px; } .try b { font: 600 11.5px var(--font-mark); margin-right: 6px; }
+.pane-head h2 { font-size: 16px; font-weight: 600; margin: 0 0 2px; }
+.explain { margin-top: 4px; font-size: 13.5px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 14px 0 0; font: 11.5px var(--font-code); color: var(--muted); }
+.legend[hidden] { display: none; }
+.count.ok { color: var(--muted); }
 .picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .picker label { font-size: 13px; color: var(--muted); }
 select { appearance: none; -webkit-appearance: none; background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 4px 22px 4px 0; font-weight: 500; cursor: pointer; min-width: 0;
@@ -84,7 +120,7 @@ select option, select optgroup { background: var(--sheet); color: var(--ink); }
 main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
 .pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 .pane + .pane { border-left: 1px solid var(--ink); }
-.pane-head { display: flex; align-items: baseline; gap: 12px; padding: 11px 16px 10px; border-bottom: 1px solid var(--rule); }
+.pane-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 16px 12px; border-bottom: 1px solid var(--rule); }
 .blurb { margin: 0; font-size: 14px; color: var(--muted); flex: 1; }
 
 #editor-wrap { position: relative; display: flex; flex: 1; min-height: 300px; background: var(--code-bg); overflow: hidden; }
@@ -131,7 +167,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .verdict { font: 600 12px var(--font-mark); letter-spacing: .02em; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .verdict.good { color: var(--good); } .verdict.bad { color: var(--bad); }
 .verdict .where { color: var(--muted); font-weight: 500; font-family: var(--font-code); }
-.headline { font-size: 17px; font-weight: 600; line-height: 1.35; margin-top: 6px; text-wrap: balance; overflow-wrap: anywhere; }
+.headline { font-size: 18px; font-weight: 600; line-height: 1.35; margin-top: 6px; text-wrap: balance; overflow-wrap: anywhere; }
 .hint { margin-top: 6px; color: var(--muted); font-size: 14px; max-width: 62ch; }
 .results { margin: 8px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font: 13px var(--font-code); }
 .results dt { font-weight: 700; } .results dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
@@ -232,8 +268,19 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .mobilebar { display: none; }
 @media (max-width: 860px) {
   .bar { gap: 10px; }
-  .picker label, .bar .tool, .bar .run, .wordmark span, .bar .spacer { display: none; }
-  .picker { flex: 1; } select { max-width: none; flex: 1; font-size: 15px; }
+  .bar .run, .bar .ghostbtn, .wordmark span, .bar .spacer, .exbtn .exlabel { display: none; }
+  .bar { flex-wrap: wrap; padding-bottom: 0; }
+  .exbtn { flex: 1; max-width: none; justify-content: space-between; }
+  .nav { order: 5; flex: 1 1 100%; gap: 22px; border-top: 1px solid var(--rule); padding: 2px 0; margin: 8px -16px 0; padding-left: 16px; }
+  .intro { grid-template-columns: minmax(0, 1fr); padding: 10px 40px 10px 16px; gap: 8px; }
+  .intro h1 { font-size: 15px; margin: 0; }
+  .intro p { display: none; }
+  .starts { display: flex; overflow-x: auto; scrollbar-width: none; margin-right: -40px; padding-right: 16px; }
+  .starts::-webkit-scrollbar { display: none; }
+  .starts button { flex: none; padding: 7px 12px; border-radius: 999px; }
+  .starts span { display: none; }
+  .intro-close { top: 2px; }
+  .pane-head h2 { font-size: 15px; }
   main { grid-template-columns: minmax(0, 1fr); }
   .pane + .pane { border-left: 0; }
   main[data-view="code"] .pane-results, main[data-view="results"] .pane-code { display: none; }
@@ -260,21 +307,40 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
     __DOGMARK__
     <span class="wordmark">phil <span>playground</span></span>
   </div>
-  <div class="picker">
-    <label for="example">Example</label>
-    <select id="example" aria-label="Example program"></select>
-  </div>
+  <button id="ex-open" class="exbtn" type="button" aria-haspopup="dialog"><span class="exlabel">Example</span><b id="ex-title"></b><span class="chev" aria-hidden="true">▾</span></button>
+  <select id="example" aria-label="Example program" hidden></select>
   <div class="spacer"></div>
-  <button class="tool" id="open-file" type="button">Open file</button>
-  <button class="tool" id="format" type="button">Format</button>
-  <button class="tool" id="hunt-link" type="button">Hunt bugs</button>
-  <button class="tool" id="about-link" type="button">Unofficial simulator</button>
+  <nav class="nav" aria-label="More">
+    <button class="tab navtab" data-tab="design" type="button">Design</button>
+    <button class="tab navtab" data-tab="docs" type="button">Docs</button>
+    <button class="tab navtab" data-tab="about" type="button" id="about-link">About</button>
+  </nav>
+  <button id="hunt-link" class="ghostbtn" type="button">Hunt bugs</button>
   <button id="run" class="run" type="button">Run <kbd>Ctrl ↵</kbd></button>
   <input type="file" id="file-input" accept=".phil,.txt,text/plain" hidden>
 </header>
+<section class="intro" id="intro" hidden aria-label="Introduction">
+  <div class="intro-text">
+    <h1>Run Phil in your browser</h1>
+    <p>Phil is a language where values can't be copied or lost, conversations between programs must follow a script, and promises in the code are checked. Write a program on the left, press <b>Run</b>, and see what happened on the right.</p>
+  </div>
+  <div class="starts">
+    <button type="button" data-start="token"><b>Watch a payment</b><span>A coin moves between two programs and can't be double-spent</span></button>
+    <button type="button" data-start="doublespend"><b>See a bug get caught</b><span>Spend the same coin twice and read what Phil says</span></button>
+    <button type="button" data-start="fix-overflow"><b>Solve a puzzle</b><span>Seven broken programs to fix</span></button>
+    <button type="button" data-start="@design"><b>Design a protocol</b><span>List the messages, get a full program</span></button>
+  </div>
+  <button type="button" class="intro-close" id="intro-close" aria-label="Hide introduction">×</button>
+</section>
+<div class="drawer-back" id="ex-drawer" hidden>
+  <div class="drawer" role="dialog" aria-label="Examples">
+    <div class="drawer-head"><b>Examples</b><button type="button" id="ex-close" class="intro-close" aria-label="Close">×</button></div>
+    <div id="ex-list"></div>
+  </div>
+</div>
 <main id="main" data-view="code">
   <section class="pane pane-code" aria-label="Editor">
-    <div class="pane-head"><p id="blurb" class="blurb"></p></div>
+    <div class="pane-head"><div><h2 id="ex-heading"></h2><p id="blurb" class="blurb"></p><p id="try" class="try" hidden></p></div></div>
     <div id="editor-wrap">
       <div id="gutter-box"><div id="gutter"></div></div>
       <div class="area">
@@ -288,7 +354,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
       <span id="syntax-status">Grammar v1</span>
       <span id="caret" class="hide-m"></span>
       <span id="caret-info" class="grow"></span>
-      <button id="open-m" class="tool show-m" type="button">Open</button>
+      <button id="open-file" class="tool" type="button">Open</button>
+      <button id="format" class="tool" type="button">Format</button>
       <button id="copy" class="tool" type="button">Copy</button>
       <button id="reset" class="tool" type="button">Reset</button>
     </div>
@@ -296,14 +363,11 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   <section class="pane pane-results" aria-label="Results">
     <div id="summary"><div class="headline">Press Run to execute the program.</div></div>
     <div class="tabs" role="tablist">
-      <button class="tab active" data-tab="sequence" role="tab" type="button">Sequence</button>
-      <button class="tab" data-tab="console" role="tab" type="button">Console</button>
-      <button class="tab" data-tab="trace" role="tab" type="button">Trace</button>
+      <button class="tab active" data-tab="sequence" role="tab" type="button">Diagram</button>
+      <button class="tab" data-tab="console" role="tab" type="button">Console<span id="console-count" class="count ok" hidden></span></button>
+      <button class="tab" data-tab="trace" role="tab" type="button">Steps</button>
       <button class="tab" data-tab="problems" role="tab" type="button">Problems<span id="problems-count" class="count" hidden></span></button>
       <button class="tab" data-tab="hunt" role="tab" type="button">Hunt<span id="hunt-count" class="count" hidden></span></button>
-      <button class="tab" data-tab="design" role="tab" type="button">Design</button>
-      <button class="tab" data-tab="docs" role="tab" type="button">Docs</button>
-      <button class="tab" data-tab="about" role="tab" type="button">About</button>
     </div>
     <div class="panels">
       <div class="panel" id="panel-sequence">
@@ -317,6 +381,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <div class="replay-label" id="rp-label"></div>
         <div class="holdings" id="holdings" hidden></div>
         <div id="sequence"></div>
+        <p class="legend" id="legend" hidden><span>arrow: a message</span><span>dashed arrow: a choice</span><span>square: connection closed</span><span>paw print: finished</span><span>red mark: stopped here</span></p>
       </div>
       <div class="panel" id="panel-console" hidden><div id="console"></div></div>
       <div class="panel" id="panel-trace" hidden>
@@ -349,6 +414,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <div id="docs"></div>
       </div>
       <div class="panel about" id="panel-about" hidden>
+        <p><button type="button" class="fix" id="intro-show">Show the introduction again</button></p>
         <h2>What this is</h2>
         <p>A browser playground for <a href="https://github.com/abiggerhammer/phil">Phil</a>, a systems language where architecture is executable and implementation is replaceable. The editor checks your code against Phil's official Grammar v1 as you type, using the same checker as the Phil VS Code extension.</p>
         <h2>Built by the Philcoin community</h2>
@@ -404,8 +470,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   </div>
   <button id="run-m" class="run" type="button">Run</button>
   <div class="more">
-    <button class="tool" id="hunt-m" type="button">Hunt</button>
-    <button class="tool" id="format-m" type="button">Format</button>
+    <button class="tool" id="hunt-m" type="button">Hunt bugs</button>
   </div>
 </nav>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
