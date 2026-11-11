@@ -6,56 +6,83 @@ import { runPhil, highlightHtml, KIND_TITLE, esc } from "./shared";
 import { wireFooter } from "./foot";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+const IDS: Record<string, string> = { selling: "t-selling", unit_price: "t-price", want: "t-want", wallet: "t-wallet", fee_bps: "t-fee", expires_after: "t-expires", cancel_after: "t-cancel" };
 const field = (id: string) => $<HTMLInputElement>(id).value.trim();
-const terms = () => ({ selling: field("t-selling"), price: field("t-price"), wallet: field("t-wallet"), fee_bps: field("t-fee") });
+const terms = () => Object.fromEntries(Object.entries(IDS).map(([k, id]) => [k, field(id)])) as Record<string, string>;
 const NAMES: Record<string, string> = { maker: "Maker", desk: "Desk", taker: "Taker" };
 const who = (p: string) => NAMES[p] ?? p;
+const PRESETS: Record<string, Record<string, string>> = {
+  sold: { selling: "1000", unit_price: "2", want: "400", wallet: "5000", fee_bps: "100", expires_after: "10", cancel_after: "0" },
+  dry: { selling: "1000", unit_price: "2", want: "400", wallet: "1000", fee_bps: "100", expires_after: "5", cancel_after: "0" },
+  cancel: { selling: "1000", unit_price: "2", want: "400", wallet: "5000", fee_bps: "100", expires_after: "10", cancel_after: "1" },
+  expire: { selling: "1000", unit_price: "2", want: "400", wallet: "5000", fee_bps: "100", expires_after: "2", cancel_after: "0" },
+};
 
 function feeNote(): void {
   const n = Number(field("t-fee"));
   $("fee-pct").textContent = Number.isFinite(n) && field("t-fee") !== "" ? `${(n / 100).toFixed(2)}% · at most 1000` : "";
 }
 
-function describe(from: string, to: string, text: string): string {
-  const coin = /^(Token|Cash) \{ amount = (\d+) \}$/.exec(text);
-  if (coin) return `${who(from)} hands ${who(to)} <span class="coin">${coin[2]} ${coin[1] === "Token" ? "tokens" : "cash"}</span>`;
-  const labels = PLAIN[`${from}>${to}`] ?? [];
-  const n = (seen[`${from}>${to}`] = (seen[`${from}>${to}`] ?? 0) + 1);
-  return `${who(from)} tells ${who(to)} ${labels[n - 1] ?? "a value"}: ${esc(text)}`;
-}
-const PLAIN: Record<string, string[]> = { "maker>desk": ["the asking price"], "desk>taker": ["how many tokens are on offer", "the asking price"] };
-let seen: Record<string, number> = {};
 const CHOICE: Record<string, string> = {
-  Accept: "Taker accepts the price", Decline: "Taker declines",
-  Filled: "Desk tells the maker the order was filled", Refunded: "Desk tells the maker the order was not filled",
+  Pass: "Taker passes this round",
+  Filled: "Desk reports the fill to the maker",
+  Keep: "Maker keeps the listing open",
+  Cancel: "Maker cancels the rest of the listing",
+  Expired: "Desk tells the maker the listing has expired",
+  SoldOut: "Desk tells the maker the listing is sold out",
+  Closed: "Desk closes the deal with the taker",
 };
+const coinOf = (text: string) => { const m = /^(Token|Cash) \{ amount = (\d+) \}$/.exec(text); return m ? { kind: m[1] === "Token" ? "tokens" : "cash", amount: BigInt(m[2]) } : undefined; };
+const MAX_STEPS = 80;
 
 function trade(): void {
   const t = terms();
   const o = runPhil(OTC_SOURCE, t);
   const box = $("result");
   if (!o.ok) {
-    const bad = o.kind === "contract" || o.kind === "runtime" || o.kind === "arithmetic";
-    box.innerHTML = `<div class="verdict bad"><b>${bad ? "The desk refuses these terms" : esc(KIND_TITLE[o.kind] ?? o.kind)}</b>${esc(o.message)}<div class="muted">Nothing moved. The program stopped before any coin changed hands${o.messages > 0 ? " for good" : ""}.</div></div>`;
+    const refused = o.kind === "contract" || o.kind === "runtime" || o.kind === "arithmetic" || o.kind === "wiring";
+    box.innerHTML = `<div class="verdict bad"><b>${refused ? "The desk refuses these terms" : esc(KIND_TITLE[o.kind] ?? o.kind)}</b>${esc(o.message)}<div class="muted">The program stopped. In Phil a broken promise halts everything rather than leaving a trade half done.</div></div>`;
     return;
   }
-  const ret = (p: string) => BigInt(o.returns.find((r) => r.proc === p)?.text ?? "0");
-  const events = o.result!.trace;
-  const filled = events.some((e) => e.kind === "select" && e.label === "Accept");
-  const selling = BigInt(t.selling), wallet = BigInt(t.wallet), price = BigInt(t.price);
+  // Follow every coin through the trace to get each party's final holdings.
+  const hold: Record<string, { tokens: bigint; cash: bigint }> = { maker: { tokens: BigInt(t.selling), cash: 0n }, desk: { tokens: 0n, cash: 0n }, taker: { tokens: 0n, cash: BigInt(t.wallet) } };
+  const start = { maker: { ...hold.maker }, desk: { ...hold.desk }, taker: { ...hold.taker } } as typeof hold;
+  const steps: string[] = [];
+  let fills = 0, round = 0, ending = "", pendingQty: string | undefined;
+  for (const e of o.result!.trace) {
+    if (e.kind === "select") {
+      if (e.label === "Open") { round++; steps.push(`<li class="round">Round ${round}</li>`); continue; }
+      if (e.label === "Buy") continue;
+      if (e.label === "Filled") fills++;
+      if (e.label === "SoldOut" || e.label === "Expired" || e.label === "Cancel") ending = e.label;
+      steps.push(`<li><span>${CHOICE[e.label] ?? `${who(e.from)} chooses ${esc(e.label)}`}</span></li>`);
+    } else if (e.kind === "message") {
+      const c = coinOf(e.text);
+      if (c) {
+        const k = c.kind as "tokens" | "cash";
+        if (hold[e.from] && hold[e.to]) { hold[e.from][k] -= c.amount; hold[e.to][k] += c.amount; }
+        steps.push(`<li><span>${who(e.from)} hands ${who(e.to)} <span class="coin">${c.amount} ${c.kind}</span></span></li>`);
+      } else if (e.from === "maker") steps.push(`<li><span>Maker sets the price: ${esc(e.text)} per token</span></li>`);
+      else if (e.from === "desk" && pendingQty === undefined) pendingQty = e.text;
+      else if (e.from === "desk") { steps.push(`<li><span>Desk quotes ${esc(pendingQty!)} tokens at ${esc(e.text)} each</span></li>`); pendingQty = undefined; }
+      else steps.push(`<li><span>Taker asks for ${esc(e.text)} tokens</span></li>`);
+    }
+  }
+  // The desk turns its fee coins into a number it hands back; count that as its cash.
+  const fee = BigInt(o.returns.find((r) => r.proc === "desk")?.text ?? "0");
+  const sold = start.maker.tokens - hold.maker.tokens - hold.desk.tokens;
+  const title = ending === "SoldOut" ? (sold > 0n ? "Sold out" : "Nothing was listed")
+    : ending === "Cancel" ? "Cancelled by the maker"
+    : fills > 0 ? "Expired part-filled" : "Expired with no fills";
+  const tone = ending === "SoldOut" && sold > 0n ? "good" : "mid";
+  const back = hold.maker.tokens;
+  const summary = `${fills} fill${fills === 1 ? "" : "s"} over ${round} round${round === 1 ? "" : "s"}. The taker bought ${hold.taker.tokens} tokens for ${start.taker.cash - hold.taker.cash}. The maker received ${hold.maker.cash} after ${fee} in desk fees${back > 0n ? `, and got ${back} unsold tokens back` : ""}.`;
   const row = (label: string, before: bigint, after: bigint) => `<dt>${label}</dt><dd>${before !== after ? `<span class="was">${before}</span>` : ""}${after}</dd>`;
-  const party = (name: string, rows: string) => `<div class="party"><h3>${name}</h3><dl>${rows}</dl></div>`;
-  seen = {};
-  const steps = events.flatMap((e) => e.kind === "message" ? [describe(e.from, e.to, e.text)] : e.kind === "select" ? [CHOICE[e.label] ?? `${who(e.from)} chooses ${esc(e.label)}`] : []);
-  box.innerHTML =
-    `<div class="verdict ${filled ? "good" : "mid"}"><b>${filled ? "Filled" : "Not filled · tokens returned"}</b>${filled
-      ? `The taker paid ${price} and received ${selling} tokens. The maker received ${ret("maker")} after a desk fee of ${ret("desk")}.`
-      : `The taker's wallet (${wallet}) does not cover the price (${price}), so the taker walked away and the desk gave the maker's ${selling} tokens back.`}</div>`
-    + `<div class="parties">`
-    + party("Maker", row("tokens", selling, filled ? 0n : selling) + row("cash", 0n, ret("maker")))
-    + party("Desk", row("tokens", 0n, 0n) + row("cash", 0n, ret("desk")))
-    + party("Taker", row("tokens", 0n, ret("taker")) + row("cash", wallet, filled ? wallet - price : wallet))
-    + `</div><ol class="steps">${steps.map((s) => `<li><span>${s}</span></li>`).join("")}</ol>`;
+  const party = (name: string, id: string, cash: bigint) => `<div class="party"><h3>${name}</h3><dl>${row("tokens", start[id].tokens, hold[id].tokens)}${row("cash", start[id].cash, cash)}</dl></div>`;
+  const shown = steps.slice(0, MAX_STEPS);
+  box.innerHTML = `<div class="verdict ${tone}"><b>${title}</b>${summary}</div>`
+    + `<div class="parties">${party("Maker", "maker", hold.maker.cash)}${party("Desk", "desk", fee)}${party("Taker", "taker", hold.taker.cash)}</div>`
+    + `<ol class="steps">${shown.join("")}${steps.length > MAX_STEPS ? `<li class="round">${steps.length - MAX_STEPS} more steps not shown. Open the program in the playground to replay all of them.</li>` : ""}</ol>`;
 }
 
 function hunt(): void {
@@ -74,6 +101,11 @@ function hunt(): void {
 $("trade").addEventListener("click", trade);
 $("hunt").addEventListener("click", hunt);
 $("t-fee").addEventListener("input", feeNote);
+document.querySelectorAll<HTMLElement>("[data-preset]").forEach((b) => b.addEventListener("click", () => {
+  for (const [k, v] of Object.entries(PRESETS[b.dataset.preset!])) $<HTMLInputElement>(IDS[k]).value = v;
+  feeNote();
+  trade();
+}));
 $("src").innerHTML = highlightHtml(OTC_SOURCE);
 feeNote();
 trade();
