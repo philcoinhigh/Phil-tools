@@ -1,4 +1,4 @@
-import { OTC_SOURCE } from "./otc-source";
+import { OTC_SOURCE, BOOK_SOURCE } from "./otc-source";
 
 // Playground examples. Each one is also a test: `expect` is the outcome the simulator must produce.
 
@@ -284,6 +284,15 @@ program main = instantiate Shop;
     inputs: { selling: "1000", unit_price: "2", want: "400", wallet: "5000", fee_bps: "100", expires_after: "10", cancel_after: "0" },
     expect: "ok",
     code: OTC_SOURCE,
+  },
+  {
+    id: "otc-book",
+    title: "OTC order book",
+    group: "Tokens",
+    blurb: "Seven programs: two listings, each with a maker and a desk, two takers, and a book that offers the cheaper listing first and relays every coin.",
+    inputs: { a_selling: "600", a_price: "3", b_selling: "500", b_price: "2", x_want: "300", x_wallet: "2000", y_want: "400", y_wallet: "900", fee_bps: "100", expires_after: "10", cancel_after: "0" },
+    expect: "ok",
+    code: BOOK_SOURCE,
   },
   {
     id: "repo-stage2",
