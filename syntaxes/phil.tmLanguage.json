@@ -1,0 +1,429 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Phil",
+  "scopeName": "source.phil",
+  "fileTypes": [
+    "phil"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#module"
+    },
+    {
+      "include": "#attribute"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#architecture-items"
+    },
+    {
+      "include": "#literals"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#arm-labels"
+    },
+    {
+      "include": "#calls"
+    },
+    {
+      "include": "#identifiers"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    },
+    {
+      "include": "#invalid"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "match": "//\\s*(TODO|FIXME|XXX|NOTE)\\b.*$",
+          "name": "comment.line.double-slash.phil",
+          "captures": {
+            "1": {
+              "name": "keyword.todo.phil"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "end": "$",
+          "name": "comment.line.double-slash.phil",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.phil"
+            }
+          }
+        }
+      ]
+    },
+    "module": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(module|import)\\s+([\\p{L}_][\\p{L}\\p{N}_']*(?:\\s*\\.\\s*[\\p{L}_][\\p{L}\\p{N}_']*)*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.phil"
+            },
+            "2": {
+              "name": "entity.name.namespace.phil"
+            }
+          }
+        }
+      ]
+    },
+    "attribute": {
+      "patterns": [
+        {
+          "match": "(@)\\s*([\\p{L}_][\\p{L}\\p{N}_']*)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.annotation.phil"
+            },
+            "2": {
+              "name": "entity.name.function.decorator.phil"
+            }
+          }
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])((?:recursive\\s+)?fn|component)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.phil"
+            },
+            "2": {
+              "name": "entity.name.function.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])((?:opaque\\s+)?provider\\s+implementation)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.phil"
+            },
+            "2": {
+              "name": "entity.name.type.implementation.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(record|data|type|claim|callable|protocol|provider|capability|boundary|architecture)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?![\\p{L}\\p{N}_'])",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.phil"
+            },
+            "2": {
+              "name": "entity.name.type.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(program)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)\\s*(=)\\s*(instantiate)(?![\\p{L}\\p{N}_'])",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.phil"
+            },
+            "2": {
+              "name": "entity.name.function.program.phil"
+            },
+            "3": {
+              "name": "keyword.operator.assignment.phil"
+            },
+            "4": {
+              "name": "keyword.other.architecture.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(operation|law|lifecycle)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*(?::|=|satisfies(?![\\p{L}\\p{N}_'])))",
+          "captures": {
+            "1": {
+              "name": "keyword.other.contract.phil"
+            },
+            "2": {
+              "name": "entity.name.function.member.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(role)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*=)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.session.phil"
+            },
+            "2": {
+              "name": "entity.name.type.role.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(let)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*=)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.term.phil"
+            },
+            "2": {
+              "name": "variable.other.declaration.phil"
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(as)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*\\{)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.term.phil"
+            },
+            "2": {
+              "name": "variable.other.declaration.phil"
+            }
+          }
+        }
+      ]
+    },
+    "architecture-items": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(instance|process|ref|entry)\\s+([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*[=:])",
+          "captures": {
+            "1": {
+              "name": "keyword.other.architecture.phil"
+            },
+            "2": {
+              "name": "variable.other.declaration.phil"
+            }
+          }
+        }
+      ]
+    },
+    "literals": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"|(?=$)",
+          "name": "string.quoted.double.phil",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.phil"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.phil"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#escapes"
+            }
+          ]
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])'(?:[^'\\\\\\r\\n]|\\\\(?:['\\\\nrt]|u\\{[0-9a-fA-F]{1,6}\\}))'",
+          "name": "string.quoted.single.phil",
+          "captures": {
+            "0": {
+              "patterns": [
+                {
+                  "include": "#escapes"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'.])\\d+\\.\\d+(?![\\p{L}\\p{N}_'])",
+          "name": "constant.numeric.float.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])\\d+(?![\\p{L}\\p{N}_'])",
+          "name": "constant.numeric.integer.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])\\d[\\p{L}\\p{N}_'.]*",
+          "name": "invalid.illegal.numeric.phil"
+        }
+      ]
+    },
+    "escapes": {
+      "patterns": [
+        {
+          "match": "\\\\(?:[\\\"'\\\\nrt]|u\\{[0-9a-fA-F]{1,6}\\})",
+          "name": "constant.character.escape.phil"
+        },
+        {
+          "match": "\\\\.?",
+          "name": "invalid.illegal.escape.phil"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:U|I)\\d+(?![\\p{L}\\p{N}_'])",
+          "name": "support.type.primitive.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:Validated|String|Bytes|Frame|Proof|Unit|Bool|Char|F32|F64)(?![\\p{L}\\p{N}_'])",
+          "name": "support.type.primitive.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:Session|Message|Effects|Type|Nat)(?![\\p{L}\\p{N}_'])",
+          "name": "storage.type.kind.phil"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:continue|decide|return|reject|match|break|else|loop|fail|if)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.control.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:implementation|architecture|capability|component|recursive|callable|protocol|provider|boundary|program|record|opaque|module|import|claim|data|type|fn)(?![\\p{L}\\p{N}_'])",
+          "name": "storage.type.declaration.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:unrestricted|affine|linear|mode)(?![\\p{L}\\p{N}_'])",
+          "name": "storage.modifier.mode.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:disjoint|and|not|or|in)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.operator.word.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:commit_receive|receive_exact|receive_frame|send_exact|receive|release|select|offer|close|using|send|then|when|role|end|on)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.other.session.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:construct|transport|recognize|validate|captures|consume|convert|closure|borrow|accept|invoke|prove|from|with|let|as|to|at)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.other.term.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:representation|correspondence|proposition|environment|obligation|structural|authority|lifecycle|operation|satisfies|placement|canonical|invariant|requires|outcomes|negative|terminal|preserve|provides|consumes|ensures|assumes|outcome|success|replace|effects|permits|failure|borrows|callee|within|fatal|state|cost|join|law)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.other.contract.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:instantiate|observable|constraint|originates|instance|external|process|assume|export|grant|entry|bind|ref)(?![\\p{L}\\p{N}_'])",
+          "name": "keyword.other.architecture.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])(?:false|true|unit)(?![\\p{L}\\p{N}_'])",
+          "name": "constant.language.phil"
+        }
+      ]
+    },
+    "arm-labels": {
+      "patterns": [
+        {
+          "match": "([\\p{L}_][\\p{L}\\p{N}_']*(?:\\s*\\.\\s*[\\p{L}_][\\p{L}\\p{N}_']*)*)(?=\\s*(?:\\([^()]*\\)|\\{[^{}]*\\})?\\s*=>)",
+          "name": "entity.name.label.phil"
+        }
+      ]
+    },
+    "calls": {
+      "patterns": [
+        {
+          "match": "([\\p{L}_][\\p{L}\\p{N}_']*)(?=\\s*\\()",
+          "name": "entity.name.function.call.phil"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])[\\p{Lu}][\\p{L}\\p{N}_']*",
+          "name": "entity.name.type.phil"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_'])[\\p{L}_][\\p{L}\\p{N}_']*",
+          "name": "variable.other.phil"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "->|=>",
+          "name": "keyword.operator.arrow.phil"
+        },
+        {
+          "match": "==|!=|<=|>=|<<|>>|<|>",
+          "name": "keyword.operator.comparison.phil"
+        },
+        {
+          "match": "[+\\-*/%]",
+          "name": "keyword.operator.arithmetic.phil"
+        },
+        {
+          "match": "=",
+          "name": "keyword.operator.assignment.phil"
+        },
+        {
+          "match": "\\|",
+          "name": "keyword.operator.pipe.phil"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.type.phil"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "match": ";",
+          "name": "punctuation.terminator.phil"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.comma.phil"
+        },
+        {
+          "match": "\\.",
+          "name": "punctuation.accessor.phil"
+        },
+        {
+          "match": "[{}]",
+          "name": "punctuation.section.braces.phil"
+        },
+        {
+          "match": "[()]",
+          "name": "punctuation.section.parens.phil"
+        },
+        {
+          "match": "[\\[\\]]",
+          "name": "punctuation.section.brackets.phil"
+        }
+      ]
+    },
+    "invalid": {
+      "patterns": [
+        {
+          "match": "[^\\s]",
+          "name": "invalid.illegal.character.phil"
+        }
+      ]
+    }
+  }
+}

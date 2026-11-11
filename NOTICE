@@ -1,0 +1,13 @@
+Phil Tools
+Copyright the Phil Tools contributors.
+
+This product includes material derived from the Phil project
+(https://github.com/abiggerhammer/phil), licensed under the Apache License 2.0:
+
+- src/keywords.json: keyword descriptions from docs/reference/keywords-phase1.md.
+- src/reserved.json: the Grammar-v1 reserved-word list from the Phil lexer.
+- The lexer, parser and highlighting grammar are independent implementations
+  written from grammar/phase1-surface.ebnf.
+- The "Ping" example follows the program in Phil's tutorial.
+
+This project is not affiliated with or endorsed by the Phil project or its authors.

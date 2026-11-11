@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Phil Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Martian+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Black-and-white like a border collie; one cobalt accent for actions. Ruled panes, square corners. */
+  --paper: #fafaf8;
+  --sheet: #ffffff;
+  --ink: #15171a;
+  --muted: #6b7079;
+  --rule: #dcdcd6;
+  --accent: #2443c9;
+  --good: #1f7a4c;
+  --bad: #c0262d;
+  --code-bg: #ffffff;
+  --line-hi: #f3f3ee;
+  --now-hi: #e6ebfb;
+  --sel: #d6def8;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-mark: "Martian Mono", "JetBrains Mono", ui-monospace, monospace;
+  --s-decl: #2443c9; --s-ctl: #8a2a9e; --s-sess: #a85400; --s-contract: #a1452b; --s-arch: #1f7a4c;
+  --s-mode: #c0262d; --s-type: #0b6e74; --s-num: #6b3fc0; --s-str: #8a5a00; --s-cmt: #8d929b; --s-ident: #15171a; --s-op: #5b6068;
+  --bar-h: 52px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111214; --sheet: #16181b; --ink: #ecebe6; --muted: #8f949c; --rule: #2b2e33; --accent: #8ea4ff;
+    --good: #5cc28e; --bad: #ff6b6b; --code-bg: #16181b; --line-hi: #1c1f23; --now-hi: #222b47; --sel: #2a3354;
+    --s-decl: #8ea4ff; --s-ctl: #d99ae6; --s-sess: #f0b35c; --s-contract: #f09a7a; --s-arch: #6fcf9a;
+    --s-mode: #ff7b7b; --s-type: #5fcfc7; --s-num: #b79bff; --s-str: #e3bf85; --s-cmt: #6c717a; --s-ident: #e6e5df; --s-op: #9ba0a8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111214; --sheet: #16181b; --ink: #ecebe6; --muted: #8f949c; --rule: #2b2e33; --accent: #8ea4ff;
+  --good: #5cc28e; --bad: #ff6b6b; --code-bg: #16181b; --line-hi: #1c1f23; --now-hi: #222b47; --sel: #2a3354;
+  --s-decl: #8ea4ff; --s-ctl: #d99ae6; --s-sess: #f0b35c; --s-contract: #f09a7a; --s-arch: #6fcf9a;
+  --s-mode: #ff7b7b; --s-type: #5fcfc7; --s-num: #b79bff; --s-str: #e3bf85; --s-cmt: #6c717a; --s-ident: #e6e5df; --s-op: #9ba0a8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--font-body); display: flex; flex-direction: column; -webkit-text-size-adjust: 100%; }
+code { font-family: var(--font-code); font-size: .88em; }
+button, select, input { font: inherit; color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ------------------------------------------------ top bar */
+.bar { display: flex; align-items: center; gap: 16px; padding: var(--safe-t) 16px 0; min-height: var(--bar-h); border-bottom: 1px solid var(--ink); background: var(--sheet); flex: none; }
+.mark { display: flex; align-items: center; gap: 9px; color: var(--ink); flex: none; }
+.mark svg { width: 24px; height: 24px; }
+.wordmark { font: 600 15px var(--font-mark); letter-spacing: -.02em; white-space: nowrap; }
+.wordmark span { color: var(--muted); font-weight: 500; }
+.picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.picker label { font-size: 13px; color: var(--muted); }
+select { appearance: none; -webkit-appearance: none; background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 4px 22px 4px 0; font-weight: 500; cursor: pointer; min-width: 0;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position: calc(100% - 9px) 55%, calc(100% - 4px) 55%; background-size: 5px 5px; background-repeat: no-repeat; max-width: 40vw; }
+select option, select optgroup { background: var(--sheet); color: var(--ink); }
+.spacer { flex: 1; }
+.tool { background: none; border: 0; padding: 6px 4px; cursor: pointer; color: var(--muted); font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); white-space: nowrap; }
+.tool:hover { color: var(--ink); }
+.run { background: var(--ink); color: var(--paper); border: 0; border-radius: 3px; padding: 8px 16px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 10px; align-items: baseline; white-space: nowrap; }
+@media (hover: hover) { .run:hover { background: var(--accent); } }
+.run:active { background: var(--accent); }
+.run kbd { font: 11px var(--font-code); opacity: .65; }
+
+/* ------------------------------------------------ panes */
+main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
+.pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--ink); }
+.pane-head { display: flex; align-items: baseline; gap: 12px; padding: 11px 16px 10px; border-bottom: 1px solid var(--rule); }
+.blurb { margin: 0; font-size: 14px; color: var(--muted); flex: 1; }
+
+#editor-wrap { position: relative; display: flex; flex: 1; min-height: 300px; background: var(--code-bg); overflow: hidden; }
+#gutter-box { width: 46px; flex: none; overflow: hidden; border-right: 1px solid var(--rule); }
+#gutter { padding: 12px 10px 12px 0; text-align: right; font: 12.5px/20px var(--font-code); color: var(--muted); user-select: none; }
+#gutter div { opacity: .65; } #gutter .cur { opacity: 1; color: var(--ink); }
+#gutter .bad { color: var(--bad); opacity: 1; font-weight: 700; }
+.area { position: relative; flex: 1; overflow: hidden; }
+#highlight, #code { margin: 0; padding: 12px 0; font: 13.5px/20px var(--font-code); tab-size: 2; white-space: pre; letter-spacing: 0; }
+#highlight { position: absolute; inset: 0 auto auto 0; pointer-events: none; color: var(--s-ident); min-width: 100%; }
+#highlight .ln { padding: 0 16px; min-height: 20px; }
+#highlight .ln.cur { background: var(--line-hi); }
+#highlight .ln.now { background: var(--now-hi); box-shadow: inset 3px 0 0 var(--accent); }
+#code { position: absolute; inset: 0; width: 100%; height: 100%; padding-left: 16px; padding-right: 16px; resize: none; border: 0; outline: none; background: transparent; color: transparent; caret-color: var(--ink); overflow: auto; }
+#code::selection { background: var(--sel); color: transparent; }
+.k-decl { color: var(--s-decl); font-weight: 500; } .k-ctl, .k-term, .k-logic { color: var(--s-ctl); } .k-sess { color: var(--s-sess); }
+.k-contract { color: var(--s-contract); } .k-arch { color: var(--s-arch); } .k-mode { color: var(--s-mode); font-weight: 500; }
+.k-type, .tname { color: var(--s-type); } .k-const, .num { color: var(--s-num); } .str { color: var(--s-str); } .cmt { color: var(--s-cmt); font-style: italic; }
+.ident { color: var(--s-ident); } .op, .punct { color: var(--s-op); }
+.bracket-match { outline: 1px solid var(--muted); border-radius: 2px; }
+.err { text-decoration: underline wavy var(--bad); text-decoration-skip-ink: none; text-underline-offset: 3px; }
+.rt-err { background: color-mix(in srgb, var(--bad) 18%, transparent); text-decoration: underline var(--bad); text-underline-offset: 3px; }
+.caret-err { display: inline-block; width: 0; height: 16px; border-left: 2px solid var(--bad); margin: 0 -1px; vertical-align: -3px; }
+
+.keys { display: none; gap: 6px; padding: 6px 10px; border-top: 1px solid var(--rule); background: var(--sheet); overflow-x: auto; scrollbar-width: none; }
+.keys::-webkit-scrollbar { display: none; }
+.keys button { flex: none; min-width: 40px; height: 36px; padding: 0 10px; border: 1px solid var(--rule); background: var(--paper); border-radius: 4px; font: 500 15px var(--font-code); cursor: pointer; }
+.keys button:active { background: var(--ink); color: var(--paper); }
+
+#inputs { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; padding: 10px 16px; border-top: 1px solid var(--rule); }
+#inputs[hidden] { display: none; }
+.inputs-label { font-size: 13px; color: var(--muted); }
+.entry { display: inline-flex; align-items: baseline; gap: 6px; font: 13px var(--font-code); }
+.entry-type { color: var(--muted); }
+.entry input { width: 88px; background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 3px 2px; font: 500 14px var(--font-code); }
+.entry input[aria-invalid="true"] { border-bottom-color: var(--bad); color: var(--bad); }
+.status { display: flex; align-items: center; gap: 14px; padding: 7px 16px; border-top: 1px solid var(--ink); font: 12px var(--font-code); color: var(--muted); background: var(--sheet); min-height: 33px; }
+.status .ok { color: var(--good); } .status .no { color: var(--bad); }
+.status .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status .kw { color: var(--ink); }
+
+/* ------------------------------------------------ results */
+#summary { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+.verdict { font: 600 12px var(--font-mark); letter-spacing: .02em; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.verdict.good { color: var(--good); } .verdict.bad { color: var(--bad); }
+.verdict .where { color: var(--muted); font-weight: 500; font-family: var(--font-code); }
+.headline { font-size: 17px; font-weight: 600; line-height: 1.35; margin-top: 6px; text-wrap: balance; overflow-wrap: anywhere; }
+.hint { margin-top: 6px; color: var(--muted); font-size: 14px; max-width: 62ch; }
+.results { margin: 8px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font: 13px var(--font-code); }
+.results dt { font-weight: 700; } .results dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.stats { margin-top: 10px; font: 12px var(--font-code); color: var(--muted); font-variant-numeric: tabular-nums; }
+.loc { background: none; border: 0; padding: 0; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font: inherit; }
+
+.tabs { display: flex; gap: 20px; padding: 0 16px; border-bottom: 1px solid var(--rule); overflow-x: auto; flex: none; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 0 9px; margin-bottom: -1px; cursor: pointer; color: var(--muted); font-weight: 500; font-size: 14px; white-space: nowrap; }
+.tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+.count { font: 600 11px var(--font-code); color: var(--bad); margin-left: 3px; }
+.panels { flex: 1; min-height: 0; overflow: auto; }
+.panel { padding: 14px 16px 24px; }
+.empty { color: var(--muted); margin: 0; }
+
+.replay { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.replay button { width: 34px; height: 30px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 3px; cursor: pointer; font: 13px var(--font-code); }
+.replay button:hover { border-color: var(--ink); }
+.replay input[type=range] { flex: 1; min-width: 60px; accent-color: var(--ink); }
+.replay-label { font: 12px var(--font-code); color: var(--muted); margin: -6px 0 12px; min-height: 18px; overflow-wrap: anywhere; }
+#sequence { overflow-x: auto; }
+#sequence svg { display: block; font-family: var(--font-code); }
+.lane-head { fill: var(--sheet); stroke: var(--ink); } .lane-head.ext { stroke: var(--muted); stroke-dasharray: 3 3; }
+.lane-name { fill: var(--ink); font-size: 12.5px; font-weight: 700; text-anchor: middle; }
+.lane-comp { fill: var(--muted); font-size: 10.5px; text-anchor: middle; }
+.lifeline { stroke: var(--rule); stroke-width: 1.5; } .lifeline.ext { stroke-dasharray: 3 4; }
+.row-now { fill: var(--now-hi); }
+.stepno { fill: var(--muted); font-size: 10px; }
+.future { opacity: .18; }
+.msg { stroke: var(--ink); stroke-width: 1.4; } .msg.sel { stroke: var(--accent); stroke-dasharray: 5 3; }
+.arrowhead { fill: var(--ink); } .arrowhead.sel { fill: var(--accent); }
+.msg-label { fill: var(--ink); font-size: 11.5px; text-anchor: middle; paint-order: stroke; stroke: var(--paper); stroke-width: 4px; } .msg-label.sel { fill: var(--accent); }
+.note { fill: var(--muted); font-size: 11px; } .note.done { fill: var(--good); } .note.failed { fill: var(--bad); }
+.close-mark { fill: none; stroke: var(--muted); stroke-width: 1.5; } .console-dot { fill: var(--muted); }
+.paw { fill: var(--good); } .end-mark.failed { fill: var(--bad); }
+.err-mark { fill: var(--bad); } .err-x { fill: var(--paper); font-size: 12px; font-weight: 700; text-anchor: middle; }
+
+.holdings { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 12px; padding: 8px 10px; border: 1px solid var(--rule); font: 12px var(--font-code); }
+.holdings[hidden] { display: none; }
+.holdings .who { font-weight: 700; margin-right: 6px; }
+.holdings .chip { display: inline-block; border: 1px solid var(--ink); border-radius: 999px; padding: 1px 9px; margin: 2px 4px 2px 0; transition: background .3s; }
+.holdings .chip.fresh { background: var(--ink); color: var(--paper); }
+.holdings .none { color: var(--muted); }
+.lead { margin: 0 0 12px; color: var(--muted); font-size: 14px; max-width: 62ch; }
+.act { background: var(--ink); color: var(--paper); border: 0; border-radius: 3px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.act:active { background: var(--accent); }
+#hunt-out { margin-top: 14px; }
+.finding { padding: 10px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 3px; }
+.finding .with { font: 12.5px var(--font-code); color: var(--muted); overflow-wrap: anywhere; }
+.dz-names { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 12px; font-size: 13px; color: var(--muted); }
+.dz-names input, .dz-row input, .dz-row select { background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 4px 2px; font: 500 14px var(--font-code); color: var(--ink); min-width: 0; }
+.dz-names input { width: 110px; margin-left: 4px; }
+.dz-row { display: grid; grid-template-columns: 22px minmax(0, 1.5fr) minmax(0, 1fr) 76px 30px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--rule); font: 12px var(--font-code); color: var(--muted); }
+.dz-row select { padding-right: 16px; max-width: none; }
+.dz-row .rm { border: 0; background: none; cursor: pointer; font-size: 16px; color: var(--muted); padding: 4px; }
+.dz-actions { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin: 12px 0 16px; }
+.show-m { display: none; }
+.console-line { font: 13.5px/1.65 var(--font-code); white-space: pre-wrap; overflow-wrap: anywhere; }
+.console-proc { color: var(--muted); display: inline-block; min-width: 7ch; margin-right: 8px; }
+.events { list-style: none; margin: 0; padding: 0; }
+.ev { display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13.5px; padding: 5px 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
+.ev:last-child { border-bottom: 0; }
+.ev[data-span] { cursor: pointer; } .ev[data-span]:hover { background: var(--line-hi); }
+.ev-icon { color: var(--muted); font-family: var(--font-code); text-align: center; }
+.ev-select .ev-icon { color: var(--accent); } .ev-return .ev-icon { color: var(--good); }
+.ev-error, .ev-fail { color: var(--bad); } .ev-error .ev-icon { color: var(--bad); font-weight: 700; }
+.ev-check { font-size: 12.5px; }
+.check-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+.problem { padding: 10px 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 3px; }
+.problem:first-child { padding-top: 0; }
+.problem-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font: 12.5px var(--font-code); color: var(--muted); }
+.code-chip { color: var(--bad); font-weight: 700; }
+.problem.warning .code-chip { color: var(--s-sess); }
+.fix { align-self: flex-start; background: none; border: 1px solid var(--ink); border-radius: 3px; padding: 5px 12px; cursor: pointer; font-size: 13px; margin-top: 4px; }
+.fix:hover { background: var(--ink); color: var(--paper); }
+
+.search { width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 6px 2px; font-size: 15px; margin-bottom: 10px; }
+.doc-group { font: 600 12px var(--font-mark); margin: 16px 0 4px; }
+.doc { display: grid; grid-template-columns: minmax(110px, max-content) 1fr; gap: 2px 14px; padding: 5px 0; border-bottom: 1px solid var(--rule); font-size: 14px; }
+.doc dt { font: 600 13px var(--font-code); } .doc dd { margin: 0; color: var(--muted); }
+.doc-count { font: 12px var(--font-code); color: var(--muted); }
+
+.about { max-width: 66ch; font-size: 14.5px; }
+.about h2 { font: 600 12.5px var(--font-mark); margin: 22px 0 6px; } .about h2:first-child { margin-top: 0; }
+.about ul { padding-left: 18px; margin: 6px 0; } .about li { margin: 3px 0; }
+.about p { margin: 6px 0; } .about a { color: var(--accent); }
+.ca { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0; }
+.ca code { font-size: 12.5px; padding: 6px 8px; border: 1px solid var(--rule); background: var(--sheet); overflow-wrap: anywhere; word-break: break-all; }
+.ca button { border: 1px solid var(--ink); background: none; border-radius: 3px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+.credit { display: flex; align-items: center; gap: 8px; padding: 8px 16px calc(8px + var(--safe-b)); border-top: 1px solid var(--rule); font: 11.5px var(--font-code); color: var(--muted); flex: none; }
+.credit .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.credit button { background: none; border: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font: inherit; padding: 2px 0; }
+.toast { position: fixed; left: 50%; bottom: calc(76px + var(--safe-b)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 3px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 20; }
+.toast.show { opacity: 1; }
+
+/* ------------------------------------------------ mobile */
+.mobilebar { display: none; }
+@media (max-width: 860px) {
+  .bar { gap: 10px; }
+  .picker label, .bar .tool, .bar .run, .wordmark span, .bar .spacer { display: none; }
+  .picker { flex: 1; } select { max-width: none; flex: 1; font-size: 15px; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  .pane + .pane { border-left: 0; }
+  main[data-view="code"] .pane-results, main[data-view="results"] .pane-code { display: none; }
+  #editor-wrap { min-height: 0; }
+  #highlight, #code { font-size: 13px; }
+  .keys { display: flex; }
+  .status .hide-m { display: none; }
+  .show-m { display: inline; }
+  .mobilebar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 8px 12px calc(8px + var(--safe-b)); border-top: 1px solid var(--ink); background: var(--sheet); flex: none; }
+  .mobilebar .seg { display: flex; border: 1px solid var(--ink); border-radius: 3px; overflow: hidden; justify-self: start; }
+  .mobilebar .seg button { background: none; border: 0; padding: 8px 14px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .mobilebar .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .mobilebar .run { display: inline-flex; padding: 10px 22px; font-size: 15px; }
+  .mobilebar .more { justify-self: end; display: flex; gap: 14px; }
+  .credit { padding-bottom: 8px; }
+  .tab { padding: 12px 0 11px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="mark">
+    __DOGMARK__
+    <span class="wordmark">phil <span>playground</span></span>
+  </div>
+  <div class="picker">
+    <label for="example">Example</label>
+    <select id="example" aria-label="Example program"></select>
+  </div>
+  <div class="spacer"></div>
+  <button class="tool" id="open-file" type="button">Open file</button>
+  <button class="tool" id="format" type="button">Format</button>
+  <button class="tool" id="hunt-link" type="button">Hunt bugs</button>
+  <button class="tool" id="about-link" type="button">Unofficial simulator</button>
+  <button id="run" class="run" type="button">Run <kbd>Ctrl ↵</kbd></button>
+  <input type="file" id="file-input" accept=".phil,.txt,text/plain" hidden>
+</header>
+<main id="main" data-view="code">
+  <section class="pane pane-code" aria-label="Editor">
+    <div class="pane-head"><p id="blurb" class="blurb"></p></div>
+    <div id="editor-wrap">
+      <div id="gutter-box"><div id="gutter"></div></div>
+      <div class="area">
+        <pre id="highlight" aria-hidden="true"></pre>
+        <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Phil source code"></textarea>
+      </div>
+    </div>
+    <div class="keys" id="keys" aria-label="Symbol keys"></div>
+    <div id="inputs" hidden></div>
+    <div class="status">
+      <span id="syntax-status">Grammar v1</span>
+      <span id="caret" class="hide-m"></span>
+      <span id="caret-info" class="grow"></span>
+      <button id="open-m" class="tool show-m" type="button">Open</button>
+      <button id="copy" class="tool" type="button">Copy</button>
+      <button id="reset" class="tool" type="button">Reset</button>
+    </div>
+  </section>
+  <section class="pane pane-results" aria-label="Results">
+    <div id="summary"><div class="headline">Press Run to execute the program.</div></div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="sequence" role="tab" type="button">Sequence</button>
+      <button class="tab" data-tab="console" role="tab" type="button">Console</button>
+      <button class="tab" data-tab="trace" role="tab" type="button">Trace</button>
+      <button class="tab" data-tab="problems" role="tab" type="button">Problems<span id="problems-count" class="count" hidden></span></button>
+      <button class="tab" data-tab="hunt" role="tab" type="button">Hunt<span id="hunt-count" class="count" hidden></span></button>
+      <button class="tab" data-tab="design" role="tab" type="button">Design</button>
+      <button class="tab" data-tab="docs" role="tab" type="button">Docs</button>
+      <button class="tab" data-tab="about" role="tab" type="button">About</button>
+    </div>
+    <div class="panels">
+      <div class="panel" id="panel-sequence">
+        <div class="replay" id="replay" hidden>
+          <button type="button" id="rp-first" aria-label="First event">⏮</button>
+          <button type="button" id="rp-prev" aria-label="Previous event">◀</button>
+          <input type="range" id="rp-range" min="0" max="0" value="0" aria-label="Replay position">
+          <button type="button" id="rp-next" aria-label="Next event">▶</button>
+          <button type="button" id="rp-last" aria-label="Last event">⏭</button>
+        </div>
+        <div class="replay-label" id="rp-label"></div>
+        <div class="holdings" id="holdings" hidden></div>
+        <div id="sequence"></div>
+      </div>
+      <div class="panel" id="panel-console" hidden><div id="console"></div></div>
+      <div class="panel" id="panel-trace" hidden>
+        <label class="check-toggle" for="show-checks"><input type="checkbox" id="show-checks"> Show contract checks and ownership changes</label>
+        <div id="trace"></div>
+      </div>
+      <div class="panel" id="panel-problems" hidden><div id="problems"></div></div>
+      <div class="panel" id="panel-hunt" hidden>
+        <p class="lead">Run the program on boundary inputs, different schedules and peer choices, and list every distinct way it can fail. A bounded search, not a proof.</p>
+        <button type="button" class="act" id="hunt-run">Hunt for bugs</button>
+        <div id="hunt-out"></div>
+      </div>
+      <div class="panel" id="panel-design" hidden>
+        <p class="lead">Describe a conversation between two roles. The designer writes the protocol, both components and the architecture, with the two sides guaranteed to match.</p>
+        <div class="dz-names">
+          <label>Protocol <input id="dz-name" value="Order" autocomplete="off" spellcheck="false"></label>
+          <label>First role <input id="dz-a" value="Buyer" autocomplete="off" spellcheck="false"></label>
+          <label>Second role <input id="dz-b" value="Seller" autocomplete="off" spellcheck="false"></label>
+        </div>
+        <div id="dz-steps"></div>
+        <div class="dz-actions">
+          <button type="button" class="fix" id="dz-add">Add step</button>
+          <label class="check-toggle" for="dz-repeat" style="margin:0"><input type="checkbox" id="dz-repeat"> Repeat in rounds (first role chooses Again or Done)</label>
+        </div>
+        <button type="button" class="act" id="dz-go">Generate program</button>
+      </div>
+      <div class="panel" id="panel-docs" hidden>
+        <label class="sr-only" for="doc-search">Search the reference</label>
+        <input type="search" id="doc-search" class="search" placeholder="Search keywords, error codes, host operations…" autocomplete="off">
+        <div id="docs"></div>
+      </div>
+      <div class="panel about" id="panel-about" hidden>
+        <h2>What this is</h2>
+        <p>A browser playground for <a href="https://github.com/abiggerhammer/phil">Phil</a>, a systems language where architecture is executable and implementation is replaceable. The editor checks your code against Phil's official Grammar v1 as you type, using the same checker as the Phil VS Code extension.</p>
+        <h2>Built by the Philcoin community</h2>
+        <p>This playground is a community tool. It is not part of, or endorsed by, the Phil project or its authors.</p>
+        <div class="ca">
+          <span class="muted">Philcoin contract</span>
+          <code id="ca-full">Ea5dBrJZN58yV1nm1Q4DybJNYKeTvwpb2GEkXyW64bUH</code>
+          <button type="button" class="copy-ca">Copy</button>
+        </div>
+        <h2>The simulator is unofficial</h2>
+        <p>Phil's own compiler cannot run real programs yet, so <b>Run</b> uses an experimental interpreter built from the Phil tour and design documents. Where Phil proves things at compile time, the simulator checks them while the program runs:</p>
+        <ul>
+          <li><b>Ownership:</b> <code>linear</code> values must be used exactly once, <code>affine</code> values at most once. Protocol endpoints are linear.</li>
+          <li><b>Protocols:</b> every <code>send</code>, <code>receive</code>, <code>select</code>, <code>offer</code> and <code>close</code> must match the next step of the role's protocol.</li>
+          <li><b>Contracts:</b> <code>requires</code> before each call, <code>ensures</code> after it, refinement types when values are bound, loop and join invariants, and <code>prove(...)</code>.</li>
+          <li><b>Arithmetic:</b> fixed-width integers never wrap. Overflow, underflow and division by zero stop the program.</li>
+          <li><b>Processes</b> declared in an <code>architecture</code> run concurrently with synchronous messages. If nobody can move, that is reported as a deadlock.</li>
+        </ul>
+        <p>A program the simulator runs can still be rejected by the real Phil checker, and the other way round.</p>
+        <h2>Simulator choices that are not Phil</h2>
+        <p>Ordinary Phil expressions have no comparison operators, so the simulator provides these host operations:</p>
+        <ul id="host-ops"></ul>
+        <ul>
+          <li>Inside an <code>offer</code> arm, the offered endpoint's name refers to its next state.</li>
+          <li>A role marked <code>external</code> is played by an automatic peer that sends default values and picks the first branch.</li>
+          <li>Effects, authority, providers, generics and byte-level operations (<code>recognize</code>, <code>validate</code>, <code>receive_exact</code>…) are accepted by the checker but not executed.</li>
+        </ul>
+        <h2>Hunt, Design and puzzles</h2>
+        <ul>
+          <li><b>Hunt</b> tries boundary values for every entry, several process orders and several strategies for external peers. With no runnable program it calls each function on generated arguments. Finding nothing is not a proof.</li>
+          <li><b>Design</b> generates a full program from a list of messages.</li>
+          <li><b>Puzzles</b> (in the example menu) are broken programs. One is solved when it runs to completion and a hunt finds nothing.</li>
+          <li>Under the sequence diagram, each process shows the linear and affine values it owns at the current replay step.</li>
+        </ul>
+        <h2>Keyboard</h2>
+        <ul>
+          <li><code>Ctrl/⌘ + Enter</code> run · <code>Ctrl/⌘ + /</code> toggle comment · <code>Tab</code> / <code>Shift + Tab</code> indent · <code>Shift + Alt + F</code> format</li>
+        </ul>
+        <h2>Your code</h2>
+        <p>Edits are kept in this browser for each example. <b>Reset</b> restores the original. <b>Open file</b> loads a <code>.phil</code> file into the scratch pad.</p>
+      </div>
+    </div>
+    <div class="credit">
+      <span class="grow">Built by the Philcoin community · CA Ea5dBrJ…W64bUH</span>
+      <button type="button" class="copy-ca">Copy CA</button>
+    </div>
+  </section>
+</main>
+<nav class="mobilebar" aria-label="View">
+  <div class="seg">
+    <button type="button" id="view-code" aria-pressed="true">Code</button>
+    <button type="button" id="view-results" aria-pressed="false">Results</button>
+  </div>
+  <button id="run-m" class="run" type="button">Run</button>
+  <div class="more">
+    <button class="tool" id="hunt-m" type="button">Hunt</button>
+    <button class="tool" id="format-m" type="button">Format</button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

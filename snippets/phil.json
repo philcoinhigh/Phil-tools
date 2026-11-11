@@ -1,0 +1,307 @@
+{
+  "Module": {
+    "prefix": "module",
+    "body": [
+      "module ${1:my.app};",
+      "$0"
+    ],
+    "description": "Module declaration (must be the first declaration)"
+  },
+  "Import": {
+    "prefix": "import",
+    "body": [
+      "import ${1:other.lib};"
+    ],
+    "description": "Import a module (add `{ A, B }` before `;` to import specific names)"
+  },
+  "Component": {
+    "prefix": "component",
+    "body": [
+      "component ${1:Name}(${2:endpoint} : ${3:Endpoint}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Executable component with parameters"
+  },
+  "Component main": {
+    "prefix": "main",
+    "body": [
+      "component main provides ${1|Unit,U32|} {",
+      "\treturn ${2:unit};",
+      "}"
+    ],
+    "description": "Runnable main component (current philc fragment: Unit or U32)"
+  },
+  "Function": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:x} : ${3:U32}) -> ${4:U32} satisfies ${5:Contract} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Function that explicitly satisfies a callable contract"
+  },
+  "Callable contract": {
+    "prefix": "callable",
+    "body": [
+      "callable ${1:Name}(${2:x} : ${3:U32}) -> ${4:Result} {",
+      "\trequires ${5:true};",
+      "\toutcomes { success ${6:Ok}, negative ${7:Err} };",
+      "\tensures ${8:true};",
+      "}"
+    ],
+    "description": "Callable contract with requirements, outcomes and guarantees"
+  },
+  "Outcome residue": {
+    "prefix": "outcome",
+    "body": [
+      "outcome ${1|success,negative,terminal,fatal|} ${2:Result} {",
+      "\tstate (${3});",
+      "\tensures ${4:true};",
+      "}"
+    ],
+    "description": "Branch-sensitive outcome post-state"
+  },
+  "Record": {
+    "prefix": "record",
+    "body": [
+      "record ${1:Name} {",
+      "\t${2:field} : ${3:U32},",
+      "}"
+    ],
+    "description": "Product type with named fields"
+  },
+  "Data": {
+    "prefix": "data",
+    "body": [
+      "data ${1:Name} = ${2:First} | ${3:Second}(${4:U32});"
+    ],
+    "description": "Sum / variant type"
+  },
+  "Type alias": {
+    "prefix": "type",
+    "body": [
+      "type ${1:Name} = ${2:U32};"
+    ],
+    "description": "Type alias"
+  },
+  "Refinement type": {
+    "prefix": "refine",
+    "body": [
+      "{ ${1:v} : ${2:U32} | ${3:v > 0} }"
+    ],
+    "description": "Refinement type { x : T | P }"
+  },
+  "Claim": {
+    "prefix": "claim",
+    "body": [
+      "claim ${1:Name}(${2:x} : ${3:U32}) = ${4:x > 0};"
+    ],
+    "description": "Named proposition"
+  },
+  "Protocol": {
+    "prefix": "protocol",
+    "body": [
+      "protocol ${1:Name} {",
+      "\trole ${2:Client} = send (${3:x} : ${4:U8}) then end ${5:Done};",
+      "\trole ${6:Server} = receive (${3:x} : ${4:U8}) then end ${5:Done};",
+      "}"
+    ],
+    "description": "Two-role protocol (session types)"
+  },
+  "Protocol with choice": {
+    "prefix": "protocol-choice",
+    "body": [
+      "protocol ${1:Name} {",
+      "\trole ${2:Client} = select { ${3:Go} => end Done | ${4:Cancel} => end Cancel };",
+      "\trole ${5:Server} = offer { ${3:Go} => end Done | ${4:Cancel} => end Cancel };",
+      "}"
+    ],
+    "description": "Protocol where the client selects and the server offers"
+  },
+  "Provider contract": {
+    "prefix": "provider",
+    "body": [
+      "provider ${1:Name} {",
+      "\toperation ${2:op} : ${3:Contract};",
+      "\tlaw ${4:name} : ${5:true};",
+      "}"
+    ],
+    "description": "Provider contract with operations and laws"
+  },
+  "Provider implementation": {
+    "prefix": "provider-impl",
+    "body": [
+      "provider implementation ${1:Name} satisfies ${2:Contract} {",
+      "\toperation ${3:op} satisfies ${4:Callable} {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Concrete provider implementation"
+  },
+  "Capability": {
+    "prefix": "capability",
+    "body": [
+      "capability ${1:Name} mode ${2|linear,affine,unrestricted|} {",
+      "\tpermits ${3:Operation};",
+      "}"
+    ],
+    "description": "Authority-bearing capability (mode is mandatory)"
+  },
+  "Boundary": {
+    "prefix": "boundary",
+    "body": [
+      "boundary ${1:Name} : ${2:Payload} {",
+      "\treceive using ${3:Decoder};",
+      "\tsend using ${4:Encoder};",
+      "\tcanonical;",
+      "}"
+    ],
+    "description": "Boundary contract"
+  },
+  "Architecture": {
+    "prefix": "architecture",
+    "body": [
+      "architecture ${1:Name} {",
+      "\tinstance ${2:client} = ${3:ClientWorker};",
+      "\tinstance ${4:server} = ${5:ServerWorker};",
+      "\tprocess ${2:client}_run = ${2:client};",
+      "\tprocess ${4:server}_run = ${4:server};",
+      "\tprotocol ${6:ping} = ${7:Ping};",
+      "\trole ${6:ping}.Client = ${2:client};",
+      "\trole ${6:ping}.Server = ${4:server};",
+      "\tbind ${2:client}.endpoint = ${6:ping}.Client;",
+      "\tbind ${4:server}.endpoint = ${6:ping}.Server;",
+      "}"
+    ],
+    "description": "Architecture wiring two processes over a protocol"
+  },
+  "Program": {
+    "prefix": "program",
+    "body": [
+      "program ${1:main} = instantiate ${2:Architecture};"
+    ],
+    "description": "Root program"
+  },
+  "Let": {
+    "prefix": "let",
+    "body": [
+      "let ${1:name} = ${2:expr};"
+    ],
+    "description": "Immutable binding"
+  },
+  "If": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "\t$2",
+      "} else {",
+      "\t$0",
+      "};"
+    ],
+    "description": "If expression"
+  },
+  "Match": {
+    "prefix": "match",
+    "body": [
+      "match ${1:value} {",
+      "\t${2:Pattern} => { $3 }",
+      "\t${4:Other} => { $0 }",
+      "};"
+    ],
+    "description": "Match expression"
+  },
+  "Decide": {
+    "prefix": "decide",
+    "body": [
+      "decide ${1:call(args)} {",
+      "\t${2:ok}(${3:value}) => { $4 }",
+      "\t${5:rejected}(${6:reason}) => { $0 }",
+      "};"
+    ],
+    "description": "Decide on a callable's outcomes"
+  },
+  "Offer": {
+    "prefix": "offer",
+    "body": [
+      "offer ${1:endpoint} {",
+      "\t${2:Go} => { $3 }",
+      "\t${4:Cancel} => { $0 }",
+      "};"
+    ],
+    "description": "Handle the branches a protocol peer may select"
+  },
+  "Select": {
+    "prefix": "select",
+    "body": [
+      "let ${1:next} = select ${2:Label} on ${3:endpoint};"
+    ],
+    "description": "Select a protocol branch"
+  },
+  "Send": {
+    "prefix": "send",
+    "body": [
+      "let ${1:next} = send ${2:value} on ${3:endpoint};"
+    ],
+    "description": "Send on a protocol endpoint"
+  },
+  "Receive": {
+    "prefix": "receive",
+    "body": [
+      "let (${1:next}, ${2:value}) = receive ${3:U8} on ${4:endpoint};"
+    ],
+    "description": "Receive on a protocol endpoint"
+  },
+  "Loop": {
+    "prefix": "loop",
+    "body": [
+      "loop state (${1:i} : ${2:U32} = ${3:0}) invariant ${4:true} {",
+      "\t$0",
+      "\tcontinue (${1:i});",
+      "};"
+    ],
+    "description": "Loop with explicit typed state"
+  },
+  "Borrow": {
+    "prefix": "borrow",
+    "body": [
+      "borrow ${1:value} as ${2:view} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Scoped shared loan"
+  },
+  "Construct": {
+    "prefix": "construct",
+    "body": [
+      "construct ${1:Record} {",
+      "\t${2:field} = ${3:value},",
+      "}"
+    ],
+    "description": "Construct a record value"
+  },
+  "Closure": {
+    "prefix": "closure",
+    "body": [
+      "closure (${1:x} : ${2:U32}) satisfies ${3:Contract} captures (${4}) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Closure with explicit contract and captures"
+  },
+  "Prove": {
+    "prefix": "prove",
+    "body": [
+      "prove(${1:x > 0})"
+    ],
+    "description": "Compile-time evidence for a proposition"
+  },
+  "Convert": {
+    "prefix": "convert",
+    "body": [
+      "convert ${1:value} to ${2:U64}"
+    ],
+    "description": "Explicit numeric conversion"
+  }
+}
