@@ -1,9 +1,9 @@
 // Test suite. Run with: npm test -- /path/to/phil/checkout
 import * as fs from "fs";
 import * as path from "path";
-import { parse } from "../src/parser";
-import { formatText } from "../src/format";
-import { CODE_MAP } from "../src/codes";
+import { parse } from "../core/src/parser";
+import { formatText } from "../core/src/format";
+import { CODE_MAP } from "../core/src/codes";
 import { loadGrammar, tokenize } from "./tm";
 
 const root = process.argv[2] ?? process.env.PHIL_REPO;
@@ -145,7 +145,7 @@ const errorsOf = (src: string) => parse(src).diagnostics.filter((d) => d.severit
   }
 
   // ---------------------------------------------------------------- 4. snippets expand to valid source
-  const snippets = JSON.parse(fs.readFileSync(path.join(__dirname, "../snippets/phil.json"), "utf8")) as Record<string, { body: string[] }>;
+  const snippets = JSON.parse(fs.readFileSync(path.join(__dirname, "../vscode/snippets/phil.json"), "utf8")) as Record<string, { body: string[] }>;
   const expand = (body: string) => body
     .replace(/\$\{\d+\|([^,|}]+)[^}]*\|\}/g, "$1")
     .replace(/\$\{\d+:((?:[^{}]|\{[^{}]*\})*)\}/g, "$1")

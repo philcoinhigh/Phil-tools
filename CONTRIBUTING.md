@@ -17,12 +17,19 @@ npm run test:corpus -- ../phil
 npm run test:conformance -- ../phil
 ```
 
+## Where things live
+
+- `core/`: lexer, parser, formatter, simulator, bug hunter, CLI and MCP server.
+- `vscode/`: the editor extension.
+- `playground/`: the web app. Its built page is committed at `docs/index.html`.
+- `test/`: suites for all three.
+
 ## Ground rules
 
 - **Follow the grammar.** Parser changes must trace to `grammar/phase1-surface.ebnf` in the Phil repository. Do not accept syntax Phil does not define.
 - **Label interpretation.** Anything in the simulator that is not stated in Phil's documents belongs in the README's list of simulator choices.
-- **Tests with every change.** Examples in `src/sim/examples.ts` double as tests: each declares the outcome it must produce.
-- **Regenerate, do not hand-edit:** `syntaxes/phil.tmLanguage.json` and `ERROR_CODES.md` come from `npm run gen`; `docs/index.html` comes from `npm run build`.
+- **Tests with every change.** Examples in `core/src/sim/examples.ts` double as tests: each declares the outcome it must produce.
+- **Regenerate, do not hand-edit:** `vscode/syntaxes/phil.tmLanguage.json` and `vscode/ERROR_CODES.md` come from `npm run gen`; `docs/index.html` comes from `npm run build`.
 - **No token gating.** Tools stay free to use. Do not add wallet checks, paywalls or promotional content.
 - **Do not use Phil's mascot artwork.** It is not covered by Phil's open-source license.
 
