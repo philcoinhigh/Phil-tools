@@ -178,6 +178,17 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   await new Promise((r) => setTimeout(r, 400));
   check("stepping by hand pauses play", d.getElementById("rp-range").value === at && d.getElementById("rp-play").getAttribute("aria-pressed") === "false", d.getElementById("rp-range").value);
 
+  // Phil's earlier syntax (what philc reads) runs in the simulator too
+  sel.value = "scratch"; sel.dispatchEvent(new w.Event("change"));
+  d.getElementById("code").value = "component main provides U32 {\n    let answer = 42\n    let same = answer\n    return same\n}\n";
+  d.getElementById("code").dispatchEvent(new w.Event("input"));
+  d.getElementById("run").click();
+  check("earlier syntax runs", summary().includes("Ran to completion") && summary().includes("returned 42") && summary().includes("earlier syntax") && d.getElementById("syntax-status").textContent === "earlier syntax OK", summary().slice(0, 200) + " | " + d.getElementById("syntax-status").textContent);
+  d.getElementById("code").value = "component main provides U32 {\n    let answer = 42\n    return nope\n}\n";
+  d.getElementById("code").dispatchEvent(new w.Event("input"));
+  d.getElementById("run").click();
+  check("earlier syntax errors point at the right line", summary().includes("nope") && /Line 3\b|line 3\b|3:/.test(summary()), summary().slice(0, 240));
+
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
   const hold = () => d.getElementById("holdings").textContent.replace(/\s+/g, " ");

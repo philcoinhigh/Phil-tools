@@ -1,7 +1,7 @@
 // Shared by the Learn and OTC pages: highlighting, a small editor, running a program.
 import { lex } from "../../core/src/lexer";
 import { parse } from "../../core/src/parser";
-import { buildAst } from "../../core/src/sim/ast";
+import { buildProgram, readEarlierSyntax } from "../../core/src/sim/earlier";
 import { run, RunResult } from "../../core/src/sim/interp";
 import kwcats from "../../playground/src/kwcats.json";
 
@@ -58,10 +58,10 @@ export interface Outcome {
 export function runPhil(src: string, inputs: Record<string, string> = {}): Outcome {
   const base = { console: [] as string[], returns: [] as { proc: string; text: string }[], messages: 0 };
   const lineOf = (o: number) => src.slice(0, o).split("\n").length;
-  const syn = parse(src, { syntax: "grammar-v1" }).diagnostics.filter((d) => d.severity === "error");
+  const syn = readEarlierSyntax(src) !== undefined ? [] : parse(src, { syntax: "grammar-v1" }).diagnostics.filter((d) => d.severity === "error");
   if (syn.length) return { ...base, ok: false, kind: "syntax", message: syn[0].message, line: lineOf(syn[0].start), span: [syn[0].start, Math.max(syn[0].end, syn[0].start + 1)] };
   let r: RunResult;
-  try { r = run(buildAst(src), inputs, { stepLimit: 40_000 }); }
+  try { r = run(buildProgram(src), inputs, { stepLimit: 40_000 }); }
   catch (e) { return { ...base, ok: false, kind: "runtime", message: String((e as Error).message ?? e) }; }
   for (const t of r.trace) {
     if (t.kind === "console") base.console.push(t.text);

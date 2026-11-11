@@ -22,14 +22,14 @@ $("behaviour").innerHTML =
     { n: b.accept.ran, cls: "ok", label: "run clean" },
     { n: b.accept.parsedOnly, cls: "mid", label: "parse, but use features the simulator does not run" },
     { n: b.accept.review, cls: "rev", label: "we reject (under review)" }])
-  + fig(b.reject.files, b.reject.caught, "rejected programs are also caught here", [
-    { n: b.reject.caught, cls: "ok", label: "caught" },
+  + fig(b.reject.files, b.reject.caught, "rejected programs also fail here", [
+    { n: b.reject.caught, cls: "ok", label: "fail here too, though we do not check it is for Phil's reason" },
     { n: b.reject.missed, cls: "mid", label: "not caught: needs Phil's checker" }]);
 if (b.accept.review > 0) {
   const note = $("review-note");
   note.hidden = false;
   $("table-note").hidden = false;
-  note.textContent = `${b.accept.review} program${b.accept.review === 1 ? "" : "s"} that Phil accepts ${b.accept.review === 1 ? "is" : "are"} rejected by our simulator. That is most likely a gap in the simulator. The file names are not listed here: Phil's security policy asks that anything which might be an acceptance problem is raised privately first.`;
+  note.textContent = `${b.accept.review} program${b.accept.review === 1 ? "" : "s"} that Phil's tests accept ${b.accept.review === 1 ? "is" : "are"} stopped by our simulator. Where we have looked, Phil's test checks one step of the program and our simulator objects to something outside that step, such as a value still held when a component ends. So these look like differences of scope rather than disagreements, and we have left the simulator strict. The file names are not listed here: Phil's security policy asks that anything which might be an acceptance question is raised privately first.`;
 }
 const cell = (n: number) => `<td${n ? "" : ' class="z"'}>${n}</td>`;
 $("suites").innerHTML = `<thead><tr><th>Suite</th><th>Phil says</th><th>Files</th><th>Agree</th><th>Parsed only</th><th>Not caught</th></tr></thead><tbody>`

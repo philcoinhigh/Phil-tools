@@ -18,8 +18,8 @@
  "behaviour": {
   "accept": {
    "files": 55,
-   "ran": 42,
-   "parsedOnly": 11,
+   "ran": 45,
+   "parsedOnly": 8,
    "review": 2
   },
   "reject": {
@@ -43,8 +43,8 @@
    "expect": "accept",
    "grammar": false,
    "files": 3,
-   "agree": 0,
-   "parsedOnly": 3,
+   "agree": 3,
+   "parsedOnly": 0,
    "missed": 0
   },
   {
