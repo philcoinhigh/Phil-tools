@@ -1,0 +1,471 @@
+// Phil OTC order book: two listings, two takers, best price first.
+//
+// Each listing has its own maker and its own desk, exactly as in otc.phil.
+// The Book sits between the desks and the takers. To the takers it speaks the
+// desk's side of the Deal protocol; to the desks it speaks the taker's side.
+// Each round it collects a quote from every open listing, offers the cheaper
+// one to the taker whose turn it is, and relays the payment and the tokens.
+// Coins only pass through the Book: being linear, they cannot stay there.
+
+record Token mode linear {
+  amount : U64
+}
+
+record Cash mode linear {
+  amount : U64
+}
+
+// Cut `part` tokens off the listing. The desk can never hand out more than it holds.
+callable Carve(book : Token, part : U64) -> (Token, Token) {
+  requires part > 0;
+  requires part <= book.amount;
+  outcomes { success (Token, Token) };
+}
+
+fn carve(book : Token, part : U64) -> (Token, Token) satisfies Carve {
+  let Token { amount = total } = book;
+  return (construct Token { amount = part }, construct Token { amount = total - part });
+}
+
+// An empty listing may be retired. A listing that still holds tokens may not.
+callable Retire(book : Token) -> U64 {
+  requires book.amount == 0;
+  outcomes { success U64 };
+}
+
+fn retire(book : Token) -> U64 satisfies Retire {
+  let Token { amount } = book;
+  return amount;
+}
+
+// The desk only settles a payment that matches the amount due exactly.
+callable Settle(payment : Cash, due : U64) -> Cash {
+  requires payment.amount == due;
+  outcomes { success Cash };
+}
+
+fn settle(payment : Cash, due : U64) -> Cash satisfies Settle {
+  return payment;
+}
+
+// The fee is in basis points (100 = 1%) and capped at 10%, so the cut is
+// always smaller than the payment and the multiplication cannot overflow.
+callable TakeFee(payment : Cash, fee_bps : U64) -> (Cash, Cash) {
+  requires fee_bps <= 1000;
+  requires payment.amount <= 1000000000000000;
+  outcomes { success (Cash, Cash) };
+}
+
+fn take_fee(payment : Cash, fee_bps : U64) -> (Cash, Cash) satisfies TakeFee {
+  let Cash { amount = total } = payment;
+  let cut = total * fee_bps / 10000;
+  return (construct Cash { amount = total - cut }, construct Cash { amount = cut });
+}
+
+callable Pay(wallet : Cash, due : U64) -> (Cash, Cash) {
+  requires due <= wallet.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn pay(wallet : Cash, due : U64) -> (Cash, Cash) satisfies Pay {
+  let Cash { amount = total } = wallet;
+  return (construct Cash { amount = due }, construct Cash { amount = total - due });
+}
+
+callable Smaller(a : U64, b : U64) -> U64 {
+  outcomes { success U64 };
+}
+
+fn smaller(a : U64, b : U64) -> U64 satisfies Smaller {
+  if le(a, b) {
+    return a;
+  } else {
+    return b;
+  };
+}
+
+// Maker and desk. After every fill the maker may keep the listing open or cancel it.
+protocol Listing {
+  role Maker = send (unit_price : U64) then send (tokens : Token) then recursive Book = offer {
+    Filled => receive (proceeds : Cash) then select {
+      Keep => continue Book |
+      Cancel => receive (rest : Token) then end Cancelled
+    } |
+    Expired => receive (rest : Token) then end Expired |
+    SoldOut => end SoldOut
+  };
+  role Desk = receive (unit_price : U64) then receive (tokens : Token) then recursive Book = select {
+    Filled => send (proceeds : Cash) then offer {
+      Keep => continue Book |
+      Cancel => send (rest : Token) then end Cancelled
+    } |
+    Expired => send (rest : Token) then end Expired |
+    SoldOut => end SoldOut
+  };
+}
+
+// Desk and taker. Each round the desk quotes what is left; the taker buys some or passes.
+protocol Deal {
+  role Desk = recursive Round = select {
+    Open => send (available : U64) then send (unit_price : U64) then offer {
+      Buy => receive (want : U64) then receive (payment : Cash) then send (tokens : Token) then continue Round |
+      Pass => continue Round
+    } |
+    Closed => end Closed
+  };
+  role Taker = recursive Round = offer {
+    Open => receive (available : U64) then receive (unit_price : U64) then select {
+      Buy => send (want : U64) then send (payment : Cash) then receive (tokens : Token) then continue Round |
+      Pass => continue Round
+    } |
+    Closed => end Closed
+  };
+}
+
+component Maker(
+  desk : Maker[Listing],
+  selling : {v : U64 | v <= 1000000},
+  unit_price : {v : U64 | v <= 1000000000},
+  cancel_after : U64
+) provides U64 {
+  let quoted = send unit_price on desk;
+  let locked = send construct Token { amount = selling } on quoted;
+  let earned = loop state (ep = locked, fills : U64 = 0, got : U64 = 0) {
+    offer ep {
+      Filled => {
+        let (asked, proceeds) = receive Cash on ep;
+        let Cash { amount = cash } = proceeds;
+        if eq(fills + 1, cancel_after) {
+          let cancelled = select Cancel on asked;
+          let (done, rest) = receive Token on cancelled;
+          close done;
+          let Token { amount = back } = rest;
+          console_write("maker cancelled and got tokens back:", back);
+          break (got + cash);
+        } else {
+          let kept = select Keep on asked;
+          continue (kept, fills + 1, got + cash);
+        };
+      }
+      Expired => {
+        let (done, rest) = receive Token on ep;
+        close done;
+        let Token { amount = back } = rest;
+        console_write("listing expired, maker got tokens back:", back);
+        break (got);
+      }
+      SoldOut => {
+        close ep;
+        console_write("listing sold out");
+        break (got);
+      }
+    };
+  };
+  return earned;
+}
+
+component Taker(desk : Taker[Deal], want : U64, wallet : U64) provides U64 {
+  let bought = loop state (ep = desk, cash = construct Cash { amount = wallet }, have : U64 = 0) {
+    offer ep {
+      Open => {
+        let (e1, available) = receive U64 on ep;
+        let (e2, unit_price) = receive U64 on e1;
+        let take = smaller(want, available);
+        let due = take * unit_price;
+        let funds = borrow cash as c { return c.amount; };
+        if gt(take, 0) {
+          if ge(funds, due) {
+            let (payment, change) = pay(cash, due);
+            let buying = select Buy on e2;
+            let sized = send take on buying;
+            let paid = send payment on sized;
+            let (next, tokens) = receive Token on paid;
+            let Token { amount = got } = tokens;
+            continue (next, change, have + got);
+          } else {
+            let next = select Pass on e2;
+            continue (next, cash, have);
+          };
+        } else {
+          let next = select Pass on e2;
+          continue (next, cash, have);
+        };
+      }
+      Closed => {
+        close ep;
+        let Cash { amount = left } = cash;
+        console_write("taker holds", have, "tokens and", left, "cash");
+        break (have);
+      }
+    };
+  };
+  return bought;
+}
+
+component Desk(
+  maker : Desk[Listing],
+  taker : Desk[Deal],
+  fee_bps : {v : U64 | v <= 1000},
+  expires_after : {v : U64 | v <= 100}
+) provides U64 {
+  let (m1, unit_price) = receive U64 on maker;
+  let (m2, tokens) = receive Token on m1;
+  let fees = loop state (m = m2, t = taker, book = tokens, round : U64 = 0, earned : U64 = 0) {
+    let available = borrow book as b { return b.amount; };
+    if eq(available, 0) {
+      let t_done = select Closed on t;
+      close t_done;
+      let m_done = select SoldOut on m;
+      close m_done;
+      let none = retire(book);
+      break (earned);
+    } else {
+      if ge(round, expires_after) {
+        let t_done = select Closed on t;
+        close t_done;
+        let m_exp = select Expired on m;
+        let m_done = send book on m_exp;
+        close m_done;
+        break (earned);
+      } else {
+        let t1 = select Open on t;
+        let t2 = send available on t1;
+        let t3 = send unit_price on t2;
+        offer t3 {
+          Buy => {
+            let (t4, want) = receive U64 on t3;
+            let (t5, payment) = receive Cash on t4;
+            let checked = settle(payment, want * unit_price);
+            let (out, rest) = carve(book, want);
+            let t6 = send out on t5;
+            let (proceeds, cut) = take_fee(checked, fee_bps);
+            let Cash { amount = kept } = cut;
+            let m3 = select Filled on m;
+            let m4 = send proceeds on m3;
+            offer m4 {
+              Keep => {
+                continue (m4, t6, rest, round + 1, earned + kept);
+              }
+              Cancel => {
+                let m_done = send rest on m4;
+                close m_done;
+                let t_done = select Closed on t6;
+                close t_done;
+                break (earned + kept);
+              }
+            };
+          }
+          Pass => {
+            continue (m, t3, book, round + 1, earned);
+          }
+        };
+      };
+    };
+  };
+  console_write("desk fees:", fees);
+  return fees;
+}
+
+// The Book: a broker between two desks and two takers.
+component Book(
+  first : Taker[Deal],
+  second : Taker[Deal],
+  buyer : Desk[Deal],
+  waiting : Desk[Deal]
+) {
+  // While both listings are open, quote the cheaper one. The two takers swap
+  // places every round, so `p` is always the taker whose turn it is.
+  let (rest, p_left, q_left) = loop state (a = first, b = second, p = buyer, q = waiting) {
+    offer a {
+      Closed => {
+        close a;
+        break (b, p, q);
+      }
+      Open => {
+        let (a1, a_available) = receive U64 on a;
+        let (a2, a_price) = receive U64 on a1;
+        offer b {
+          Closed => {
+            close b;
+            let p1 = select Open on p;
+            let p2 = send a_available on p1;
+            let p3 = send a_price on p2;
+            offer p3 {
+              Buy => {
+                let (p4, want) = receive U64 on p3;
+                let (p5, payment) = receive Cash on p4;
+                let a3 = select Buy on a2;
+                let a4 = send want on a3;
+                let a5 = send payment on a4;
+                let (a6, tokens) = receive Token on a5;
+                let p6 = send tokens on p5;
+                break (a6, q, p6);
+              }
+              Pass => {
+                let a3 = select Pass on a2;
+                break (a3, q, p3);
+              }
+            };
+          }
+          Open => {
+            let (b1, b_available) = receive U64 on b;
+            let (b2, b_price) = receive U64 on b1;
+            if le(a_price, b_price) {
+              let b3 = select Pass on b2;
+              let p1 = select Open on p;
+              let p2 = send a_available on p1;
+              let p3 = send a_price on p2;
+              offer p3 {
+                Buy => {
+                  let (p4, want) = receive U64 on p3;
+                  let (p5, payment) = receive Cash on p4;
+                  let a3 = select Buy on a2;
+                  let a4 = send want on a3;
+                  let a5 = send payment on a4;
+                  let (a6, tokens) = receive Token on a5;
+                  let p6 = send tokens on p5;
+                  continue (a6, b3, q, p6);
+                }
+                Pass => {
+                  let a3 = select Pass on a2;
+                  continue (a3, b3, q, p3);
+                }
+              };
+            } else {
+              let a3 = select Pass on a2;
+              let p1 = select Open on p;
+              let p2 = send b_available on p1;
+              let p3 = send b_price on p2;
+              offer p3 {
+                Buy => {
+                  let (p4, want) = receive U64 on p3;
+                  let (p5, payment) = receive Cash on p4;
+                  let b3 = select Buy on b2;
+                  let b4 = send want on b3;
+                  let b5 = send payment on b4;
+                  let (b6, tokens) = receive Token on b5;
+                  let p6 = send tokens on p5;
+                  continue (a3, b6, q, p6);
+                }
+                Pass => {
+                  let b3 = select Pass on b2;
+                  continue (a3, b3, q, p3);
+                }
+              };
+            };
+          }
+        };
+      }
+    };
+  };
+  // One listing is left (or none: then it closes at once).
+  let (p_done, q_done) = loop state (d = rest, p = p_left, q = q_left) {
+    offer d {
+      Closed => {
+        close d;
+        break (p, q);
+      }
+      Open => {
+        let (d1, available) = receive U64 on d;
+        let (d2, unit_price) = receive U64 on d1;
+        let p1 = select Open on p;
+        let p2 = send available on p1;
+        let p3 = send unit_price on p2;
+        offer p3 {
+          Buy => {
+            let (p4, want) = receive U64 on p3;
+            let (p5, payment) = receive Cash on p4;
+            let d3 = select Buy on d2;
+            let d4 = send want on d3;
+            let d5 = send payment on d4;
+            let (d6, tokens) = receive Token on d5;
+            let p6 = send tokens on p5;
+            continue (d6, q, p6);
+          }
+          Pass => {
+            let d3 = select Pass on d2;
+            continue (d3, q, p3);
+          }
+        };
+      }
+    };
+  };
+  let p_closed = select Closed on p_done;
+  close p_closed;
+  let q_closed = select Closed on q_done;
+  close q_closed;
+}
+
+architecture OrderBook {
+  instance maker_a = Maker;
+  instance maker_b = Maker;
+  instance desk_a = Desk;
+  instance desk_b = Desk;
+  instance book = Book;
+  instance taker_x = Taker;
+  instance taker_y = Taker;
+  process maker_a_run = maker_a;
+  process maker_b_run = maker_b;
+  process desk_a_run = desk_a;
+  process desk_b_run = desk_b;
+  process book_run = book;
+  process taker_x_run = taker_x;
+  process taker_y_run = taker_y;
+  protocol listing_a = Listing;
+  protocol listing_b = Listing;
+  protocol quotes_a = Deal;
+  protocol quotes_b = Deal;
+  protocol deal_x = Deal;
+  protocol deal_y = Deal;
+  role listing_a.Maker = maker_a;
+  role listing_a.Desk = desk_a;
+  role listing_b.Maker = maker_b;
+  role listing_b.Desk = desk_b;
+  role quotes_a.Desk = desk_a;
+  role quotes_a.Taker = book;
+  role quotes_b.Desk = desk_b;
+  role quotes_b.Taker = book;
+  role deal_x.Desk = book;
+  role deal_x.Taker = taker_x;
+  role deal_y.Desk = book;
+  role deal_y.Taker = taker_y;
+  entry a_selling : U64;
+  entry a_price : U64;
+  entry b_selling : U64;
+  entry b_price : U64;
+  entry x_want : U64;
+  entry x_wallet : U64;
+  entry y_want : U64;
+  entry y_wallet : U64;
+  entry fee_bps : U64;
+  entry expires_after : U64;
+  entry cancel_after : U64;
+  bind maker_a.desk = listing_a.Maker;
+  bind maker_a.selling = a_selling;
+  bind maker_a.unit_price = a_price;
+  bind maker_a.cancel_after = cancel_after;
+  bind maker_b.desk = listing_b.Maker;
+  bind maker_b.selling = b_selling;
+  bind maker_b.unit_price = b_price;
+  bind maker_b.cancel_after = cancel_after;
+  bind desk_a.maker = listing_a.Desk;
+  bind desk_a.taker = quotes_a.Desk;
+  bind desk_a.fee_bps = fee_bps;
+  bind desk_a.expires_after = expires_after;
+  bind desk_b.maker = listing_b.Desk;
+  bind desk_b.taker = quotes_b.Desk;
+  bind desk_b.fee_bps = fee_bps;
+  bind desk_b.expires_after = expires_after;
+  bind book.first = quotes_a.Taker;
+  bind book.second = quotes_b.Taker;
+  bind book.buyer = deal_x.Desk;
+  bind book.waiting = deal_y.Desk;
+  bind taker_x.desk = deal_x.Taker;
+  bind taker_x.want = x_want;
+  bind taker_x.wallet = x_wallet;
+  bind taker_y.desk = deal_y.Taker;
+  bind taker_y.want = y_want;
+  bind taker_y.wallet = y_wallet;
+}
+
+program main = instantiate OrderBook;

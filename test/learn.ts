@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { LESSONS } from "../site/src/lessons";
 import { runPhil } from "../site/src/shared";
 import { checkLesson } from "../site/src/check";
-import { OTC_SOURCE } from "../core/src/sim/otc-source";
+import { OTC_SOURCE, BOOK_SOURCE } from "../core/src/sim/otc-source";
 import { buildAst } from "../core/src/sim/ast";
 import { explore } from "../core/src/sim/explore";
 
@@ -36,4 +36,23 @@ for (const [name, change, want, says] of [
 check("otc: a fee above 10% is refused", runPhil(OTC_SOURCE, { ...BASE, fee_bps: "1001" }).ok === false);
 const hunt = explore(buildAst(OTC_SOURCE), BASE, { budgetMs: 3000 });
 check(`otc: hunt finds nothing in ${hunt.runs} runs`, hunt.findings.length === 0 && hunt.runs > 50, JSON.stringify(hunt.findings[0] ?? {}).slice(0, 300));
+
+// Order book
+check("book source is in sync with otc/book.phil", fs.readFileSync("otc/book.phil", "utf8") === BOOK_SOURCE);
+const shared = (src: string) => src.slice(src.indexOf("record Token"), src.indexOf("architecture "));
+check("book reuses the desk's records, contracts, protocols and components unchanged", shared(BOOK_SOURCE).startsWith(shared(OTC_SOURCE)));
+const BOOK = { a_selling: "600", a_price: "3", b_selling: "500", b_price: "2", x_want: "300", x_wallet: "2000", y_want: "400", y_wallet: "900", fee_bps: "100", expires_after: "10", cancel_after: "0" };
+for (const [name, change, want] of [
+  ["cheaper listing fills first, dearer one expires part-filled", {}, ["maker_b:990", "desk_b:10", "maker_a:891", "desk_a:9", "taker_x:600", "taker_y:200"]],
+  ["both sell out with deep wallets", { x_wallet: "100000", y_wallet: "100000" }, ["maker_b:990", "maker_a:1782", "desk_a:18", "taker_x:600", "taker_y:500"]],
+  ["both makers cancel after one fill", { cancel_after: "1" }, ["maker_b:594", "maker_a:891", "taker_x:600", "taker_y:0"]],
+  ["nobody can pay, both expire", { x_wallet: "0", y_wallet: "0", expires_after: "100" }, ["maker_a:0", "maker_b:0", "taker_x:0", "taker_y:0"]],
+  ["equal prices: listing A goes first", { a_price: "2" }, ["maker_a:1188", "maker_b:990", "taker_x:800", "taker_y:300"]],
+] as const) {
+  const o = runPhil(BOOK_SOURCE, { ...BOOK, ...change });
+  const got = o.returns.map((r) => `${r.proc}:${r.text}`);
+  check(`book: ${name}`, o.ok && want.every((w) => got.includes(w)), got.join(" ") + " " + o.message);
+}
+const bookHunt = explore(buildAst(BOOK_SOURCE), BOOK, { budgetMs: 4000 });
+check(`book: hunt finds nothing in ${bookHunt.runs} runs`, bookHunt.findings.length === 0 && bookHunt.runs > 50, JSON.stringify(bookHunt.findings[0] ?? {}).slice(0, 300));
 process.exit(fails ? 1 : 0);

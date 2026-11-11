@@ -1,6 +1,9 @@
 # Phil OTC desk
 
-`otc.phil` is a token swap through an escrow desk, written in Phil.
+Two Phil programs:
+
+- `otc.phil`: one listing. A maker, a desk and a taker.
+- `book.phil`: an order book. Two listings (each with its own maker and desk), two takers, and a `Book` that offers the cheaper listing first and relays every coin. It reuses the records, contracts, protocols and components of `otc.phil` unchanged; a test fails if they drift apart.
 
 A maker lists tokens with the desk at a price per token. Round by round a taker buys some, or passes. The listing ends when it sells out, when it expires after a set number of rounds, or when the maker cancels after a fill. The desk passes each coin on and keeps a fee of at most 10%.
 
@@ -15,7 +18,7 @@ A maker lists tokens with the desk at a price per token. Round by round a taker 
 - A listing can only be retired when it is empty (`Retire`). Unsold tokens go back to the maker.
 - Both protocols end on every path: sold out, expired, or cancelled.
 
-`npm run test:learn` runs five outcomes (sold out, wallet runs dry, cancelled, expired part-filled, expired unfilled) and a bounded bug hunt over boundary inputs and schedules. A bounded search is not a proof.
+`npm run test:learn` runs five outcomes of each program and a bounded bug hunt over boundary inputs and schedules. A bounded search is not a proof.
 
 An earlier draft took a flat fee. The bug hunt found that a fee larger than the price broke `TakeFee`, which is why the fee is now a capped percentage.
 
@@ -27,12 +30,12 @@ Open the OTC page of the site, or the "OTC desk" example in the playground.
 
 1. The swap, written and checked in Phil (done).
 2. Partial fills, expiry and cancel (done).
-3. Several takers and several listings.
+3. Several takers and several listings (done, for two of each).
 4. An on-chain escrow that follows the same script, audited before it touches real tokens.
 5. Wallets and listings.
 
-After editing `otc.phil`, run `npm run gen:otc` (or `npm run build`) so the pages pick it up.
+After editing either file, run `npm run gen:otc` (or `npm run build`) so the pages pick it up.
 
 ## Limits of this version
 
-One maker, one listing, one taker. Expiry is counted in rounds, not clock time, and is capped at 100 rounds. The maker can only cancel straight after a fill. Listings are capped at 1,000,000 tokens and a price of 1,000,000,000 per token so that no multiplication can overflow.
+The order book is fixed at two listings and two takers, because a Phil architecture is wired up before it runs. Takers take turns; a taker who cannot afford a full round passes rather than buying less. Equal prices go to listing A. Expiry is counted in rounds, not clock time, and is capped at 100 rounds. The maker can only cancel straight after a fill. Listings are capped at 1,000,000 tokens and a price of 1,000,000,000 per token so that no multiplication can overflow.
