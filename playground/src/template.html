@@ -234,6 +234,10 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 .scripts > div { padding: 10px 12px; min-width: 0; overflow-x: auto; } .scripts > div + div { border-left: 1px solid var(--rule); }
 .scripts h4 { margin: 0 0 6px; font: 700 12.5px var(--font-code); }
 .sl { font: 12.5px/1.6 var(--font-code); white-space: pre; }
+.sl.cur { background: var(--now-hi); box-shadow: inset 3px 0 0 var(--accent); font-weight: 700; margin: 0 -12px; padding: 0 12px; }
+.sl.fin { background: var(--line-hi); margin: 0 -12px; padding: 0 12px; }
+#positions .st-h { margin-top: 22px; }
+.scripts h4 .muted { font-weight: 400; } .scripts h4 .okmark { color: var(--good); font-weight: 600; margin-left: 6px; }
 .sl.send { color: var(--s-sess); } .sl.receive { color: var(--s-decl); } .sl.select, .sl.offer { color: var(--s-ctl); } .sl.branch { font-weight: 700; } .sl.end, .sl.continue, .sl.loop { color: var(--muted); }
 #arch { overflow-x: auto; } #arch svg { display: block; font-family: var(--font-code); }
 .a-box { fill: var(--sheet); stroke: var(--ink); } .a-box.ext { stroke: var(--muted); stroke-dasharray: 4 3; }
@@ -400,6 +404,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <div class="holdings" id="holdings" hidden></div>
         <div id="sequence"></div>
         <p class="legend" id="legend" hidden><span>arrow: a message</span><span>dashed arrow: a choice</span><span>square: connection closed</span><span>paw print: finished</span><span>red mark: stopped here</span></p>
+        <div id="positions"></div>
       </div>
       <div class="panel" id="panel-structure" hidden><div id="structure"></div></div>
       <div class="panel" id="panel-console" hidden><div id="console"></div></div>

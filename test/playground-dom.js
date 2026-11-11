@@ -157,6 +157,16 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const shared = load(1360, "#" + w.__copied.split("#")[1]); await wait(300);
   check("shared link opens the code", shared.d.getElementById("code").value.includes("The answer is") && shared.d.getElementById("example").value === "scratch" && shared.errors.length === 0, shared.errors.join(";"));
 
+  // Protocol positions follow the replay
+  sel.value = "pingpong"; sel.dispatchEvent(new w.Event("change"));
+  const pos = () => [...d.querySelectorAll("#positions .sl.cur")].map((e) => e.textContent.replace(/[▸\s]+/g, " ").trim());
+  d.getElementById("rp-first").click();
+  check("positions after the first choice", JSON.stringify(pos()) === JSON.stringify(["send x : U32", "receive x : U32"]), JSON.stringify(pos()));
+  d.getElementById("rp-next").click();
+  check("positions advance with the message", JSON.stringify(pos()) === JSON.stringify(["receive reply : String", "send reply : String"]), JSON.stringify(pos()));
+  d.getElementById("rp-last").click();
+  check("positions show both sides closed at the end", d.querySelectorAll("#positions .okmark").length === 2 && d.querySelectorAll("#positions .sl.fin").length === 2, d.getElementById("positions").textContent.slice(0, 120));
+
   // Ownership view
   sel.value = "token"; sel.dispatchEvent(new w.Event("change"));
   const hold = () => d.getElementById("holdings").textContent.replace(/\s+/g, " ");

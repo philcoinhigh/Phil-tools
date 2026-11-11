@@ -7,7 +7,7 @@ import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } fr
 import { explore, ExploreResult } from "../../core/src/sim/explore";
 import { generateProtocol, Step, STEP_TYPES } from "../../core/src/sim/designer";
 import { RESERVED } from "../../core/src/lexer";
-import { protocolViews, architectureView } from "../../core/src/sim/inspect";
+import { protocolViews, architectureView, protocolPositions } from "../../core/src/sim/inspect";
 import { EXAMPLES, Example } from "../../core/src/sim/examples";
 import { CODES, CODE_MAP } from "../../core/src/codes";
 import kwcats from "./kwcats.json";
@@ -593,6 +593,7 @@ function renderReplay(): void {
   const span = t && "span" in t ? t.span : undefined;
   nowSpan = replayIdx < seqEvents.length - 1 && span ? span : undefined;
   renderHoldings();
+  renderPositions();
   if (lastResult) renderSequence(lastResult, replayIdx);
   highlight();
   if (nowSpan) revealOffset(nowSpan[0]);
@@ -618,6 +619,23 @@ function renderHoldings(): void {
     const mine = [...held.values()].filter((h) => h.proc === p.name);
     return `<span><span class="who">${esc(p.name)} owns</span>${mine.length ? mine.map((h) => `<span class="chip${h.fresh ? " fresh" : ""}">${esc(h.text)}</span>`).join("") : '<span class="none">nothing</span>'}</span>`;
   }).join("");
+}
+
+/** Where each role stands in its protocol at the current replay step. */
+function renderPositions(): void {
+  const box = $("positions");
+  const r = lastResult;
+  box.innerHTML = "";
+  if (!r || !seqEvents.length) return;
+  let upto = replayIdx >= seqEvents.length - 1 ? r.trace.length - 1 : r.trace.indexOf(seqEvents[replayIdx]);
+  if (upto < 0) upto = r.trace.length - 1;
+  let sessions: ReturnType<typeof protocolPositions> = [];
+  try { sessions = protocolPositions(buildAst(editor.value), r.trace, upto); } catch { return; }
+  box.innerHTML = sessions.map((x) => `<div class="st-h">Where each side is in ${esc(x.session)} : ${esc(x.protocol)}</div>
+    <div class="scripts">${x.roles.map((role) => `<div><h4>${esc(role.owner)} <span class="muted">as ${esc(role.role)}</span>${role.closed ? ' <span class="okmark">closed</span>' : ""}</h4>${role.lines.map((l, i) => {
+      const cur = i === role.current;
+      return `<div class="sl ${l.kind}${cur ? (role.closed ? " fin" : " cur") : ""}">${cur && !role.closed ? "▸ " : "  "}${"  ".repeat(l.depth)}${esc(l.text)}</div>`;
+    }).join("")}</div>`).join("")}</div>`).join("");
 }
 
 function step(to: number): void {
