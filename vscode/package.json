@@ -128,11 +128,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/phillcoinhigh/Phil-tools.git",
+    "url": "https://github.com/philcoinhigh/Phil-tools.git",
     "directory": "vscode"
   },
-  "homepage": "https://github.com/phillcoinhigh/Phil-tools",
+  "homepage": "https://github.com/philcoinhigh/Phil-tools",
   "bugs": {
-    "url": "https://github.com/phillcoinhigh/Phil-tools/issues"
+    "url": "https://github.com/philcoinhigh/Phil-tools/issues"
   }
 }

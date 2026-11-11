@@ -4,7 +4,7 @@
 
 Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a systems language where architecture is executable and implementation is replaceable.
 
-> **Unofficial.** This project is not part of, or endorsed by, the Phil project or its authors. Phil's own checker and documents are the authority on the language. Where these tools disagree with Phil, Phil is right and the disagreement is a bug here (please [open an issue](https://github.com/phillcoinhigh/Phil-tools/issues)).
+> **Unofficial.** This project is not part of, or endorsed by, the Phil project or its authors. Phil's own checker and documents are the authority on the language. Where these tools disagree with Phil, Phil is right and the disagreement is a bug here (please [open an issue](https://github.com/philcoinhigh/Phil-tools/issues)).
 
 ## Projects
 
