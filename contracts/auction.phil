@@ -1,0 +1,183 @@
+// A sealed-bid auction with a reserve price.
+//
+// A seller hands an item to an auctioneer and names a reserve. Two bidders each
+// lock their bid in cash. The higher bid wins if it meets the reserve: the
+// winner gets the item, the seller gets the winning bid, the loser gets their
+// cash back. If no bid meets the reserve, everything goes back where it came
+// from. The item and the cash are linear, so no path can keep a losing bid or
+// hand the item to two people.
+
+record Item mode linear {
+  id : U64
+}
+
+record Cash mode linear {
+  amount : U64
+}
+
+// The item only changes hands for a bid that meets the reserve and beats the other bid.
+callable Award(winning : Cash, losing : U64, reserve : U64) -> Cash {
+  requires winning.amount >= reserve;
+  requires winning.amount >= losing;
+  outcomes { success Cash };
+}
+
+fn award(winning : Cash, losing : U64, reserve : U64) -> Cash satisfies Award {
+  return winning;
+}
+
+// Seller and auctioneer.
+protocol Sale {
+  role Seller = send (reserve : U64) then send (item : Item) then offer {
+    Sold => receive (proceeds : Cash) then end Sold |
+    Unsold => receive (item : Item) then end Unsold
+  };
+  role Auctioneer = receive (reserve : U64) then receive (item : Item) then select {
+    Sold => send (proceeds : Cash) then end Sold |
+    Unsold => send (item : Item) then end Unsold
+  };
+}
+
+// One bidder and the auctioneer. The bid is real cash, held until the result.
+protocol Bid {
+  role Bidder = send (bid : Cash) then offer {
+    Won => receive (item : Item) then end Won |
+    Lost => receive (refund : Cash) then end Lost
+  };
+  role Auctioneer = receive (bid : Cash) then select {
+    Won => send (item : Item) then end Won |
+    Lost => send (refund : Cash) then end Lost
+  };
+}
+
+component Seller(house : Seller[Sale], reserve : U64) provides U64 {
+  let named = send reserve on house;
+  let handed = send construct Item { id = 1 } on named;
+  offer handed {
+    Sold => {
+      let (done, proceeds) = receive Cash on handed;
+      close done;
+      let Cash { amount = got } = proceeds;
+      console_write("seller received", got);
+      return got;
+    }
+    Unsold => {
+      let (done, item) = receive Item on handed;
+      close done;
+      let Item { id } = item;
+      console_write("no sale: the seller has the item back");
+      return 0;
+    }
+  };
+}
+
+component Bidder(house : Bidder[Bid], offer_amount : U64) provides U64 {
+  let placed = send construct Cash { amount = offer_amount } on house;
+  offer placed {
+    Won => {
+      let (done, item) = receive Item on placed;
+      close done;
+      let Item { id } = item;
+      console_write("won the item for", offer_amount);
+      return 1;
+    }
+    Lost => {
+      let (done, refund) = receive Cash on placed;
+      close done;
+      let Cash { amount = back } = refund;
+      console_write("lost, refunded", back);
+      return 0;
+    }
+  };
+}
+
+component Auctioneer(seller : Auctioneer[Sale], left : Auctioneer[Bid], right : Auctioneer[Bid]) {
+  let (s1, reserve) = receive U64 on seller;
+  let (s2, item) = receive Item on s1;
+  let (l1, left_bid) = receive Cash on left;
+  let (r1, right_bid) = receive Cash on right;
+  let l = borrow left_bid as c { return c.amount; };
+  let r = borrow right_bid as c { return c.amount; };
+  // The higher bid is the candidate; a tie goes to the left bidder.
+  if ge(l, r) {
+    if ge(l, reserve) {
+      let winning = award(left_bid, r, reserve);
+      let l2 = select Won on l1;
+      let l3 = send item on l2;
+      close l3;
+      let r2 = select Lost on r1;
+      let r3 = send right_bid on r2;
+      close r3;
+      let s3 = select Sold on s2;
+      let s4 = send winning on s3;
+      close s4;
+    } else {
+      let l2 = select Lost on l1;
+      let l3 = send left_bid on l2;
+      close l3;
+      let r2 = select Lost on r1;
+      let r3 = send right_bid on r2;
+      close r3;
+      let s3 = select Unsold on s2;
+      let s4 = send item on s3;
+      close s4;
+    };
+  } else {
+    if ge(r, reserve) {
+      let winning = award(right_bid, l, reserve);
+      let r2 = select Won on r1;
+      let r3 = send item on r2;
+      close r3;
+      let l2 = select Lost on l1;
+      let l3 = send left_bid on l2;
+      close l3;
+      let s3 = select Sold on s2;
+      let s4 = send winning on s3;
+      close s4;
+    } else {
+      let l2 = select Lost on l1;
+      let l3 = send left_bid on l2;
+      close l3;
+      let r2 = select Lost on r1;
+      let r3 = send right_bid on r2;
+      close r3;
+      let s3 = select Unsold on s2;
+      let s4 = send item on s3;
+      close s4;
+    };
+  };
+}
+
+architecture AuctionHouse {
+  instance seller = Seller;
+  instance ann = Bidder;
+  instance ben = Bidder;
+  instance auctioneer = Auctioneer;
+  process seller_run = seller;
+  process ann_run = ann;
+  process ben_run = ben;
+  process auctioneer_run = auctioneer;
+  protocol sale = Sale;
+  protocol bid_ann = Bid;
+  protocol bid_ben = Bid;
+  role sale.Seller = seller;
+  role sale.Auctioneer = auctioneer;
+  role bid_ann.Bidder = ann;
+  role bid_ann.Auctioneer = auctioneer;
+  role bid_ben.Bidder = ben;
+  role bid_ben.Auctioneer = auctioneer;
+  entry reserve : U64;
+  entry ann_bid : U64;
+  entry ben_bid : U64;
+  bind seller.house = sale.Seller;
+  bind seller.reserve = reserve;
+  bind ann.house = bid_ann.Bidder;
+  bind ann.offer_amount = ann_bid;
+  bind ben.house = bid_ben.Bidder;
+  bind ben.offer_amount = ben_bid;
+  bind auctioneer.seller = sale.Auctioneer;
+  bind auctioneer.left = bid_ann.Auctioneer;
+  bind auctioneer.right = bid_ben.Auctioneer;
+}
+
+program main = instantiate AuctionHouse;

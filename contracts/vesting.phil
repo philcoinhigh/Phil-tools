@@ -1,0 +1,184 @@
+// Token vesting with revocation.
+//
+// A grantor locks tokens in a vault for a beneficiary. The tokens are released
+// in equal parts, one per period. Before each period the grantor may revoke:
+// what has not vested yet goes back to the grantor, what has vested stays with
+// the beneficiary. Tokens are linear, so the two shares always add up to the
+// grant: nothing is stranded in the vault.
+
+record Token mode linear {
+  amount : U64
+}
+
+callable Carve(pot : Token, part : U64) -> (Token, Token) {
+  requires part <= pot.amount;
+  outcomes { success (Token, Token) };
+}
+
+fn carve(pot : Token, part : U64) -> (Token, Token) satisfies Carve {
+  let Token { amount = total } = pot;
+  return (construct Token { amount = part }, construct Token { amount = total - part });
+}
+
+callable Join(a : Token, b : Token) -> Token {
+  outcomes { success Token };
+}
+
+fn combine(a : Token, b : Token) -> Token satisfies Join {
+  let Token { amount = x } = a;
+  let Token { amount = y } = b;
+  return construct Token { amount = x + y };
+}
+
+// A vault may only be emptied out when it holds nothing.
+callable Retire(pot : Token) -> U64 {
+  requires pot.amount == 0;
+  outcomes { success U64 };
+}
+
+fn retire(pot : Token) -> U64 satisfies Retire {
+  let Token { amount } = pot;
+  return amount;
+}
+
+// Grantor and vault. Before every period the grantor keeps the grant or revokes it.
+protocol Grant {
+  role Grantor = send (award : Token) then recursive Period = offer {
+    Due => select {
+      Keep => continue Period |
+      Revoke => receive (unvested : Token) then end Revoked
+    } |
+    Complete => end Vested
+  };
+  role Vault = receive (award : Token) then recursive Period = select {
+    Due => offer {
+      Keep => continue Period |
+      Revoke => send (unvested : Token) then end Revoked
+    } |
+    Complete => end Vested
+  };
+}
+
+// Vault and beneficiary. Each period that vests delivers one part.
+protocol Payout {
+  role Vault = recursive Period = select {
+    Vested => send (part : Token) then continue Period |
+    Finished => end Finished
+  };
+  role Beneficiary = recursive Period = offer {
+    Vested => receive (part : Token) then continue Period |
+    Finished => end Finished
+  };
+}
+
+component Grantor(vault : Grantor[Grant], total : {v : U64 | v <= 1000000000}, revoke_after : U64) provides Token {
+  let locked = send construct Token { amount = total } on vault;
+  let back = loop state (ep = locked, seen : U64 = 0) {
+    offer ep {
+      Due => {
+        if eq(seen, revoke_after) {
+          let revoking = select Revoke on ep;
+          let (done, unvested) = receive Token on revoking;
+          close done;
+          console_write("grantor revoked after", seen, "periods");
+          break (unvested);
+        } else {
+          let keeping = select Keep on ep;
+          continue (keeping, seen + 1);
+        };
+      }
+      Complete => {
+        close ep;
+        break (construct Token { amount = 0 });
+      }
+    };
+  };
+  return back;
+}
+
+component Vault(grantor : Vault[Grant], beneficiary : Vault[Payout], periods : {v : U64 | v > 0}) {
+  let (g1, award) = receive Token on grantor;
+  let total = borrow award as t { return t.amount; };
+  let each = total / periods;
+  loop state (g = g1, b = beneficiary, pot = award, period : U64 = 1) {
+    if gt(period, periods) {
+      let g_done = select Complete on g;
+      close g_done;
+      let b_done = select Finished on b;
+      close b_done;
+      let none = retire(pot);
+      break;
+    } else {
+      let asked = select Due on g;
+      offer asked {
+        Keep => {
+          // The last period releases whatever is left, so rounding never strands a token.
+          let left = borrow pot as p { return p.amount; };
+          if eq(period, periods) {
+            let (part, rest) = carve(pot, left);
+            let b1 = select Vested on b;
+            let b2 = send part on b1;
+            continue (asked, b2, rest, period + 1);
+          } else {
+            let (part, rest) = carve(pot, each);
+            let b1 = select Vested on b;
+            let b2 = send part on b1;
+            continue (asked, b2, rest, period + 1);
+          };
+        }
+        Revoke => {
+          let g_done = send pot on asked;
+          close g_done;
+          let b_done = select Finished on b;
+          close b_done;
+          break;
+        }
+      };
+    };
+  };
+}
+
+component Beneficiary(vault : Beneficiary[Payout]) provides Token {
+  let held = loop state (ep = vault, mine = construct Token { amount = 0 }) {
+    offer ep {
+      Vested => {
+        let (next, part) = receive Token on ep;
+        continue (next, combine(mine, part));
+      }
+      Finished => {
+        close ep;
+        break (mine);
+      }
+    };
+  };
+  let amount = borrow held as h { return h.amount; };
+  console_write("beneficiary holds", amount);
+  return held;
+}
+
+architecture Vesting {
+  instance grantor = Grantor;
+  instance vault = Vault;
+  instance beneficiary = Beneficiary;
+  process grantor_run = grantor;
+  process vault_run = vault;
+  process beneficiary_run = beneficiary;
+  protocol award = Grant;
+  protocol payout = Payout;
+  role award.Grantor = grantor;
+  role award.Vault = vault;
+  role payout.Vault = vault;
+  role payout.Beneficiary = beneficiary;
+  entry total : U64;
+  entry periods : U64;
+  entry revoke_after : U64;
+  bind grantor.vault = award.Grantor;
+  bind grantor.total = total;
+  bind grantor.revoke_after = revoke_after;
+  bind vault.grantor = award.Vault;
+  bind vault.beneficiary = payout.Vault;
+  bind vault.periods = periods;
+  bind beneficiary.vault = payout.Beneficiary;
+}
+
+program main = instantiate Vesting;

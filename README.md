@@ -14,6 +14,8 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | **Phil Playground** | Web app to write, run, replay and bug-hunt Phil programs, with examples and puzzles | [`playground/`](playground) |
 | **Learn Phil** | A course of fifteen short lessons with code you run and fix in the page | [`site/`](site) |
 | **Phil OTC desk** | An escrow desk and a two-listing order book, written in Phil. Simulation only: no real tokens move | [`otc/`](otc) |
+| **Contract library** | Vesting, a 2-of-3 treasury, an auction and a bonding-curve launch, written in Phil. Simulation only | [`contracts/`](contracts) |
+| **Conformance report** | Every test program in the Phil repository, run through these tools once a day | [`conformance/`](conformance) |
 | **Phil core** | The shared checker and experimental simulator, plus the command-line checker and the MCP server for AI assistants | [`core/`](core) |
 
 Each folder has its own README. The site at <https://philcoinhigh.github.io/Phil-tools/> has a home page that links to the playground, the course and the OTC desk.
@@ -42,7 +44,7 @@ Exit status is 0 with no errors, 1 with syntax errors, 2 on usage errors.
 
 ### Playground
 
-`npm run build` writes the site to `docs/`: the home page at `docs/index.html`, the playground at `docs/playground/`, the course at `docs/learn/` and the OTC desk at `docs/otc/`. Each page is self-contained. See [playground/README.md](playground/README.md). Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
+`npm run build` writes the site to `docs/`: the home page at `docs/index.html`, the playground at `docs/playground/`, the course at `docs/learn/`, the OTC desk at `docs/otc/`, the contract library at `docs/library/` and the conformance report at `docs/conformance/`. Each page is self-contained. See [playground/README.md](playground/README.md). Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
 
 ### VS Code extension
 

@@ -1,0 +1,190 @@
+// A 2-of-3 treasury.
+//
+// Three signers vote on one payment from a shared treasury. The vault pays the
+// payee only when at least two approve and the treasury can cover the amount.
+// Otherwise nothing leaves. Cash is linear, so the payment and what stays in
+// the treasury always add up to what was there before.
+
+record Cash mode linear {
+  amount : U64
+}
+
+// The only way cash leaves the treasury. Both conditions are promises the vault must keep.
+callable PayOut(treasury : Cash, amount : U64, approvals : U64) -> (Cash, Cash) {
+  requires approvals >= 2;
+  requires amount <= treasury.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn pay_out(treasury : Cash, amount : U64, approvals : U64) -> (Cash, Cash) satisfies PayOut {
+  let Cash { amount = total } = treasury;
+  return (construct Cash { amount = amount }, construct Cash { amount = total - amount });
+}
+
+// Vault and one signer: here is the proposal, how do you vote?
+protocol Ballot {
+  role Vault = send (amount : U64) then offer {
+    Approve => end Voted |
+    Reject => end Voted
+  };
+  role Signer = receive (amount : U64) then select {
+    Approve => end Voted |
+    Reject => end Voted
+  };
+}
+
+// Vault and payee: the outcome, and the cash if it passed.
+protocol Payment {
+  role Vault = select {
+    Paid => send (cash : Cash) then end Paid |
+    Denied => end Denied
+  };
+  role Payee = offer {
+    Paid => receive (cash : Cash) then end Paid |
+    Denied => end Denied
+  };
+}
+
+component Signer(vault : Signer[Ballot], approves : Bool) {
+  let (asked, amount) = receive U64 on vault;
+  if approves {
+    let voted = select Approve on asked;
+    close voted;
+  } else {
+    let voted = select Reject on asked;
+    close voted;
+  };
+}
+
+component Vault(
+  first : Vault[Ballot],
+  second : Vault[Ballot],
+  third : Vault[Ballot],
+  payee : Vault[Payment],
+  funds : U64,
+  amount : U64
+) provides Cash {
+  let treasury = construct Cash { amount = funds };
+  // Ask each signer in turn and count the approvals.
+  let asked_a = send amount on first;
+  let after_a = loop state (ep = asked_a, count : U64 = 0) {
+    offer ep {
+      Approve => {
+        close ep;
+        break (count + 1);
+      }
+      Reject => {
+        close ep;
+        break (count);
+      }
+    };
+  };
+  let asked_b = send amount on second;
+  let after_b = loop state (ep = asked_b, count : U64 = after_a) {
+    offer ep {
+      Approve => {
+        close ep;
+        break (count + 1);
+      }
+      Reject => {
+        close ep;
+        break (count);
+      }
+    };
+  };
+  let asked_c = send amount on third;
+  let approvals = loop state (ep = asked_c, count : U64 = after_b) {
+    offer ep {
+      Approve => {
+        close ep;
+        break (count + 1);
+      }
+      Reject => {
+        close ep;
+        break (count);
+      }
+    };
+  };
+  console_write("approvals:", approvals, "of 3");
+  if ge(approvals, 2) {
+    if ge(funds, amount) {
+      let (payment, kept) = pay_out(treasury, amount, approvals);
+      let paying = select Paid on payee;
+      let done = send payment on paying;
+      close done;
+      return kept;
+    } else {
+      // Approved, but the treasury cannot cover it: nothing leaves.
+      let denied = select Denied on payee;
+      close denied;
+      console_write("approved but not covered");
+      return treasury;
+    };
+  } else {
+    let denied = select Denied on payee;
+    close denied;
+    return treasury;
+  };
+}
+
+component Payee(vault : Payee[Payment]) provides U64 {
+  offer vault {
+    Paid => {
+      let (done, cash) = receive Cash on vault;
+      close done;
+      let Cash { amount = got } = cash;
+      console_write("payee received", got);
+      return got;
+    }
+    Denied => {
+      close vault;
+      console_write("payment denied");
+      return 0;
+    }
+  };
+}
+
+architecture Treasury {
+  instance alice = Signer;
+  instance bob = Signer;
+  instance carol = Signer;
+  instance vault = Vault;
+  instance payee = Payee;
+  process alice_run = alice;
+  process bob_run = bob;
+  process carol_run = carol;
+  process vault_run = vault;
+  process payee_run = payee;
+  protocol ballot_a = Ballot;
+  protocol ballot_b = Ballot;
+  protocol ballot_c = Ballot;
+  protocol payment = Payment;
+  role ballot_a.Vault = vault;
+  role ballot_a.Signer = alice;
+  role ballot_b.Vault = vault;
+  role ballot_b.Signer = bob;
+  role ballot_c.Vault = vault;
+  role ballot_c.Signer = carol;
+  role payment.Vault = vault;
+  role payment.Payee = payee;
+  entry funds : U64;
+  entry amount : U64;
+  entry alice_approves : Bool;
+  entry bob_approves : Bool;
+  entry carol_approves : Bool;
+  bind alice.vault = ballot_a.Signer;
+  bind alice.approves = alice_approves;
+  bind bob.vault = ballot_b.Signer;
+  bind bob.approves = bob_approves;
+  bind carol.vault = ballot_c.Signer;
+  bind carol.approves = carol_approves;
+  bind vault.first = ballot_a.Vault;
+  bind vault.second = ballot_b.Vault;
+  bind vault.third = ballot_c.Vault;
+  bind vault.payee = payment.Vault;
+  bind payee.vault = payment.Payee;
+  bind vault.funds = funds;
+  bind vault.amount = amount;
+}
+
+program main = instantiate Treasury;

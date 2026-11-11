@@ -6,6 +6,7 @@ import { checkLesson } from "../site/src/check";
 import { OTC_SOURCE, BOOK_SOURCE } from "../core/src/sim/otc-source";
 import { buildAst } from "../core/src/sim/ast";
 import { explore } from "../core/src/sim/explore";
+import { CONTRACTS } from "../core/src/sim/contracts";
 
 let fails = 0;
 const check = (name: string, ok: boolean, detail = "") => { if (!ok) fails++; console.log(`${ok ? "ok  " : "FAIL"} ${name}${ok ? "" : "  " + detail}`); };
@@ -55,4 +56,16 @@ for (const [name, change, want] of [
 }
 const bookHunt = explore(buildAst(BOOK_SOURCE), BOOK, { budgetMs: 4000 });
 check(`book: hunt finds nothing in ${bookHunt.runs} runs`, bookHunt.findings.length === 0 && bookHunt.runs > 50, JSON.stringify(bookHunt.findings[0] ?? {}).slice(0, 300));
+
+// Contract library: every scenario must run and say what it claims; a bounded hunt must find nothing.
+for (const c of CONTRACTS) {
+  check(`${c.id}: source is in sync with ${c.file}`, fs.readFileSync(c.file, "utf8") === c.source);
+  check(`${c.id}: every input has a field`, Object.keys(c.scenarios[0].inputs).sort().join() === c.fields.map((f) => f.key).sort().join());
+  for (const sc of c.scenarios) {
+    const o = runPhil(c.source, sc.inputs);
+    check(`${c.id}: ${sc.name}`, o.ok && sc.says.every((line) => o.console.some((l) => l.includes(line))), o.console.join(" / ") + " " + o.message);
+  }
+  const h = explore(buildAst(c.source), c.scenarios[0].inputs, { budgetMs: 2500 });
+  check(`${c.id}: hunt finds nothing in ${h.runs} runs`, h.findings.length === 0 && h.runs > 50, JSON.stringify(h.findings[0] ?? {}).slice(0, 300));
+}
 process.exit(fails ? 1 : 0);

@@ -1,0 +1,290 @@
+// A bonding-curve token launch.
+//
+// Tokens are minted along a straight price curve: each token costs a little
+// more than the one before it. A buyer buys in rounds. If the whole supply
+// sells before time runs out, the launch graduates: the cash collected and a
+// matching batch of tokens go to a liquidity pool. If it does not, the launch
+// fails and the buyer gets all their cash back in exchange for the tokens.
+// Cash and tokens are linear, so the curve cannot keep the cash from a failed
+// launch or mint tokens it was not paid for.
+
+record Token mode linear {
+  amount : U64
+}
+
+record Cash mode linear {
+  amount : U64
+}
+
+// The price of `count` tokens when `sold` are already out:
+// each token costs base + slope * (number sold before it).
+callable Quote(sold : U64, count : U64, base : U64, slope : U64) -> U64 {
+  requires count > 0;
+  requires sold <= 1000000;
+  requires count <= 1000000;
+  requires base <= 1000000;
+  requires slope <= 1000;
+  outcomes { success U64 };
+}
+
+fn quote(sold : U64, count : U64, base : U64, slope : U64) -> U64 satisfies Quote {
+  return count * base + slope * (count * sold + count * (count - 1) / 2);
+}
+
+// Minting is tied to payment: tokens only come into being against exactly the quoted cash.
+callable Mint(payment : Cash, due : U64, count : U64) -> (Token, Cash) {
+  requires payment.amount == due;
+  outcomes { success (Token, Cash) };
+}
+
+fn mint(payment : Cash, due : U64, count : U64) -> (Token, Cash) satisfies Mint {
+  return (construct Token { amount = count }, payment);
+}
+
+// A refund burns the returned tokens and must hand back the whole reserve.
+callable Refund(returned : Token, sold : U64, reserve : Cash) -> Cash {
+  requires returned.amount == sold;
+  outcomes { success Cash };
+}
+
+fn refund(returned : Token, sold : U64, reserve : Cash) -> Cash satisfies Refund {
+  let Token { amount } = returned;
+  return reserve;
+}
+
+callable Add(a : Cash, b : Cash) -> Cash {
+  outcomes { success Cash };
+}
+
+fn add(a : Cash, b : Cash) -> Cash satisfies Add {
+  let Cash { amount = x } = a;
+  let Cash { amount = y } = b;
+  return construct Cash { amount = x + y };
+}
+
+callable Stack(a : Token, b : Token) -> Token {
+  outcomes { success Token };
+}
+
+fn stack(a : Token, b : Token) -> Token satisfies Stack {
+  let Token { amount = x } = a;
+  let Token { amount = y } = b;
+  return construct Token { amount = x + y };
+}
+
+callable Pay(wallet : Cash, due : U64) -> (Cash, Cash) {
+  requires due <= wallet.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn pay(wallet : Cash, due : U64) -> (Cash, Cash) satisfies Pay {
+  let Cash { amount = total } = wallet;
+  return (construct Cash { amount = due }, construct Cash { amount = total - due });
+}
+
+callable Smaller(a : U64, b : U64) -> U64 {
+  outcomes { success U64 };
+}
+
+fn smaller(a : U64, b : U64) -> U64 satisfies Smaller {
+  if le(a, b) {
+    return a;
+  } else {
+    return b;
+  };
+}
+
+// Curve and buyer. Each round the curve says how many tokens are left; the
+// buyer asks for some, hears the price, and pays or declines.
+protocol Trade {
+  role Curve = recursive Round = select {
+    Open => send (left : U64) then offer {
+      Ask => receive (count : U64) then send (due : U64) then offer {
+        Accept => receive (payment : Cash) then send (tokens : Token) then continue Round |
+        Decline => continue Round
+      } |
+      Pass => continue Round
+    } |
+    Graduated => end Graduated |
+    Failed => receive (tokens : Token) then send (refund : Cash) then end Refunded
+  };
+  role Buyer = recursive Round = offer {
+    Open => receive (left : U64) then select {
+      Ask => send (count : U64) then receive (due : U64) then select {
+        Accept => send (payment : Cash) then receive (tokens : Token) then continue Round |
+        Decline => continue Round
+      } |
+      Pass => continue Round
+    } |
+    Graduated => end Graduated |
+    Failed => send (tokens : Token) then receive (refund : Cash) then end Refunded
+  };
+}
+
+// Curve and pool: on graduation the reserve and the liquidity tokens arrive together.
+protocol Seed {
+  role Curve = select {
+    Fund => send (reserve : Cash) then send (liquidity : Token) then end Funded |
+    Cancel => end Cancelled
+  };
+  role Pool = offer {
+    Fund => receive (reserve : Cash) then receive (liquidity : Token) then end Funded |
+    Cancel => end Cancelled
+  };
+}
+
+component Curve(
+  buyer : Curve[Trade],
+  pool : Curve[Seed],
+  supply : {v : U64 | v <= 1000000},
+  base : {v : U64 | v <= 1000000},
+  slope : {v : U64 | v <= 1000},
+  rounds : {v : U64 | v <= 50}
+) provides U64 {
+  loop state (b = buyer, reserve = construct Cash { amount = 0 }, sold : U64 = 0, round : U64 = 0) {
+    if eq(sold, supply) {
+      // Sold out: graduate. The pool gets the whole reserve and a matching batch of tokens.
+      let b_done = select Graduated on b;
+      close b_done;
+      let raised = borrow reserve as r { return r.amount; };
+      let p1 = select Fund on pool;
+      let p2 = send reserve on p1;
+      let p3 = send construct Token { amount = supply } on p2;
+      close p3;
+      console_write("graduated with a reserve of", raised);
+      return raised;
+    } else {
+      if ge(round, rounds) {
+        // Out of time: fail. Take the tokens back and return every unit of cash.
+        let failing = select Failed on b;
+        let (b1, returned) = receive Token on failing;
+        let b2 = send refund(returned, sold, reserve) on b1;
+        close b2;
+        let p1 = select Cancel on pool;
+        close p1;
+        console_write("launch failed after", round, "rounds");
+        return 0;
+      } else {
+        let b1 = select Open on b;
+        let b2 = send supply - sold on b1;
+        offer b2 {
+          Ask => {
+            let (b3, count) = receive U64 on b2;
+            let due = quote(sold, count, base, slope);
+            let b4 = send due on b3;
+            offer b4 {
+              Accept => {
+                let (b5, payment) = receive Cash on b4;
+                let (tokens, cash) = mint(payment, due, count);
+                let b6 = send tokens on b5;
+                continue (b6, add(reserve, cash), sold + count, round + 1);
+              }
+              Decline => {
+                continue (b4, reserve, sold, round + 1);
+              }
+            };
+          }
+          Pass => {
+            continue (b2, reserve, sold, round + 1);
+          }
+        };
+      };
+    };
+  };
+}
+
+component Buyer(curve : Buyer[Trade], per_round : U64, wallet : U64) provides U64 {
+  loop state (ep = curve, cash = construct Cash { amount = wallet }, bag = construct Token { amount = 0 }) {
+    offer ep {
+      Open => {
+        let (e1, left) = receive U64 on ep;
+        let count = smaller(per_round, left);
+        if gt(count, 0) {
+          let asking = select Ask on e1;
+          let e2 = send count on asking;
+          let (e3, due) = receive U64 on e2;
+          let funds = borrow cash as c { return c.amount; };
+          if ge(funds, due) {
+            let (payment, change) = pay(cash, due);
+            let accepting = select Accept on e3;
+            let e4 = send payment on accepting;
+            let (e5, tokens) = receive Token on e4;
+            continue (e5, change, stack(bag, tokens));
+          } else {
+            let declining = select Decline on e3;
+            continue (declining, cash, bag);
+          };
+        } else {
+          let passing = select Pass on e1;
+          continue (passing, cash, bag);
+        };
+      }
+      Graduated => {
+        close ep;
+        let Token { amount = held } = bag;
+        let Cash { amount = left } = cash;
+        console_write("buyer holds", held, "tokens and", left, "cash");
+        return held;
+      }
+      Failed => {
+        let e1 = send bag on ep;
+        let (done, refunded) = receive Cash on e1;
+        close done;
+        let Cash { amount = back } = add(cash, refunded);
+        console_write("buyer refunded, cash back to", back);
+        return 0;
+      }
+    };
+  };
+}
+
+component Pool(curve : Pool[Seed]) provides U64 {
+  offer curve {
+    Fund => {
+      let (p1, reserve) = receive Cash on curve;
+      let (done, liquidity) = receive Token on p1;
+      close done;
+      let Cash { amount = cash } = reserve;
+      let Token { amount = tokens } = liquidity;
+      console_write("pool opened with", cash, "cash and", tokens, "tokens");
+      return cash;
+    }
+    Cancel => {
+      close curve;
+      return 0;
+    }
+  };
+}
+
+architecture Launch {
+  instance curve = Curve;
+  instance buyer = Buyer;
+  instance pool = Pool;
+  process curve_run = curve;
+  process buyer_run = buyer;
+  process pool_run = pool;
+  protocol trade = Trade;
+  protocol seed = Seed;
+  role trade.Curve = curve;
+  role trade.Buyer = buyer;
+  role seed.Curve = curve;
+  role seed.Pool = pool;
+  entry supply : U64;
+  entry base : U64;
+  entry slope : U64;
+  entry rounds : U64;
+  entry per_round : U64;
+  entry wallet : U64;
+  bind curve.buyer = trade.Curve;
+  bind curve.pool = seed.Curve;
+  bind curve.supply = supply;
+  bind curve.base = base;
+  bind curve.slope = slope;
+  bind curve.rounds = rounds;
+  bind buyer.curve = trade.Buyer;
+  bind buyer.per_round = per_round;
+  bind buyer.wallet = wallet;
+  bind pool.curve = seed.Pool;
+}
+
+program main = instantiate Launch;

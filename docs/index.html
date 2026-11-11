@@ -74,8 +74,9 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .site nav a:hover { color: var(--ink); }
 .site nav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); }
 @media (max-width: 560px) {
-  .site .wrap { gap: 14px; padding: 0 14px; }
-  .site nav { gap: 14px; }
+  .site .wrap { gap: 10px; padding: 0 14px; }
+  .site nav { gap: 12px; }
+  .site nav a { font-size: 13.5px; }
   .site .wordmark span, .site nav .wide { display: none; }
 }
 
@@ -154,7 +155,7 @@ h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform:
   <ellipse cx="3.5" cy="12" rx="1.3" ry="1.1" fill="currentColor"/>
   <circle cx="15.4" cy="9.4" r="1.05" fill="var(--sheet)"/>
 </svg><span class="wordmark">phil <span>tools</span></span></a>
-  <nav aria-label="Site"><a href="playground/">Playground</a><a href="learn/">Learn</a><a href="otc/">OTC</a><a href="conformance/" class="wide">Report</a><a href="https://github.com/philcoinhigh/Phil-tools" class="wide">GitHub</a></nav>
+  <nav aria-label="Site"><a href="playground/">Playground</a><a href="learn/">Learn</a><a href="otc/">OTC</a><a href="library/">Library</a><a href="conformance/" class="wide">Report</a><a href="https://github.com/philcoinhigh/Phil-tools" class="wide">GitHub</a></nav>
 </div></header>
 <section class="hero"><div class="wrap">
   <div>
@@ -176,9 +177,10 @@ h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform:
     <li><a class="row" href="playground/"><span class="n">01</span><span class="name">Playground</span><span class="what">Write Phil, run it, and replay the conversation between programs step by step. Hunts for bugs across inputs and schedules.</span><span class="tag live">live</span></a></li>
     <li><a class="row" href="learn/"><span class="n">02</span><span class="name">Learn Phil</span><span class="what">Fifteen short lessons, each with code you fix in the page. From a first program to an escrow swap.</span><span class="tag live">live</span></a></li>
     <li><a class="row" href="otc/"><span class="n">03</span><span class="name">OTC desk</span><span class="what">An escrow desk and a small order book, written in Phil: partial fills, expiry, cancel, best price first. A simulation today; no real tokens move yet.</span><span class="tag">simulation</span></a></li>
-    <li><a class="row" href="conformance/"><span class="n">04</span><span class="name">Conformance report</span><span class="what">Every test program in the Phil repository, run through these tools once a day. Shows where we agree with Phil and where we fall short.</span><span class="tag live">daily</span></a></li>
-    <li><a class="row" href="https://github.com/philcoinhigh/Phil-tools/tree/main/vscode"><span class="n">05</span><span class="name">VS Code extension</span><span class="what">Highlighting, indentation, formatting, error codes with fixes, and hover help for every keyword.</span><span class="tag">on GitHub</span></a></li>
-    <li><a class="row" href="https://github.com/philcoinhigh/Phil-tools#readme"><span class="n">06</span><span class="name">Command line and MCP</span><span class="what">Check and run Phil from a terminal, or give an AI agent the same checker as a tool.</span><span class="tag">on GitHub</span></a></li>
+    <li><a class="row" href="library/"><span class="n">04</span><span class="name">Contract library</span><span class="what">Vesting, a 2-of-3 treasury, an auction and a bonding-curve launch, each written in Phil and runnable in the page.</span><span class="tag">simulation</span></a></li>
+    <li><a class="row" href="conformance/"><span class="n">05</span><span class="name">Conformance report</span><span class="what">Every test program in the Phil repository, run through these tools once a day. Shows where we agree with Phil and where we fall short.</span><span class="tag live">daily</span></a></li>
+    <li><a class="row" href="https://github.com/philcoinhigh/Phil-tools/tree/main/vscode"><span class="n">06</span><span class="name">VS Code extension</span><span class="what">Highlighting, indentation, formatting, error codes with fixes, and hover help for every keyword.</span><span class="tag">on GitHub</span></a></li>
+    <li><a class="row" href="https://github.com/philcoinhigh/Phil-tools#readme"><span class="n">07</span><span class="name">Command line and MCP</span><span class="what">Check and run Phil from a terminal, or give an AI agent the same checker as a tool.</span><span class="tag">on GitHub</span></a></li>
   </ul>
 
   <h2 class="sec">Where this is going</h2>
