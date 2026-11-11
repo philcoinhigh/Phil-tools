@@ -62,7 +62,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
 /* ------------------------------------------------ top bar */
 .bar { display: flex; align-items: center; gap: 16px; padding: var(--safe-t) 16px 0; min-height: var(--bar-h); border-bottom: 1px solid var(--ink); background: var(--sheet); flex: none; }
-.mark { display: flex; align-items: center; gap: 9px; color: var(--ink); flex: none; }
+.mark { display: flex; align-items: center; gap: 9px; color: var(--ink); flex: none; text-decoration: none; }
 .mark svg { width: 24px; height: 24px; }
 .wordmark { font: 600 15px var(--font-mark); letter-spacing: -.02em; white-space: nowrap; }
 .wordmark span { color: var(--muted); font-weight: 500; }
@@ -72,7 +72,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .exbtn b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .exbtn .chev { color: var(--muted); font-size: 12px; }
 .nav { display: flex; gap: 16px; }
-.bar .navtab { border: 0; margin: 0; padding: 6px 0; font-size: 13.5px; }
+.bar .navtab { border: 0; margin: 0; padding: 6px 0; font-size: 13.5px; text-decoration: none; }
 .bar .navtab.active { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
 .ghostbtn { background: none; border: 1px solid var(--ink); border-radius: 3px; padding: 7px 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .ghostbtn:hover { background: var(--line-hi); }
@@ -342,14 +342,15 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
 </head>
 <body>
 <header class="bar">
-  <div class="mark">
+  <a class="mark" href="../" title="Phil tools home">
     __DOGMARK__
     <span class="wordmark">phil <span>playground</span></span>
-  </div>
+  </a>
   <button id="ex-open" class="exbtn" type="button" aria-haspopup="dialog"><span class="exlabel">Example</span><b id="ex-title"></b><span class="chev" aria-hidden="true">▾</span></button>
   <select id="example" aria-label="Example program" hidden></select>
   <div class="spacer"></div>
   <nav class="nav" aria-label="More">
+    <a class="tab navtab" href="../learn/">Learn</a>
     <button class="tab navtab" data-tab="design" type="button">Design</button>
     <button class="tab navtab" data-tab="docs" type="button">Docs</button>
     <button class="tab navtab" data-tab="about" type="button" id="about-link">About</button>

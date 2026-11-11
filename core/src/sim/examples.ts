@@ -1,3 +1,5 @@
+import { OTC_SOURCE } from "./otc-source";
+
 // Playground examples. Each one is also a test: `expect` is the outcome the simulator must produce.
 
 export interface Example {
@@ -273,6 +275,15 @@ architecture Shop {
 
 program main = instantiate Shop;
 `,
+  },
+  {
+    id: "otc",
+    title: "OTC desk (escrow swap)",
+    group: "Tokens",
+    blurb: "Three programs: a maker locks tokens with a desk, a taker pays or walks away. Every coin ends with exactly one owner.",
+    inputs: { selling: "1000", price: "250", wallet: "400", fee_bps: "100" },
+    expect: "ok",
+    code: OTC_SOURCE,
   },
   {
     id: "repo-stage2",

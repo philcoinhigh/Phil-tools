@@ -1,0 +1,176 @@
+// Phil OTC desk: a two-party token swap through an escrow desk.
+//
+// The maker locks tokens with the desk and names a price. The taker either
+// pays that price or walks away. Tokens and payment are linear values, so the
+// desk cannot keep, copy or lose either one: every path must hand each coin
+// to exactly one owner.
+
+record Token mode linear {
+  amount : U64
+}
+
+record Cash mode linear {
+  amount : U64
+}
+
+// Splitting the payment into the maker's proceeds and the desk fee.
+// The fee is in basis points (100 = 1%) and can never exceed 10%, so the
+// cut is always smaller than the payment and the multiplication cannot overflow.
+callable TakeFee(payment : Cash, fee_bps : U64) -> (Cash, Cash) {
+  requires fee_bps <= 1000;
+  requires payment.amount <= 1000000000000;
+  outcomes { success (Cash, Cash) };
+}
+
+fn take_fee(payment : Cash, fee_bps : U64) -> (Cash, Cash) satisfies TakeFee {
+  let Cash { amount = total } = payment;
+  let cut = total * fee_bps / 10000;
+  return (construct Cash { amount = total - cut }, construct Cash { amount = cut });
+}
+
+// The desk only settles a payment that matches the asking price exactly.
+callable Settle(payment : Cash, price : U64) -> Cash {
+  requires payment.amount == price;
+  outcomes { success Cash };
+}
+
+fn settle(payment : Cash, price : U64) -> Cash satisfies Settle {
+  return payment;
+}
+
+callable Pay(wallet : Cash, price : U64) -> (Cash, Cash) {
+  requires price <= wallet.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn pay(wallet : Cash, price : U64) -> (Cash, Cash) satisfies Pay {
+  let Cash { amount = total } = wallet;
+  return (construct Cash { amount = price }, construct Cash { amount = total - price });
+}
+
+// Maker and desk: lock the tokens, then learn how it ended.
+protocol Listing {
+  role Maker = send (price : U64) then send (tokens : Token) then offer {
+    Filled => receive (proceeds : Cash) then end Sold |
+    Refunded => receive (tokens : Token) then end Returned
+  };
+  role Desk = receive (price : U64) then receive (tokens : Token) then select {
+    Filled => send (proceeds : Cash) then end Sold |
+    Refunded => send (tokens : Token) then end Returned
+  };
+}
+
+// Desk and taker: quote the deal, then swap or part ways.
+protocol Deal {
+  role Desk = send (size : U64) then send (price : U64) then offer {
+    Accept => receive (payment : Cash) then send (tokens : Token) then end Swapped |
+    Decline => end Declined
+  };
+  role Taker = receive (size : U64) then receive (price : U64) then select {
+    Accept => send (payment : Cash) then receive (tokens : Token) then end Swapped |
+    Decline => end Declined
+  };
+}
+
+component Maker(desk : Maker[Listing], selling : U64, price : {v : U64 | v <= 1000000000000}) provides U64 {
+  let quoted = send price on desk;
+  let locked = send construct Token { amount = selling } on quoted;
+  offer locked {
+    Filled => {
+      let (done, proceeds) = receive Cash on locked;
+      close done;
+      let Cash { amount = got } = proceeds;
+      console_write("maker sold for", got);
+      return got;
+    }
+    Refunded => {
+      let (done, tokens) = receive Token on locked;
+      close done;
+      let Token { amount = back } = tokens;
+      console_write("maker got tokens back:", back);
+      return convert 0 to U64;
+    }
+  };
+}
+
+component Taker(desk : Taker[Deal], wallet : U64) provides U64 {
+  let (e1, size) = receive U64 on desk;
+  let (e2, price) = receive U64 on e1;
+  let funds = construct Cash { amount = wallet };
+  if ge(wallet, price) {
+    let (payment, change) = pay(funds, price);
+    let accepted = select Accept on e2;
+    let paid = send payment on accepted;
+    let (done, tokens) = receive Token on paid;
+    close done;
+    let Token { amount = got } = tokens;
+    let Cash { amount = left } = change;
+    console_write("taker bought", got, "and has", left, "left");
+    return got;
+  } else {
+    let declined = select Decline on e2;
+    close declined;
+    let Cash { amount = left } = funds;
+    console_write("taker declined and keeps", left);
+    return convert 0 to U64;
+  };
+}
+
+component Desk(maker : Desk[Listing], taker : Desk[Deal], fee_bps : {v : U64 | v <= 1000}) provides U64 {
+  let (m1, price) = receive U64 on maker;
+  let (m2, tokens) = receive Token on m1;
+  let size = borrow tokens as t { return t.amount; };
+  let t1 = send size on taker;
+  let t2 = send price on t1;
+  offer t2 {
+    Accept => {
+      let (t3, payment) = receive Cash on t2;
+      let checked = settle(payment, price);
+      let (proceeds, cut) = take_fee(checked, fee_bps);
+      let t4 = send tokens on t3;
+      close t4;
+      let m3 = select Filled on m2;
+      let m4 = send proceeds on m3;
+      close m4;
+      let Cash { amount = kept } = cut;
+      console_write("desk fee", kept);
+      return kept;
+    }
+    Decline => {
+      close t2;
+      let m3 = select Refunded on m2;
+      let m4 = send tokens on m3;
+      close m4;
+      return convert 0 to U64;
+    }
+  };
+}
+
+architecture OtcDesk {
+  instance maker = Maker;
+  instance taker = Taker;
+  instance desk = Desk;
+  process maker_run = maker;
+  process taker_run = taker;
+  process desk_run = desk;
+  protocol listing = Listing;
+  protocol deal = Deal;
+  role listing.Maker = maker;
+  role listing.Desk = desk;
+  role deal.Desk = desk;
+  role deal.Taker = taker;
+  entry selling : U64;
+  entry price : U64;
+  entry wallet : U64;
+  entry fee_bps : U64;
+  bind maker.desk = listing.Maker;
+  bind maker.selling = selling;
+  bind maker.price = price;
+  bind taker.desk = deal.Taker;
+  bind taker.wallet = wallet;
+  bind desk.maker = listing.Desk;
+  bind desk.taker = deal.Desk;
+  bind desk.fee_bps = fee_bps;
+}
+
+program main = instantiate OtcDesk;

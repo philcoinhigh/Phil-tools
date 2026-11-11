@@ -13,20 +13,24 @@
     "phil-mcp": "./out/mcp.js"
   },
   "scripts": {
-    "build": "npm run build:core && npm run build:vscode && npm run build:playground",
+    "build": "npm run gen:otc && npm run build:core && npm run build:vscode && npm run build:playground && npm run build:site",
     "build:core": "esbuild core/src/cli.ts --bundle --platform=node --format=cjs --outfile=out/cli.js --log-level=warning && esbuild core/src/mcp.ts --bundle --platform=node --format=cjs --outfile=out/mcp.js --log-level=warning",
     "build:vscode": "esbuild vscode/src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=vscode/out/extension.js --log-level=warning",
     "build:playground": "node playground/build.js",
     "typecheck": "tsc --noEmit -p .",
     "gen": "python3 vscode/scripts/gen-grammar.py && esbuild vscode/scripts/gen-docs.ts --bundle --platform=node --outfile=out/gen-docs.js --log-level=error && node out/gen-docs.js",
-    "test": "npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:playground && npm run test:smoke",
+    "test": "npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:learn && npm run test:playground && npm run test:site && npm run test:smoke",
     "test:sim": "esbuild test/sim.ts --bundle --platform=node --outfile=out/sim.js --log-level=error && node out/sim.js",
     "test:designer": "esbuild test/designer.ts --bundle --platform=node --outfile=out/designer.js --log-level=error && node out/designer.js",
     "test:playground": "node test/playground-dom.js",
     "test:smoke": "esbuild test/smoke.ts --bundle --platform=node --outfile=out/smoke.js --log-level=error --alias:vscode=./test/fake-vscode.ts && node out/smoke.js",
     "test:corpus": "esbuild test/test.ts --bundle --platform=node --outfile=out/test.js --log-level=error && cp node_modules/vscode-oniguruma/release/onig.wasm out/ && node out/test.js",
     "test:conformance": "esbuild test/explore.ts --bundle --platform=node --outfile=out/explore.js --log-level=error && node out/explore.js",
-    "package:vscode": "npm run build:vscode && cd vscode && vsce package --no-dependencies"
+    "package:vscode": "npm run build:vscode && cd vscode && vsce package --no-dependencies",
+    "gen:otc": "node scripts/gen-otc.js",
+    "build:site": "node site/build.js",
+    "test:learn": "esbuild test/learn.ts --bundle --platform=node --outfile=out/learn.js --log-level=error && node out/learn.js",
+    "test:site": "node test/site-dom.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

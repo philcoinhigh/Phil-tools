@@ -12,9 +12,13 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | --- | --- | --- |
 | **Phil for VS Code** | Editor extension: highlighting, live syntax errors with codes and quick fixes, hovers, outline, snippets, formatting | [`vscode/`](vscode) |
 | **Phil Playground** | Web app to write, run, replay and bug-hunt Phil programs, with examples and puzzles | [`playground/`](playground) |
+| **Learn Phil** | A course of fifteen short lessons with code you run and fix in the page | [`site/`](site) |
+| **Phil OTC desk** | A token swap through an escrow desk, written in Phil. Simulation only: no real tokens move | [`otc/`](otc) |
 | **Phil core** | The shared checker and experimental simulator, plus the command-line checker and the MCP server for AI assistants | [`core/`](core) |
 
-Each folder has its own README. They live in one repository because all three use the same lexer and parser, written from Phil's normative grammar `grammar/phase1-surface.ebnf`; a grammar fix lands in every tool at once.
+Each folder has its own README. The site at <https://philcoinhigh.github.io/Phil-tools/> has a home page that links to the playground, the course and the OTC desk.
+
+They live in one repository because they all use the same lexer and parser, written from Phil's normative grammar `grammar/phase1-surface.ebnf`; a grammar fix lands in every tool at once.
 
 ## Quick start
 
@@ -38,7 +42,7 @@ Exit status is 0 with no errors, 1 with syntax errors, 2 on usage errors.
 
 ### Playground
 
-`npm run build` writes a self-contained page to `docs/index.html`. See [playground/README.md](playground/README.md). Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
+`npm run build` writes the site to `docs/`: the home page at `docs/index.html`, the playground at `docs/playground/`, the course at `docs/learn/` and the OTC desk at `docs/otc/`. Each page is self-contained. See [playground/README.md](playground/README.md). Open it in a browser, or serve the `docs/` folder with GitHub Pages (repository **Settings → Pages → Deploy from a branch → `main` / `docs`**).
 
 ### VS Code extension
 

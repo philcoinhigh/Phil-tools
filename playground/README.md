@@ -27,10 +27,10 @@ From the repository root:
 
 ```sh
 npm install
-npm run build:playground    # writes docs/index.html
+npm run build:playground    # writes docs/playground/index.html
 ```
 
-Open `docs/index.html` in a browser. The file is self-contained (it loads only web fonts).
+Open `docs/playground/index.html` in a browser. The file is self-contained (it loads only web fonts).
 
 To publish it with GitHub Pages: repository **Settings → Pages → Deploy from a branch → `main` / `docs`**.
 
@@ -41,7 +41,7 @@ To publish it with GitHub Pages: repository **Settings → Pages → Deploy from
 | `src/main.ts` | UI logic |
 | `src/template.html` | Markup and styles |
 | `src/dogmark.svg` | Logo (original artwork for this project) |
-| `build.js` | Bundles everything into `docs/index.html` |
+| `build.js` | Bundles everything into `docs/playground/index.html` |
 | [`../core/src/sim/examples.ts`](../core/src/sim/examples.ts) | Examples; each declares the outcome it must produce |
 
 ## Add an example or puzzle
