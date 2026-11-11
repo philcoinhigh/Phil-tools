@@ -1,6 +1,6 @@
 import * as fs from "fs"; import * as path from "path";
-import { parse } from "../src/parser"; import { buildAst } from "../src/sim/ast";
-import { explore } from "../src/sim/explore"; import { EXAMPLES } from "../src/sim/examples";
+import { parse } from "../core/src/parser"; import { buildAst } from "../core/src/sim/ast";
+import { explore } from "../core/src/sim/explore"; import { EXAMPLES } from "../core/src/sim/examples";
 const root = process.argv[2];
 console.log("== examples");
 for (const ex of EXAMPLES) {

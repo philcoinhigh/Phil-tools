@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { execFile } from "child_process";
-import { parse, ParseResult, PhilSymbol, SymbolKind } from "./parser";
-import { Token, RESERVED } from "./lexer";
-import { formatLines } from "./format";
-import { CODE_MAP, codesMarkdown } from "./codes";
-import keywordDocs from "./keywords.json";
+import { parse, ParseResult, PhilSymbol, SymbolKind } from "../../core/src/parser";
+import { Token, RESERVED } from "../../core/src/lexer";
+import { formatLines } from "../../core/src/format";
+import { CODE_MAP, codesMarkdown } from "../../core/src/codes";
+import keywordDocs from "../../core/src/keywords.json";
 
 const KEYWORDS = keywordDocs as Record<string, { category: string; meaning: string; note?: string }>;
 const DOCS_SCHEME = "phil-docs";
