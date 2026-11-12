@@ -11,7 +11,9 @@ if (flag === "--airdrop") {
   await conn.confirmTransaction(sig, "confirmed");
 }
 const ix = new TransactionInstruction({ programId: new PublicKey(programId), keys: [], data: Buffer.alloc(0) });
-const signature = await sendAndConfirmTransaction(conn, new Transaction().add(ix), [payer], { commitment: "confirmed" });
+let signature;
+try { signature = await sendAndConfirmTransaction(conn, new Transaction().add(ix), [payer], { commitment: "confirmed" }); }
+catch (e) { console.error("transaction failed:", e?.message ?? e); for (const l of e?.logs ?? e?.transactionLogs ?? []) console.error("  " + l); process.exit(1); }
 let tx = null;
 for (let i = 0; i < 20 && !tx; i++) { tx = await conn.getTransaction(signature, { commitment: "confirmed", maxSupportedTransactionVersion: 0 }); if (!tx) await new Promise((r) => setTimeout(r, 1500)); }
 const logs = tx?.meta?.logMessages ?? [];
