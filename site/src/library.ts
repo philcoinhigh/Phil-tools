@@ -62,6 +62,9 @@ function show(id: string): void {
   $("c-title").textContent = current.title;
   $("c-summary").textContent = current.summary;
   $("c-holds").innerHTML = current.guarantees.map((g) => `<li>${esc(g)}</li>`).join("");
+  const basis = $("c-basis");
+  basis.hidden = !current.basis;
+  basis.innerHTML = current.basis ? `${esc(current.basis.note)} Source: <a href="${esc(current.basis.url)}" rel="noopener">${esc(current.basis.label)}</a>.` : "";
   $("port-box").hidden = !current.port?.length;
   $("c-port").innerHTML = (current.port ?? []).map((g) => `<li>${esc(g)}</li>`).join("");
   $("terms").innerHTML = current.fields.map((f) => f.bool

@@ -131,7 +131,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   d.querySelector('[data-start="doublespend"]').click();
   check("start button loads the caught-bug example", d.getElementById("ex-title").textContent === "Double spend" && summary().includes("Ownership error") && summary().includes("used exactly once"), summary().slice(0, 160));
   d.getElementById("ex-open").click();
-  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 31 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
+  check("example browser lists everything", !d.getElementById("ex-drawer").hidden && d.querySelectorAll("#ex-list [data-ex]").length === 32 && !!d.querySelector('#ex-list .current[data-ex="doublespend"]'), d.querySelectorAll("#ex-list [data-ex]").length);
   d.querySelector('#ex-list [data-ex="ping"]').click();
   check("picking from the browser loads and closes it", d.getElementById("ex-drawer").hidden && d.getElementById("ex-title").textContent.startsWith("Ping") && good());
   d.getElementById("intro-close").click();

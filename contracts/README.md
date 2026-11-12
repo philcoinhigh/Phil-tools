@@ -6,6 +6,7 @@ The tools token projects use every day, written in Phil. Each file is a complete
 | --- | --- |
 | `locker.phil` | A token locker: cliff, a release every period, claim on demand, optional cancel by the sender |
 | `hooks.phil` | Transfer hooks: a limit hook that allows or blocks a transfer, and a fee hook that takes custody and keeps a capped cut |
+| `launchhooks.phil` | Launchpad hooks: a sniper hook and a fee hook on every buy, holder rewards, and a graduation hook that burns and locks liquidity and schedules the creator's tokens. Modelled on higher.fun's public docs; not their code |
 | `vesting.phil` | A grant released in equal parts per period, revocable by the grantor |
 | `multisig.phil` | A 2-of-3 treasury: three signers vote on one payment |
 | `auction.phil` | A sealed-bid auction with a reserve price and two bidders |

@@ -1,0 +1,436 @@
+// Launchpad hooks: the rules a launchpad runs at each step of a token launch.
+//
+// Modelled on the "New school" launch described in higher.fun's public docs.
+// This is our own reading of those docs, written in Phil. It is not
+// higher.fun's code and is not endorsed by them.
+//
+// A launch has three hook points:
+//
+//   on every buy       a sniper hook looks at when the buy happened and flags
+//                      or clears the buyer; a fee hook is handed the 1% trade
+//                      fee and splits it four ways.
+//   at graduation      a graduation hook is handed the liquidity and the
+//                      creator's locked allocation. It burns 70% of the
+//                      liquidity, locks 30%, and puts the creator's tokens on
+//                      a schedule: nothing for 7 days, then evenly over 30.
+//   at the end         holder rewards are paid out. Flagged buyers get none.
+//
+// Cash, tokens and liquidity are linear. Every unit of fee ends up in exactly
+// one of the four places, and the launch cannot keep any of it.
+
+record Cash mode linear {
+  amount : U64
+}
+
+record Token mode linear {
+  amount : U64
+}
+
+record Liquidity mode linear {
+  amount : U64
+}
+
+callable Take(pot : Cash, part : U64) -> (Cash, Cash) {
+  requires part <= pot.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn take(pot : Cash, part : U64) -> (Cash, Cash) satisfies Take {
+  let Cash { amount = total } = pot;
+  return (construct Cash { amount = part }, construct Cash { amount = total - part });
+}
+
+// One holder's part of the reward pot, by tokens held. Nobody holding means nothing to split.
+callable ProRata(pot : U64, mine : U64, everyone : U64) -> U64 {
+  requires mine <= everyone;
+  requires pot <= 1000000;
+  requires everyone <= 1000000000;
+  outcomes { success U64 };
+}
+
+fn pro_rata(pot : U64, mine : U64, everyone : U64) -> U64 satisfies ProRata {
+  if eq(everyone, 0) {
+    return 0;
+  } else {
+    return pot * mine / everyone;
+  };
+}
+
+callable Pool(a : Cash, b : Cash) -> Cash {
+  outcomes { success Cash };
+}
+
+fn pool(a : Cash, b : Cash) -> Cash satisfies Pool {
+  let Cash { amount = x } = a;
+  let Cash { amount = y } = b;
+  return construct Cash { amount = x + y };
+}
+
+// The trade fee is 1% of what the buyer pays.
+callable TradeFee(payment : U64) -> U64 {
+  requires payment <= 1000000000000;
+  outcomes { success U64 };
+}
+
+fn trade_fee(payment : U64) -> U64 satisfies TradeFee {
+  return payment / 100;
+}
+
+// The launch checks what the fee hook hands back for holders: a quarter of
+// the fee if the creator keeps their share, half if the creator gives it up.
+callable HolderShare(returned : Cash, fee : U64, creator_keeps : Bool) -> Cash {
+  requires returned.amount <= fee;
+  requires returned.amount * 4 + 3 >= fee;
+  outcomes { success Cash };
+}
+
+fn holder_share(returned : Cash, fee : U64, creator_keeps : Bool) -> Cash satisfies HolderShare {
+  return returned;
+}
+
+// At graduation 30% of the liquidity is locked and the rest, at least 70%, is burned.
+callable Burn(liquidity : Liquidity) -> (Liquidity, Liquidity) {
+  requires liquidity.amount <= 1000000000000;
+  outcomes { success (Liquidity, Liquidity) };
+}
+
+fn burn(liquidity : Liquidity) -> (Liquidity, Liquidity) satisfies Burn {
+  let Liquidity { amount = total } = liquidity;
+  let locked = total * 30 / 100;
+  return (construct Liquidity { amount = total - locked }, construct Liquidity { amount = locked });
+}
+
+// How much of the creator's locked allocation has unlocked `day` days after graduation.
+callable CreatorUnlocked(locked : U64, day : U64) -> U64 {
+  requires locked <= 1000000000000;
+  outcomes { success U64 };
+}
+
+fn creator_unlocked(locked : U64, day : U64) -> U64 satisfies CreatorUnlocked {
+  if le(day, 7) {
+    return 0;
+  } else {
+    if ge(day, 37) {
+      return locked;
+    } else {
+      return locked * (day - 7) / 30;
+    };
+  };
+}
+
+// A buyer and the launch.
+protocol Buy {
+  role Buyer = send (payment : Cash) then receive (tokens : Token) then offer {
+    Reward => receive (reward : Cash) then end Rewarded |
+    NoReward => end Unrewarded
+  };
+  role Launch = receive (payment : Cash) then send (tokens : Token) then select {
+    Reward => send (reward : Cash) then end Rewarded |
+    NoReward => end Unrewarded
+  };
+}
+
+// Sniper hook: told which block a buy landed in, it flags or clears the buyer.
+protocol Screen {
+  role Launch = recursive Next = select {
+    Check => send (block : U64) then offer {
+      Flag => continue Next |
+      Clear => continue Next
+    } |
+    Finished => end Finished
+  };
+  role Hook = recursive Next = offer {
+    Check => receive (block : U64) then select {
+      Flag => continue Next |
+      Clear => continue Next
+    } |
+    Finished => end Finished
+  };
+}
+
+// Fee hook: handed each trade fee, it hands back the holders' share and keeps the rest to pay out.
+protocol Fees {
+  role Launch = recursive Next = select {
+    Trade => send (fee : Cash) then receive (holders : Cash) then continue Next |
+    Finished => end Finished
+  };
+  role Hook = recursive Next = offer {
+    Trade => receive (fee : Cash) then send (holders : Cash) then continue Next |
+    Finished => end Finished
+  };
+}
+
+// Graduation hook: handed the liquidity and the creator's locked tokens, or told the launch did not graduate.
+protocol Graduation {
+  role Launch = select {
+    Graduate => send (liquidity : Liquidity) then send (creator_tokens : Token) then end Graduated |
+    Stay => end Ungraduated
+  };
+  role Hook = offer {
+    Graduate => receive (liquidity : Liquidity) then receive (creator_tokens : Token) then end Graduated |
+    Stay => end Ungraduated
+  };
+}
+
+component Buyer(launch : Buyer[Buy], spend : {v : U64 | v <= 1000000}) provides U64 {
+  let paid = send construct Cash { amount = spend } on launch;
+  let (deciding, tokens) = receive Token on paid;
+  let Token { amount = got } = tokens;
+  offer deciding {
+    Reward => {
+      let (done, reward) = receive Cash on deciding;
+      close done;
+      let Cash { amount = earned } = reward;
+      console_write("bought", got, "tokens, holder reward", earned);
+      return earned;
+    }
+    NoReward => {
+      close deciding;
+      console_write("bought", got, "tokens, no holder reward");
+      return 0;
+    }
+  };
+}
+
+component SniperHook(launch : Hook[Screen], sniper_window : U64) {
+  loop state (ep = launch) {
+    offer ep {
+      Check => {
+        let (deciding, block) = receive U64 on ep;
+        if le(block, sniper_window) {
+          let flagged = select Flag on deciding;
+          console_write("sniper hook: buy in block", block, "flagged");
+          continue (flagged);
+        } else {
+          let cleared = select Clear on deciding;
+          continue (cleared);
+        };
+      }
+      Finished => {
+        close ep;
+        break;
+      }
+    };
+  };
+}
+
+component FeeHook(launch : Hook[Fees], creator_keeps : Bool) provides U64 {
+  let total = loop state (ep = launch, creator : U64 = 0, platform : U64 = 0, amm : U64 = 0) {
+    offer ep {
+      Trade => {
+        let (returning, fee) = receive Cash on ep;
+        let whole = borrow fee as f { return f.amount; };
+        let quarter = whole / 4;
+        // A quarter each to the platform and the pool; the creator's quarter goes to the creator or to holders.
+        let (for_platform, rest1) = take(fee, quarter);
+        let (for_creator, rest2) = take(rest1, quarter);
+        let (for_holders, for_amm) = take(rest2, quarter);
+        let Cash { amount = p } = for_platform;
+        let Cash { amount = a } = for_amm;
+        if creator_keeps {
+          let Cash { amount = c } = for_creator;
+          let next = send for_holders on returning;
+          continue (next, creator + c, platform + p, amm + a);
+        } else {
+          let next = send pool(for_holders, for_creator) on returning;
+          continue (next, creator, platform + p, amm + a);
+        };
+      }
+      Finished => {
+        close ep;
+        console_write("fee hook: creator", creator, "platform", platform, "pool", amm);
+        break (creator + platform + amm);
+      }
+    };
+  };
+  return total;
+}
+
+component GraduationHook(launch : Hook[Graduation], check_day : U64) provides U64 {
+  offer launch {
+    Graduate => {
+      let (more, liquidity) = receive Liquidity on launch;
+      let (done, creator_tokens) = receive Token on more;
+      close done;
+      let (burned, locked) = burn(liquidity);
+      let Liquidity { amount = gone } = burned;
+      let Liquidity { amount = kept } = locked;
+      console_write("graduation hook: liquidity burned", gone, "locked", kept);
+      let Token { amount = held } = creator_tokens;
+      let open = creator_unlocked(held, check_day);
+      console_write("graduation hook: creator lock", held, "tokens,", open, "unlocked on day", check_day);
+      return gone;
+    }
+    Stay => {
+      close launch;
+      console_write("graduation hook: not graduated, nothing to do");
+      return 0;
+    }
+  };
+}
+
+component Launch(
+  early : Launch[Buy],
+  late : Launch[Buy],
+  screen : Launch[Screen],
+  fees : Launch[Fees],
+  graduation : Launch[Graduation],
+  late_block : U64,
+  target : U64,
+  creator_keeps : Bool,
+  creator_lock_pct : {v : U64 | v <= 10}
+) {
+  // First buy, in block 1.
+  let (e1, pay1) = receive Cash on early;
+  let spend1 = borrow pay1 as p { return p.amount; };
+  let asked1 = select Check on screen;
+  let s1 = send 1 on asked1;
+  let (screened1, flag1) = loop state (ep = s1) {
+    offer ep {
+      Flag => { break (ep, true); }
+      Clear => { break (ep, false); }
+    };
+  };
+  let fee1 = trade_fee(spend1);
+  let (fee_cash1, net1) = take(pay1, fee1);
+  let trading1 = select Trade on fees;
+  let f1 = send fee_cash1 on trading1;
+  let (f2, back1) = receive Cash on f1;
+  let holders1 = holder_share(back1, fee1, creator_keeps);
+  let tokens1 = (spend1 - fee1) * 100;
+  let e2 = send construct Token { amount = tokens1 } on e1;
+
+  // Second buy, in a later block.
+  let (l1, pay2) = receive Cash on late;
+  let spend2 = borrow pay2 as p { return p.amount; };
+  let asked2 = select Check on screened1;
+  let s2 = send late_block on asked2;
+  let (screened2, flag2) = loop state (ep = s2) {
+    offer ep {
+      Flag => { break (ep, true); }
+      Clear => { break (ep, false); }
+    };
+  };
+  let screen_done = select Finished on screened2;
+  close screen_done;
+  let fee2 = trade_fee(spend2);
+  let (fee_cash2, net2) = take(pay2, fee2);
+  let trading2 = select Trade on f2;
+  let f3 = send fee_cash2 on trading2;
+  let (f4, back2) = receive Cash on f3;
+  let holders2 = holder_share(back2, fee2, creator_keeps);
+  let fees_done = select Finished on f4;
+  close fees_done;
+  let tokens2 = (spend2 - fee2) * 100;
+  let l2 = send construct Token { amount = tokens2 } on l1;
+
+  // Graduation: enough cash in the curve.
+  let reserve = pool(net1, net2);
+  let raised = borrow reserve as r { return r.amount; };
+  let Cash { amount = into_pool } = reserve;
+  if ge(raised, target) {
+    let graduating = select Graduate on graduation;
+    let g1 = send construct Liquidity { amount = into_pool } on graduating;
+    let g2 = send construct Token { amount = (tokens1 + tokens2) * creator_lock_pct / 100 } on g1;
+    close g2;
+    console_write("launch: graduated with", raised, "in the curve");
+  } else {
+    let staying = select Stay on graduation;
+    close staying;
+    console_write("launch: did not graduate,", raised, "of", target);
+  };
+
+  // Holder rewards. Flagged buyers get nothing.
+  let rewards = pool(holders1, holders2);
+  let pot = borrow rewards as r { return r.amount; };
+  if flag1 {
+    let none = select NoReward on e2;
+    close none;
+    if flag2 {
+      let none2 = select NoReward on l2;
+      close none2;
+      let Cash { amount = unclaimed } = rewards;
+      console_write("launch: no eligible holders, unclaimed rewards", unclaimed);
+    } else {
+      let paying = select Reward on l2;
+      let done = send rewards on paying;
+      close done;
+    };
+  } else {
+    if flag2 {
+      let none2 = select NoReward on l2;
+      close none2;
+      let paying = select Reward on e2;
+      let done = send rewards on paying;
+      close done;
+    } else {
+      // Both eligible: split by how many tokens each holds.
+      let (share1, share2) = take(rewards, pro_rata(pot, tokens1, tokens1 + tokens2));
+      let paying1 = select Reward on e2;
+      let done1 = send share1 on paying1;
+      close done1;
+      let paying2 = select Reward on l2;
+      let done2 = send share2 on paying2;
+      close done2;
+    };
+  };
+}
+
+architecture HookedLaunch {
+  instance early_buyer = Buyer;
+  instance late_buyer = Buyer;
+  instance launch = Launch;
+  instance sniper_hook = SniperHook;
+  instance fee_hook = FeeHook;
+  instance graduation_hook = GraduationHook;
+  process early_run = early_buyer;
+  process late_run = late_buyer;
+  process launch_run = launch;
+  process sniper_run = sniper_hook;
+  process fee_run = fee_hook;
+  process graduation_run = graduation_hook;
+  protocol buy_early = Buy;
+  protocol buy_late = Buy;
+  protocol screening = Screen;
+  protocol fee_split = Fees;
+  protocol graduating = Graduation;
+  role buy_early.Buyer = early_buyer;
+  role buy_early.Launch = launch;
+  role buy_late.Buyer = late_buyer;
+  role buy_late.Launch = launch;
+  role screening.Launch = launch;
+  role screening.Hook = sniper_hook;
+  role fee_split.Launch = launch;
+  role fee_split.Hook = fee_hook;
+  role graduating.Launch = launch;
+  role graduating.Hook = graduation_hook;
+  entry early_spend : U64;
+  entry late_spend : U64;
+  entry late_block : U64;
+  entry sniper_window : U64;
+  entry target : U64;
+  entry creator_keeps : Bool;
+  entry creator_lock_pct : U64;
+  entry check_day : U64;
+  bind early_buyer.launch = buy_early.Buyer;
+  bind early_buyer.spend = early_spend;
+  bind late_buyer.launch = buy_late.Buyer;
+  bind late_buyer.spend = late_spend;
+  bind launch.early = buy_early.Launch;
+  bind launch.late = buy_late.Launch;
+  bind launch.screen = screening.Launch;
+  bind launch.fees = fee_split.Launch;
+  bind launch.graduation = graduating.Launch;
+  bind launch.late_block = late_block;
+  bind launch.target = target;
+  bind launch.creator_keeps = creator_keeps;
+  bind launch.creator_lock_pct = creator_lock_pct;
+  bind sniper_hook.launch = screening.Hook;
+  bind sniper_hook.sniper_window = sniper_window;
+  bind fee_hook.launch = fee_split.Hook;
+  bind fee_hook.creator_keeps = creator_keeps;
+  bind graduation_hook.launch = graduating.Hook;
+  bind graduation_hook.check_day = check_day;
+}
+
+program main = instantiate HookedLaunch;

@@ -1,5 +1,5 @@
 // The contract library: Phil programs for common token mechanics. Each scenario is also a test.
-import { LOCKER_SOURCE, HOOKS_SOURCE, VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
+import { LOCKER_SOURCE, HOOKS_SOURCE, LAUNCHHOOKS_SOURCE, VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
 
 export interface Scenario { name: string; inputs: Record<string, string>; says: string[] }
 export interface Contract {
@@ -7,6 +7,8 @@ export interface Contract {
   guarantees: string[];
   /** What an on-chain version would need that this program does not model. */
   port?: string[];
+  /** Where the rules being modelled were published, when they are someone else's. */
+  basis?: { label: string; url: string; note: string };
   fields: { key: string; label: string; note?: string; bool?: boolean }[];
   scenarios: Scenario[];
 }
@@ -55,6 +57,35 @@ export const CONTRACTS: Contract[] = [
       { name: "Allowed, 1% fee", inputs: { amount: "1000", max_transfer: "5000", fee_bps: "100" }, says: ["fee hook: kept 10", "receiver: received 990", "transfer went through"] },
       { name: "Blocked by the limit", inputs: { amount: "9000", max_transfer: "5000", fee_bps: "100" }, says: ["over the limit of 5000", "nothing arrived", "tokens returned: 9000"] },
       { name: "No fee", inputs: { amount: "1000", max_transfer: "5000", fee_bps: "0" }, says: ["fee hook: kept 0", "receiver: received 1000"] },
+    ],
+  },
+  {
+    id: "launchhooks", title: "Launchpad hooks", file: "contracts/launchhooks.phil", source: LAUNCHHOOKS_SOURCE,
+    summary: "The rules a launchpad runs at each step of a launch: flag snipers on every buy, split the 1% trade fee four ways, pay holder rewards, and at graduation burn 70% of the liquidity, lock 30% and put the creator's tokens on a schedule.",
+    basis: { label: "higher.fun docs", url: "https://higher.fun/docs", note: "Modelled on the “New school” launch in higher.fun's public docs. This is our reading of those docs, not higher.fun's code, and it is not endorsed by them. Curve pricing is simplified to a fixed price." },
+    guarantees: [
+      "Every unit of trade fee ends up in exactly one of four places: creator, holders, platform or pool.",
+      "The launch checks the holders' share the fee hook hands back, so a hook that short-changes holders halts the trade.",
+      "Buyers flagged as snipers get no holder reward; an unflagged holder gets theirs by tokens held.",
+      "At graduation the liquidity is fully accounted for: 30% locked, the rest burned.",
+      "The creator's locked tokens unlock by the published schedule: nothing for 7 days, then evenly over 30.",
+    ],
+    port: [
+      "The real curve prices each buy along a bonding curve (Raydium LaunchLab); this uses a fixed price so the hooks are the subject.",
+      "Blocks and days are plain numbers here. On chain they come from the slot and the clock.",
+      "Two buyers and one trade each. A real launch has any number, with rewards accruing over time.",
+      "Sniper detection on chain looks at wallets buying in the first blocks or together in one block; here it is the block number alone.",
+    ],
+    fields: [
+      { key: "early_spend", label: "First buyer spends (block 1)", note: "at most 1,000,000" }, { key: "late_spend", label: "Second buyer spends" }, { key: "late_block", label: "Second buyer's block" },
+      { key: "sniper_window", label: "Sniper window (blocks)", note: "buys in these blocks are flagged" }, { key: "target", label: "Graduation target (cash in curve)" }, { key: "creator_lock_pct", label: "Creator lock (% of supply)", note: "at most 10" },
+      { key: "check_day", label: "Check the creator lock on day" }, { key: "creator_keeps", label: "Creator keeps their fee share", bool: true },
+    ],
+    scenarios: [
+      { name: "Sniper gets nothing", inputs: { early_spend: "40000", late_spend: "60000", late_block: "20", sniper_window: "3", target: "85000", creator_keeps: "false", creator_lock_pct: "5", check_day: "22" }, says: ["buy in block 1 flagged", "creator 0 platform 250 pool 250", "liquidity burned 69300 locked 29700", "247500 unlocked on day 22", "no holder reward", "holder reward 500"] },
+      { name: "Creator keeps their share", inputs: { early_spend: "40000", late_spend: "60000", late_block: "20", sniper_window: "0", target: "85000", creator_keeps: "true", creator_lock_pct: "5", check_day: "37" }, says: ["creator 250 platform 250 pool 250", "holder reward 100", "holder reward 150", "495000 unlocked on day 37"] },
+      { name: "Both sniped", inputs: { early_spend: "40000", late_spend: "60000", late_block: "2", sniper_window: "3", target: "85000", creator_keeps: "false", creator_lock_pct: "5", check_day: "7" }, says: ["buy in block 2 flagged", "no eligible holders, unclaimed rewards 500", "0 unlocked on day 7"] },
+      { name: "Does not graduate", inputs: { early_spend: "10000", late_spend: "20000", late_block: "20", sniper_window: "3", target: "85000", creator_keeps: "false", creator_lock_pct: "5", check_day: "22" }, says: ["did not graduate, 29700 of 85000", "not graduated, nothing to do", "holder reward 150"] },
     ],
   },
   {
