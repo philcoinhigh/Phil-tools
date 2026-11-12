@@ -6,22 +6,23 @@
   "local": {
     "ok": true,
     "run": {
-      "signature": "jdnz271ViQBPmQ7VUp3c3xtLNxyFH3Exy9ABGZqUZXzdngud82ygJ2XpcFdH6udxwwDk76WzSBgKLqPTHWMJ19t",
+      "signature": "584i738rAoba5qvgMa5woXBrK9pYSUgKboUK1qpYEbujHmVtsJVySNQnkmP5p2hPbXw5PdXuUYuSKsuKUihynb5Q",
       "slot": 10,
       "returned": 42,
       "unitsConsumed": 217,
       "logs": [
-        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW invoke [1]",
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB invoke [1]",
         "Program log: Phil main returned:",
         "Program log: 0x0, 0x0, 0x0, 0x0, 0x2a",
-        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW consumed 217 of 200000 compute units",
-        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW success"
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB consumed 217 of 200000 compute units",
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB success"
       ]
     }
   },
   "devnet": {
     "ok": false,
-    "programId": null,
+    "programId": "4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB",
+    "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
     "run": null
   }
 }
