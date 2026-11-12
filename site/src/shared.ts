@@ -114,6 +114,19 @@ export function mountEditor(host: HTMLElement, initial: string, onChange: () => 
   };
 }
 
+/** Makes it obvious that a button did something: a short highlight, a note beside the button, and the result brought into view. */
+export function landed(result: HTMLElement, note: HTMLElement | null, text: string): void {
+  result.classList.remove("flash");
+  void result.offsetWidth;                       // restart the animation
+  result.classList.add("flash");
+  if (note) note.textContent = text;
+  const r = result.getBoundingClientRect();
+  const vh = window.innerHeight || 0;
+  if (vh && (r.top > vh - 80 || r.top < 0) && typeof result.scrollIntoView === "function") result.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+let runs = 0;
+export const runLabel = () => `Ran just now (run ${++runs})`;
+
 export function store(key: string, value?: string): string | null {
   try {
     if (value === undefined) return localStorage.getItem(key);

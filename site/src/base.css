@@ -98,6 +98,13 @@ button { -webkit-tap-highlight-color: transparent; cursor: pointer; }
 .ed textarea::selection { background: var(--sel); }
 pre.code { margin: 0; padding: 14px 16px; border: 1px solid var(--rule); background: var(--code-bg); font-size: 13px; line-height: 1.6; overflow-x: auto; color: var(--s-ident); }
 
+/* feedback after a button press */
+@keyframes flash { from { box-shadow: 0 0 0 3px var(--accent); } to { box-shadow: 0 0 0 3px transparent; } }
+.flash { animation: flash 1.1s ease-out; }
+.ran { font-size: 13.5px; color: var(--muted); }
+.btn.busy { opacity: .6; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; outline: 2px solid var(--accent); } }
+
 /* footer */
 .foot { border-top: 1px solid var(--rule); margin-top: 56px; padding: 18px 0 calc(22px + var(--safe-b)); font: 12px/1.7 var(--font-code); color: var(--muted); }
 .foot .wrap { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
