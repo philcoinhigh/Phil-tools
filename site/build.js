@@ -12,7 +12,7 @@ function header(root, active) {
   const link = (id, href, label, cls = "") => `<a href="${href}"${cls ? ` class="${cls}"` : ""}${active === id ? ' aria-current="page"' : ""}>${label}</a>`;
   return `<header class="site"><div class="wrap">
   <a class="mark" href="${root || "./"}" aria-label="Phil tools home">${dog}<span class="wordmark">phil <span>tools</span></span></a>
-  <nav aria-label="Site">${link("playground", root + "playground/", "Playground")}${link("learn", root + "learn/", "Learn")}${link("otc", root + "otc/", "OTC")}${link("library", root + "library/", "Library")}${link("conformance", root + "conformance/", "Report", "wide")}${link("gh", REPO, "GitHub", "wide")}</nav>
+  <nav aria-label="Site">${link("playground", root + "playground/", "Playground")}${link("learn", root + "learn/", "Learn")}${link("otc", root + "otc/", "OTC")}${link("hacks", root + "hacks/", "Hacks")}${link("library", root + "library/", "Library", "wide")}${link("changelog", root + "changelog/", "Changes", "wide")}${link("conformance", root + "conformance/", "Report", "wide")}${link("gh", REPO, "GitHub", "wide")}</nav>
 </div></header>`;
 }
 const footer = `<footer class="foot"><div class="wrap"><span>Built by the Philcoin community. Independent of the Phil project.</span><span class="ca">CA <span id="ca"></span></span><button type="button" id="copy-ca">Copy CA</button><a href="${REPO}">Source (Apache-2.0)</a></div></footer>`;
@@ -37,3 +37,6 @@ page("learn", "docs/learn/index.html", "../", "learn");
 page("otc", "docs/otc/index.html", "../", "otc");
 page("conformance", "docs/conformance/index.html", "../", "conformance");
 page("library", "docs/library/index.html", "../", "library");
+page("hacks", "docs/hacks/index.html", "../", "hacks");
+page("changelog", "docs/changelog/index.html", "../", "changelog");
+page("fuzz", "docs/fuzz/index.html", "../", "fuzz");

@@ -3,6 +3,7 @@ import { lex } from "../../core/src/lexer";
 import { parse, ParseDiagnostic } from "../../core/src/parser";
 import { formatText } from "../../core/src/format";
 import { buildAst } from "../../core/src/sim/ast";
+import { buildProgram, readEarlierSyntax } from "../../core/src/sim/earlier";
 import { run, Simulator, RunResult, RunOptions, TraceEvent, HOST_OPERATIONS } from "../../core/src/sim/interp";
 import { explore, ExploreResult } from "../../core/src/sim/explore";
 import { generateProtocol, Step, STEP_TYPES } from "../../core/src/sim/designer";
@@ -351,13 +352,16 @@ function onEdit(): void {
   editing = false;
 }
 
+let earlierSyntax = false;
 function checkSyntax(): void {
+  // Simple programs in Phil's earlier syntax (no semicolons) are read as they are.
+  earlierSyntax = readEarlierSyntax(editor.value) !== undefined;
   const r = parse(editor.value, { syntax: "grammar-v1" });
-  syntaxDiags = r.diagnostics.filter((d) => d.severity === "error" || d.severity === "warning");
+  syntaxDiags = earlierSyntax ? [] : r.diagnostics.filter((d) => d.severity === "error" || d.severity === "warning");
   const errors = syntaxDiags.filter((d) => d.severity === "error").length;
   $("syntax-status").innerHTML = errors
     ? `<span class="no">${errors} syntax error${errors > 1 ? "s" : ""}</span>`
-    : `<span class="ok">syntax OK</span>`;
+    : `<span class="ok">${earlierSyntax ? "earlier syntax OK" : "syntax OK"}</span>`;
   renderProblems();
   refreshInputs();
   renderStructure();
@@ -383,7 +387,7 @@ $("keys").querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
 function refreshInputs(): void {
   if (syntaxDiags.some((d) => d.severity === "error")) return;
   let entries: { name: string; typeText: string }[] = [];
-  try { entries = new Simulator(buildAst(editor.value)).entries(); } catch { entries = []; }
+  try { entries = new Simulator(buildProgram(editor.value)).entries(); } catch { entries = []; }
   const existing = [...inputsBox.querySelectorAll("input")].map((i) => i.id).join(",");
   const wanted = entries.map((e) => "in-" + e.name).join(",");
   if (existing === wanted && entries.length) return;
@@ -504,7 +508,7 @@ function runProgram(): void {
     return;
   }
   const t0 = performance.now();
-  const result = run(buildAst(editor.value), inputValues, { stepLimit: 40_000, ...runOpts });
+  const result = run(buildProgram(editor.value), inputValues, { stepLimit: 40_000, ...runOpts });
   const ms = performance.now() - t0;
   lastResult = result;
   runtimeSpan = result.error?.span && result.error.span[1] > result.error.span[0] ? result.error.span : undefined;
@@ -517,6 +521,7 @@ function runProgram(): void {
   renderTrace(result);
   highlight();
   if (runtimeSpan) revealOffset(runtimeSpan[0]);
+  if (earlierSyntax) summary.insertAdjacentHTML("beforeend", `<div class="hint">Read as Phil's earlier syntax, which has no semicolons.</div>`);
   checkPuzzle(result);
   const hasMsgs = seqEvents.some((t) => t.kind === "message" || t.kind === "select");
   showTab(!result.ok || hasMsgs || !result.trace.some((t) => t.kind === "console") ? "sequence" : "console");
@@ -637,7 +642,7 @@ function renderPositions(): void {
   let upto = replayIdx >= seqEvents.length - 1 ? r.trace.length - 1 : r.trace.indexOf(seqEvents[replayIdx]);
   if (upto < 0) upto = r.trace.length - 1;
   let sessions: ReturnType<typeof protocolPositions> = [];
-  try { sessions = protocolPositions(buildAst(editor.value), r.trace, upto); } catch { return; }
+  try { sessions = protocolPositions(buildProgram(editor.value), r.trace, upto); } catch { return; }
   box.innerHTML = sessions.map((x) => `<div class="st-h">Where each side is in ${esc(x.session)} : ${esc(x.protocol)}</div>
     <div class="scripts">${x.roles.map((role) => `<div><h4>${esc(role.owner)} <span class="muted">as ${esc(role.role)}</span>${role.closed ? ' <span class="okmark">closed</span>' : ""}</h4>${role.lines.map((l, i) => {
       const cur = i === role.current;
@@ -763,7 +768,7 @@ function doHunt(): ExploreResult | undefined {
   checkSyntax();
   if (syntaxDiags.some((d) => d.severity === "error")) { out.innerHTML = `<p class="empty">Fix the syntax errors first (see Problems).</p>`; return undefined; }
   let r: ExploreResult;
-  try { r = explore(buildAst(editor.value), inputValues); }
+  try { r = explore(buildProgram(editor.value), inputValues); }
   catch (err) { out.innerHTML = `<p class="empty">The hunt hit an internal error: ${esc(String((err as Error).message))}</p>`; return undefined; }
   lastHunt = r;
   const count = $("hunt-count");
@@ -804,7 +809,7 @@ $("hunt-m").addEventListener("click", doHunt);
 
 function checkPuzzle(result: RunResult): void {
   if (!current.id.startsWith("fix-") || !result.ok || solved.has(current.id) || editor.value === current.code) return;
-  const hunt = explore(buildAst(editor.value), inputValues, { budgetMs: 600 });
+  const hunt = explore(buildProgram(editor.value), inputValues, { budgetMs: 600 });
   if (hunt.findings.length) { toast("It runs, but a hunt still finds a failure. Open Hunt."); return; }
   solved.add(current.id);
   try { localStorage.setItem("phil-playground-solved", JSON.stringify([...solved])); } catch { /* storage unavailable */ }
@@ -839,8 +844,8 @@ async function doPhilc(): Promise<void> {
     out.innerHTML = `<p class="philc-both">Compiling…</p>`;
     await new Promise((r) => setTimeout(r, 20));
     const r = await runPhilc(module, src, $<HTMLSelectElement>("philc-target").value);
-    const legacy = parse(src, { syntax: "auto" }).legacy;
-    const ours = legacy ? "reads the newer grammar with semicolons, so it does not run this earlier syntax"
+    const legacy = parse(src, { syntax: "auto" }).legacy && !earlierSyntax;
+    const ours = legacy ? "reads the newer grammar with semicolons, and this earlier-syntax program is beyond the simple cases it can also read"
       : syntaxDiags.length ? "could not parse it"
       : lastResult ? (lastResult.ok ? "ran it to completion" : `stopped it with “${KIND_LABEL[lastResult.error!.kind] ?? lastResult.error!.kind}”`) : "has not run it yet";
     if (r.accepted) {
@@ -911,7 +916,7 @@ function renderStructure(): void {
   let html = "";
   let bad = 0;
   try {
-    const ast = buildAst(editor.value);
+    const ast = buildProgram(editor.value);
     const arch = architectureView(ast);
     if (arch) {
       const owners = [...arch.instances.map((i) => i.name)];

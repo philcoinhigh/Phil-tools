@@ -10,6 +10,7 @@ import * as path from "path";
 import { execFileSync } from "child_process";
 import { parse } from "../core/src/parser";
 import { buildAst } from "../core/src/sim/ast";
+import { buildProgram } from "../core/src/sim/earlier";
 import { explore } from "../core/src/sim/explore";
 
 const root = process.argv[2];
@@ -36,13 +37,15 @@ function expectation(rel: string): { suite: string; expect: Expect } {
 }
 
 type Ours = "syntax-error" | "run-error" | "clean-run" | "parsed-only";
-function check(src: string, syntaxOnly: boolean): { ours: Ours; detail: string } {
+function check(src: string, syntaxOnly: boolean, earlier: boolean): { ours: Ours; detail: string } {
   const syn = parse(src, { syntax: "auto" }).diagnostics.filter((d) => d.severity === "error");
   if (syn.length) return { ours: "syntax-error", detail: `${syn[0].code} ${syn[0].message}` };
   // Grammar fixtures only claim that a file parses, so that is all we compare.
   if (syntaxOnly) return { ours: "clean-run", detail: "parses" };
   try {
-    const r = explore(buildAst(src), {}, { budgetMs: 300, stepLimit: 3000 });
+    // Earlier-syntax programs are only run when Phil expects them to pass. Running a rejected one
+    // would "catch" it for reasons that have nothing to do with why Phil rejects it.
+    const r = explore(earlier ? buildProgram(src) : buildAst(src), {}, { budgetMs: 300, stepLimit: 3000 });
     if (r.findings.length) return { ours: "run-error", detail: `${r.findings[0].kind}: ${r.findings[0].message}` };
     if (r.mode === "none" || !r.runs) return { ours: "parsed-only", detail: r.unsupported?.[0] ?? "nothing the simulator can run" };
     return { ours: "clean-run", detail: `${r.runs} runs` };
@@ -61,7 +64,7 @@ for (const rel of files) {
   const s = suites.get(key) ?? { name: suite, expect, grammar, files: 0, agree: 0, parsedOnly: 0, missed: 0, review: 0 };
   suites.set(key, s);
   s.files++;
-  const { ours, detail } = check(fs.readFileSync(path.join(root, rel), "utf8"), grammar);
+  const { ours, detail } = check(fs.readFileSync(path.join(root, rel), "utf8"), grammar, expect !== "reject");
   const rejects = ours === "syntax-error" || ours === "run-error";
   if (expect === "accept") {
     if (rejects) { s.review++; review.push({ file: rel, ours, detail }); }

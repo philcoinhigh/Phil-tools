@@ -1,4 +1,4 @@
-name: Conformance report
+name: Daily report, changelog and fuzzing
 on:
   schedule:
     - cron: "17 5 * * *"
@@ -16,18 +16,24 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check out Phil
-        run: git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
+        # Some history is needed for the changelog page.
+        run: git clone --shallow-since="45 days ago" https://github.com/abiggerhammer/phil ../phil || git clone --depth 200 https://github.com/abiggerhammer/phil ../phil
       - name: Run every Phil test program through the tools
         run: npm run conformance -- ../phil
+      - name: Record what changed in Phil
+        run: npm run changelog -- ../phil
+      - name: Fuzz Phil's compiler for two minutes, with a new seed each day
+        run: |
+          if [ -f docs/playground/philc.wasm ]; then npm run fuzz -- --seconds 120 --seed "$(date -u +%Y%m%d)" --record; else echo "No compiler build yet."; fi
       - run: npm run build
       - name: Commit the report if it changed
         run: |
-          if git diff --quiet -- conformance/data.json docs; then
+          if git diff --quiet -- conformance/data.json changelog fuzz docs; then
             echo "No change."
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add conformance/data.json docs
+            git add conformance/data.json changelog fuzz docs
             git commit -m "Conformance report: Phil $(git -C ../phil rev-parse --short=10 HEAD)"
             git push
           fi

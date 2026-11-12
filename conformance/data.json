@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "13808408f9",
+  "commit": "6fb69ee6f5",
   "date": "2026-11-12",
-  "subject": "FSEM-02: fail-closed nominal protocol instance and role gates for source Offer replay (#1738)"
+  "subject": "Merge pull request #1586 from abiggerhammer/hamster/rocq-refinement/generic-requirement-recursive-grouping"
  },
  "files": 338,
  "grammar": {
@@ -18,8 +18,8 @@
  "behaviour": {
   "accept": {
    "files": 55,
-   "ran": 42,
-   "parsedOnly": 11,
+   "ran": 45,
+   "parsedOnly": 8,
    "review": 2
   },
   "reject": {
@@ -43,8 +43,8 @@
    "expect": "accept",
    "grammar": false,
    "files": 3,
-   "agree": 0,
-   "parsedOnly": 3,
+   "agree": 3,
+   "parsedOnly": 0,
    "missed": 0
   },
   {
