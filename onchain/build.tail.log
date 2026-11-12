@@ -1,0 +1,6 @@
+philc emitted 16 lines of LLVM for onchain/first.phil
+solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
+SDK: /home/runner/work/Phil-tools
+find: ‘/home/runner/.cache/solana’: No such file or directory
+LLVM: .
+onchain/build.sh: line 13: ./clang: No such file or directory
