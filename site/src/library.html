@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Phil contract library</title>
+<title>Phil utilities</title>
 <meta name="description" content="Token contracts written in the Phil language: vesting, a 2-of-3 treasury, an auction and a bonding-curve launch. Each runs in the page.">
 __FONTS__
 <style>
@@ -18,6 +18,7 @@ __FONTS__
 .picker button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .contract h2 { font: 600 22px/1.2 var(--font-mark); letter-spacing: -.02em; margin: 26px 0 8px; }
 .contract > p { margin: 0 0 12px; max-width: 70ch; }
+.basis { font-size: 14px; color: var(--muted); border-left: 3px solid var(--ink); padding: 2px 0 2px 12px; }
 .holds { margin: 0 0 4px; padding: 12px 16px 12px 34px; border-left: 3px solid var(--good); background: var(--sheet); max-width: 74ch; font-size: 15px; }
 .holds li { margin: 2px 0; }
 .terms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
@@ -39,6 +40,7 @@ __FONTS__
 .moves .coin { font-family: var(--font-code); font-size: 13px; border: 1px solid var(--ink); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
 .moves-h { font: 600 11.5px var(--font-mark); color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .03em; }
 .hunt { margin-top: 14px; padding: 12px 16px; border: 1px solid var(--rule); background: var(--sheet); font-size: 14.5px; } .hunt:empty { display: none; }
+.port { margin: 6px 0 0; padding-left: 20px; max-width: 72ch; font-size: 15px; } .port li { margin: 5px 0; }
 details.src { margin-top: 18px; } details.src summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .note { margin: 36px 0 0; color: var(--muted); font-size: 14px; max-width: 72ch; }
 @media (max-width: 720px) { .terms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -49,18 +51,21 @@ __HEADER__
 <main class="wrap">
   <div class="top">
     <span class="sim">Simulation · no real tokens move</span>
-    <h1>Token contracts, written in Phil</h1>
-    <p>The mechanics most token projects need, each as a complete Phil program you can run here. Coins are linear values and every rule about money is a written promise, so the mistakes that drain contracts are the ones Phil is built to refuse.</p>
+    <h1>Token utilities, written in Phil</h1>
+    <p>The tools token projects reach for every day: a locker, transfer hooks, vesting, a treasury, an auction, a launch curve. Each is a complete Phil program you can run here and fork. Coins are linear values and every rule about money is a written promise, so the mistakes that drain contracts are the ones Phil refuses.</p>
+    <p class="muted" style="font-size:14.5px">They run as simulations today. When Phil can deploy to a chain, these are the starting point: each one lists what an on-chain version still needs.</p>
   </div>
   <div class="picker" id="picker" role="group" aria-label="Contract"></div>
   <section class="contract">
     <h2 id="c-title"></h2>
     <p id="c-summary"></p>
+    <p class="basis" id="c-basis" hidden></p>
     <ul class="holds" id="c-holds"></ul>
     <div class="terms" id="terms"></div>
     <div class="go"><button type="button" class="btn" id="run">Run it</button><button type="button" class="btn ghost" id="hunt">Try to break it</button></div>
     <div id="result"></div>
     <div class="hunt" id="hunt-out" aria-live="polite"></div>
+    <details class="src" id="port-box"><summary>What an on-chain version would still need</summary><ul id="c-port" class="port"></ul></details>
     <details class="src"><summary>Read the Phil program</summary><pre class="code" id="src"></pre><p><a id="pg-link" href="../playground/">Open it in the playground</a> to replay it step by step. The file is <a id="gh-link" href="__REPO__"></a>.</p></details>
   </section>
   <p class="note">These run in this project's experimental simulator, which is our own reading of Phil. Phil cannot deploy to a chain yet, and a clean bug hunt is a bounded search, not a proof. The <a href="../otc/">OTC desk</a> is built the same way.</p>

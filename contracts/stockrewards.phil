@@ -1,0 +1,315 @@
+// Stock rewards hook: pay holders in tokenized stock instead of cash.
+//
+// A token program collects the holders' share of trading fees. Each round it
+// hands that pot to a rewards hook. The hook asks a stock desk for a price,
+// buys as many units of tokenized stock as the pot affords, and hands the
+// stock to holders in proportion to the tokens they hold. Holders flagged as
+// snipers are left out. Cash that is too little to buy a unit is carried over
+// to the next round.
+//
+// The hook refuses to buy above a price limit: then the whole pot is carried
+// over. Cash and stock are linear, so the pot is fully accounted for (spent
+// or carried), and every unit of stock bought reaches a holder.
+
+record Cash mode linear {
+  amount : U64
+}
+
+record Stock mode linear {
+  units : U64
+}
+
+callable Take(pot : Cash, part : U64) -> (Cash, Cash) {
+  requires part <= pot.amount;
+  outcomes { success (Cash, Cash) };
+}
+
+fn take(pot : Cash, part : U64) -> (Cash, Cash) satisfies Take {
+  let Cash { amount = total } = pot;
+  return (construct Cash { amount = part }, construct Cash { amount = total - part });
+}
+
+callable Cut(lot : Stock, part : U64) -> (Stock, Stock) {
+  requires part <= lot.units;
+  outcomes { success (Stock, Stock) };
+}
+
+fn cut(lot : Stock, part : U64) -> (Stock, Stock) satisfies Cut {
+  let Stock { units = total } = lot;
+  return (construct Stock { units = part }, construct Stock { units = total - part });
+}
+
+// How many units to buy: whole units only, never more than the desk has,
+// and none at all when nobody is eligible to receive them.
+callable Affordable(pot : U64, price : U64, available : U64, eligible : U64) -> U64 {
+  requires price > 0;
+  outcomes { success U64 };
+}
+
+fn affordable(pot : U64, price : U64, available : U64, eligible : U64) -> U64 satisfies Affordable {
+  if eq(eligible, 0) {
+    return 0;
+  } else {
+    if le(pot / price, available) {
+      return pot / price;
+    } else {
+      return available;
+    };
+  };
+}
+
+// The hook checks the desk delivered exactly what was paid for.
+callable Delivered(lot : Stock, ordered : U64) -> Stock {
+  requires lot.units == ordered;
+  outcomes { success Stock };
+}
+
+fn delivered(lot : Stock, ordered : U64) -> Stock satisfies Delivered {
+  return lot;
+}
+
+// The desk checks it was paid the quoted price for every unit.
+callable Paid(payment : Cash, units : U64, price : U64) -> Cash {
+  requires units <= 1000000000;
+  requires price <= 1000000000;
+  requires payment.amount == units * price;
+  outcomes { success Cash };
+}
+
+fn paid(payment : Cash, units : U64, price : U64) -> Cash satisfies Paid {
+  return payment;
+}
+
+// One holder's part of the stock, by tokens held.
+callable ProRata(units : U64, mine : U64, everyone : U64) -> U64 {
+  requires mine <= everyone;
+  requires units <= 1000000000;
+  requires everyone <= 1000000000;
+  outcomes { success U64 };
+}
+
+fn pro_rata(units : U64, mine : U64, everyone : U64) -> U64 satisfies ProRata {
+  if eq(everyone, 0) {
+    return 0;
+  } else {
+    return units * mine / everyone;
+  };
+}
+
+// Token program and rewards hook: here is the pot and who holds what; hand back what you did not spend.
+protocol Fund {
+  role Program = send (pot : Cash) then send (first_holding : U64) then send (second_holding : U64) then receive (carry : Cash) then end Funded;
+  role Hook = receive (pot : Cash) then receive (first_holding : U64) then receive (second_holding : U64) then send (carry : Cash) then end Funded;
+}
+
+// Rewards hook and stock desk: a quote, then buy or pass.
+protocol Quote {
+  role Desk = send (price : U64) then send (available : U64) then offer {
+    Buy => receive (units : U64) then receive (payment : Cash) then send (lot : Stock) then end Sold |
+    Pass => end Passed
+  };
+  role Hook = receive (price : U64) then receive (available : U64) then select {
+    Buy => send (units : U64) then send (payment : Cash) then receive (lot : Stock) then end Sold |
+    Pass => end Passed
+  };
+}
+
+// Rewards hook and one holder.
+protocol Reward {
+  role Hook = select {
+    Shares => send (lot : Stock) then end Rewarded |
+    Nothing => end Unrewarded
+  };
+  role Holder = offer {
+    Shares => receive (lot : Stock) then end Rewarded |
+    Nothing => end Unrewarded
+  };
+}
+
+component TokenProgram(
+  hook : Program[Fund],
+  pot : {v : U64 | v <= 1000000000},
+  first_tokens : {v : U64 | v <= 500000000},
+  second_tokens : {v : U64 | v <= 500000000},
+  second_flagged : Bool
+) provides Cash {
+  let funded = send construct Cash { amount = pot } on hook;
+  let told = send first_tokens on funded;
+  // A flagged holder counts as holding nothing for rewards.
+  if second_flagged {
+    let asked = send 0 on told;
+    let (done, carry) = receive Cash on asked;
+    close done;
+    let left = borrow carry as c { return c.amount; };
+    console_write("token program: carried to next round", left);
+    return carry;
+  } else {
+    let asked = send second_tokens on told;
+    let (done, carry) = receive Cash on asked;
+    close done;
+    let left = borrow carry as c { return c.amount; };
+    console_write("token program: carried to next round", left);
+    return carry;
+  };
+}
+
+component StockDesk(hook : Desk[Quote], stock_price : {v : U64 | v > 0}, inventory : {v : U64 | v <= 1000000000}) provides U64 {
+  let shelf = construct Stock { units = inventory };
+  let quoted = send stock_price on hook;
+  let listed = send inventory on quoted;
+  offer listed {
+    Buy => {
+      let (paying, units) = receive U64 on listed;
+      let (delivering, payment) = receive Cash on paying;
+      let Cash { amount = taken } = paid(payment, units, stock_price);
+      let (lot, rest) = cut(shelf, units);
+      let done = send lot on delivering;
+      close done;
+      let Stock { units = left } = rest;
+      console_write("stock desk: sold", units, "units for", taken);
+      return taken;
+    }
+    Pass => {
+      close listed;
+      let Stock { units = left } = shelf;
+      console_write("stock desk: no sale");
+      return 0;
+    }
+  };
+}
+
+component RewardsHook(
+  token : Hook[Fund],
+  desk : Hook[Quote],
+  first : Hook[Reward],
+  second : Hook[Reward],
+  max_price : U64
+) {
+  let (t1, pot) = receive Cash on token;
+  let (t2, first_holding) = receive U64 on t1;
+  let (t3, second_holding) = receive U64 on t2;
+  let (d1, price) = receive U64 on desk;
+  let (d2, available) = receive U64 on d1;
+  let funds = borrow pot as p { return p.amount; };
+  if le(price, max_price) {
+    let everyone = first_holding + second_holding;
+    let units = affordable(funds, price, available, everyone);
+    if gt(units, 0) {
+      let (payment, carry) = take(pot, units * price);
+      let buying = select Buy on d2;
+      let d3 = send units on buying;
+      let d4 = send payment on d3;
+      let (d5, lot) = receive Stock on d4;
+      close d5;
+      let checked = delivered(lot, units);
+      let t_done = send carry on t3;
+      close t_done;
+      // Split by tokens held. Rounding goes to the second holder unless they are left out.
+      if eq(second_holding, 0) {
+        let none = select Nothing on second;
+        close none;
+        let giving = select Shares on first;
+        let done = send checked on giving;
+        close done;
+      } else {
+        let (for_first, for_second) = cut(checked, pro_rata(units, first_holding, everyone));
+        let giving2 = select Shares on second;
+        let done2 = send for_second on giving2;
+        close done2;
+        let giving1 = select Shares on first;
+        let done1 = send for_first on giving1;
+        close done1;
+      };
+    } else {
+      let passing = select Pass on d2;
+      close passing;
+      let t_done = send pot on t3;
+      close t_done;
+      let none1 = select Nothing on first;
+      close none1;
+      let none2 = select Nothing on second;
+      close none2;
+      if eq(everyone, 0) {
+        console_write("rewards hook: no eligible holders, nothing bought");
+      } else {
+        console_write("rewards hook: nothing bought, the pot or the desk's stock is too small");
+      };
+    };
+  } else {
+    let passing = select Pass on d2;
+    close passing;
+    let t_done = send pot on t3;
+    close t_done;
+    let none1 = select Nothing on first;
+    close none1;
+    let none2 = select Nothing on second;
+    close none2;
+    console_write("rewards hook: price", price, "is above the limit of", max_price);
+  };
+}
+
+component Holder(hook : Holder[Reward]) provides U64 {
+  offer hook {
+    Shares => {
+      let (done, lot) = receive Stock on hook;
+      close done;
+      let Stock { units = got } = lot;
+      console_write("received", got, "units of stock");
+      return got;
+    }
+    Nothing => {
+      close hook;
+      console_write("received nothing this round");
+      return 0;
+    }
+  };
+}
+
+architecture StockRewards {
+  instance token = TokenProgram;
+  instance rewards_hook = RewardsHook;
+  instance stock_desk = StockDesk;
+  instance first_holder = Holder;
+  instance second_holder = Holder;
+  process token_run = token;
+  process hook_run = rewards_hook;
+  process desk_run = stock_desk;
+  process first_run = first_holder;
+  process second_run = second_holder;
+  protocol fund = Fund;
+  protocol quote = Quote;
+  protocol reward_first = Reward;
+  protocol reward_second = Reward;
+  role fund.Program = token;
+  role fund.Hook = rewards_hook;
+  role quote.Desk = stock_desk;
+  role quote.Hook = rewards_hook;
+  role reward_first.Hook = rewards_hook;
+  role reward_first.Holder = first_holder;
+  role reward_second.Hook = rewards_hook;
+  role reward_second.Holder = second_holder;
+  entry pot : U64;
+  entry stock_price : U64;
+  entry max_price : U64;
+  entry inventory : U64;
+  entry first_tokens : U64;
+  entry second_tokens : U64;
+  entry second_flagged : Bool;
+  bind token.hook = fund.Program;
+  bind token.pot = pot;
+  bind token.first_tokens = first_tokens;
+  bind token.second_tokens = second_tokens;
+  bind token.second_flagged = second_flagged;
+  bind stock_desk.hook = quote.Desk;
+  bind stock_desk.stock_price = stock_price;
+  bind stock_desk.inventory = inventory;
+  bind rewards_hook.token = fund.Hook;
+  bind rewards_hook.desk = quote.Hook;
+  bind rewards_hook.first = reward_first.Hook;
+  bind rewards_hook.second = reward_second.Hook;
+  bind rewards_hook.max_price = max_price;
+  bind first_holder.hook = reward_first.Holder;
+  bind second_holder.hook = reward_second.Holder;
+}
+
+program main = instantiate StockRewards;

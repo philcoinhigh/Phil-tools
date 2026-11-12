@@ -1,0 +1,231 @@
+// Transfer hooks: programs that run on every transfer of a token.
+//
+// A sender asks the token program to move tokens to a receiver. Before anything
+// moves, the token program runs its hooks in order:
+//
+//   1. a limit hook, which only looks at the amount and allows or blocks it;
+//   2. a fee hook, which is handed the tokens, keeps a cut, and hands the rest back.
+//
+// A blocked transfer returns everything to the sender. Tokens are linear, so a
+// hook that is handed tokens has to pass every one of them on or keep it as its
+// stated fee: it cannot lose any. The token program then checks, in writing,
+// that the hook did not keep more than the cap.
+
+record Token mode linear {
+  amount : U64
+}
+
+callable Carve(pot : Token, part : U64) -> (Token, Token) {
+  requires part <= pot.amount;
+  outcomes { success (Token, Token) };
+}
+
+fn carve(pot : Token, part : U64) -> (Token, Token) satisfies Carve {
+  let Token { amount = total } = pot;
+  return (construct Token { amount = part }, construct Token { amount = total - part });
+}
+
+// A hook may keep at most 5% of what it was handed. The token program checks
+// what comes back against what it sent, so it does not have to trust the hook.
+callable Accept(returned : Token, sent : U64) -> Token {
+  requires sent <= 1000000000000;
+  requires returned.amount <= sent;
+  requires returned.amount * 100 >= sent * 95;
+  outcomes { success Token };
+}
+
+fn approve(returned : Token, sent : U64) -> Token satisfies Accept {
+  return returned;
+}
+
+// Sender and token program.
+protocol Transfer {
+  role Sender = send (tokens : Token) then offer {
+    Sent => end Sent |
+    Blocked => receive (tokens : Token) then end Blocked
+  };
+  role Program = receive (tokens : Token) then select {
+    Sent => end Sent |
+    Blocked => send (tokens : Token) then end Blocked
+  };
+}
+
+// A hook that only inspects the transfer.
+protocol Inspect {
+  role Program = send (amount : U64) then offer {
+    Allow => end Allowed |
+    Deny => end Denied
+  };
+  role Hook = receive (amount : U64) then select {
+    Allow => end Allowed |
+    Deny => end Denied
+  };
+}
+
+// A hook that is handed the tokens and must hand them back, less its fee.
+// If the transfer was blocked earlier, it is told to stand down.
+protocol Custody {
+  role Program = select {
+    Run => send (tokens : Token) then receive (rest : Token) then end Done |
+    Skip => end Skipped
+  };
+  role Hook = offer {
+    Run => receive (tokens : Token) then send (rest : Token) then end Done |
+    Skip => end Skipped
+  };
+}
+
+// Token program and receiver.
+protocol Deliver {
+  role Program = select {
+    Arrived => send (tokens : Token) then end Arrived |
+    Nothing => end Nothing
+  };
+  role Receiver = offer {
+    Arrived => receive (tokens : Token) then end Arrived |
+    Nothing => end Nothing
+  };
+}
+
+component Sender(ledger : Sender[Transfer], amount : {v : U64 | v <= 1000000000000}) provides U64 {
+  let asked = send construct Token { amount = amount } on ledger;
+  offer asked {
+    Sent => {
+      close asked;
+      console_write("sender: transfer went through");
+      return 0;
+    }
+    Blocked => {
+      let (done, tokens) = receive Token on asked;
+      close done;
+      let Token { amount = back } = tokens;
+      console_write("sender: transfer blocked, tokens returned:", back);
+      return back;
+    }
+  };
+}
+
+component LimitHook(ledger : Hook[Inspect], max_transfer : U64) {
+  let (deciding, amount) = receive U64 on ledger;
+  if le(amount, max_transfer) {
+    let allowed = select Allow on deciding;
+    close allowed;
+  } else {
+    let denied = select Deny on deciding;
+    close denied;
+    console_write("limit hook: over the limit of", max_transfer);
+  };
+}
+
+component FeeHook(ledger : Hook[Custody], fee_bps : {v : U64 | v <= 500}) provides U64 {
+  offer ledger {
+    Run => {
+      let (returning, tokens) = receive Token on ledger;
+      let held = borrow tokens as t { return t.amount; };
+      let (fee, rest) = carve(tokens, held * fee_bps / 10000);
+      let done = send rest on returning;
+      close done;
+      let Token { amount = kept } = fee;
+      console_write("fee hook: kept", kept);
+      return kept;
+    }
+    Skip => {
+      close ledger;
+      return 0;
+    }
+  };
+}
+
+component TokenProgram(
+  sender : Program[Transfer],
+  limit : Program[Inspect],
+  fee : Program[Custody],
+  receiver : Program[Deliver]
+) {
+  let (s1, tokens) = receive Token on sender;
+  let amount = borrow tokens as t { return t.amount; };
+  let asked = send amount on limit;
+  offer asked {
+    Allow => {
+      close asked;
+      let running = select Run on fee;
+      let handed = send tokens on running;
+      let (fee_done, returned) = receive Token on handed;
+      close fee_done;
+      let checked = approve(returned, amount);
+      let arriving = select Arrived on receiver;
+      let r_done = send checked on arriving;
+      close r_done;
+      let s_done = select Sent on s1;
+      close s_done;
+    }
+    Deny => {
+      close asked;
+      let skipping = select Skip on fee;
+      close skipping;
+      let nothing = select Nothing on receiver;
+      close nothing;
+      let blocked = select Blocked on s1;
+      let s_done = send tokens on blocked;
+      close s_done;
+    }
+  };
+}
+
+component Receiver(ledger : Receiver[Deliver]) provides U64 {
+  offer ledger {
+    Arrived => {
+      let (done, tokens) = receive Token on ledger;
+      close done;
+      let Token { amount = got } = tokens;
+      console_write("receiver: received", got);
+      return got;
+    }
+    Nothing => {
+      close ledger;
+      console_write("receiver: nothing arrived");
+      return 0;
+    }
+  };
+}
+
+architecture HookedToken {
+  instance sender = Sender;
+  instance token = TokenProgram;
+  instance limit_hook = LimitHook;
+  instance fee_hook = FeeHook;
+  instance receiver = Receiver;
+  process sender_run = sender;
+  process token_run = token;
+  process limit_run = limit_hook;
+  process fee_run = fee_hook;
+  process receiver_run = receiver;
+  protocol transfer = Transfer;
+  protocol inspect = Inspect;
+  protocol custody = Custody;
+  protocol deliver = Deliver;
+  role transfer.Sender = sender;
+  role transfer.Program = token;
+  role inspect.Program = token;
+  role inspect.Hook = limit_hook;
+  role custody.Program = token;
+  role custody.Hook = fee_hook;
+  role deliver.Program = token;
+  role deliver.Receiver = receiver;
+  entry amount : U64;
+  entry max_transfer : U64;
+  entry fee_bps : U64;
+  bind sender.ledger = transfer.Sender;
+  bind sender.amount = amount;
+  bind token.sender = transfer.Program;
+  bind token.limit = inspect.Program;
+  bind token.fee = custody.Program;
+  bind token.receiver = deliver.Program;
+  bind limit_hook.ledger = inspect.Hook;
+  bind limit_hook.max_transfer = max_transfer;
+  bind fee_hook.ledger = custody.Hook;
+  bind fee_hook.fee_bps = fee_bps;
+  bind receiver.ledger = deliver.Receiver;
+}
+
+program main = instantiate HookedToken;

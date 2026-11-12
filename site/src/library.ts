@@ -23,6 +23,7 @@ function fill(values: Record<string, string>): void {
 function describeCoin(text: string): string | undefined {
   const m = /^(\w+) \{ (\w+) = (\d+) \}$/.exec(text);
   if (!m) return undefined;
+  if (m[2] === "units") return `${m[3]} units of ${m[1].toLowerCase()}`;
   return m[2] === "amount" ? `${m[3]} ${m[1] === "Token" ? "tokens" : m[1].toLowerCase()}` : `the ${m[1].toLowerCase()}`;
 }
 
@@ -62,6 +63,11 @@ function show(id: string): void {
   $("c-title").textContent = current.title;
   $("c-summary").textContent = current.summary;
   $("c-holds").innerHTML = current.guarantees.map((g) => `<li>${esc(g)}</li>`).join("");
+  const basis = $("c-basis");
+  basis.hidden = !current.basis;
+  basis.innerHTML = current.basis ? `${esc(current.basis.note)} Source: <a href="${esc(current.basis.url)}" rel="noopener">${esc(current.basis.label)}</a>.` : "";
+  $("port-box").hidden = !current.port?.length;
+  $("c-port").innerHTML = (current.port ?? []).map((g) => `<li>${esc(g)}</li>`).join("");
   $("terms").innerHTML = current.fields.map((f) => f.bool
     ? `<label class="bool"><input type="checkbox" id="f-${f.key}"><span>${esc(f.label)}</span></label>`
     : `<label><span>${esc(f.label)}</span><input type="text" id="f-${f.key}" inputmode="numeric" autocomplete="off"><small>${esc(f.note ?? "")}</small></label>`).join("")
