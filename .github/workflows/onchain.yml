@@ -50,24 +50,28 @@ jobs:
           for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
           node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/local.json || { echo "--- local run failed; validator log:" >> onchain/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> onchain/out/build.log; exit 1; }
           pkill -f solana-test-validator || true
-      - name: Deploy to devnet and call it
+      - name: Deploy to a public test network and call it
         id: devnet
         continue-on-error: true
         run: |
           set -o pipefail
-          URL=https://api.devnet.solana.com
           WALLET=$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")
-          funded=0
-          for i in 1 2 3 4 5 6 7 8; do
-            if solana airdrop 1 "$WALLET" --url "$URL" 2>&1 | tail -2 | tee -a onchain/out/build.log; then
-              bal=$(solana balance "$WALLET" --url "$URL" | awk '{print $1}')
-              if [ "$(printf '%.0f' "$(echo "$bal * 1000" | bc)")" -ge 500 ]; then funded=1; break; fi
-            fi
-            sleep $((i * 15))
+          # A 2 KB program needs well under 0.1 SOL. Public faucets rate-limit shared addresses such as
+          # GitHub's, so ask for a little, wait between tries, and fall back from devnet to testnet.
+          URL=""
+          for net in devnet testnet; do
+            u="https://api.$net.solana.com"
+            for i in 1 2 3 4 5; do
+              solana airdrop 0.3 "$WALLET" --url "$u" 2>&1 | tail -1 | tee -a onchain/out/build.log || true
+              bal=$(solana balance "$WALLET" --url "$u" 2>/dev/null | awk '{print $1}')
+              if [ "$(printf '%.0f' "$(echo "${bal:-0} * 1000" | bc)")" -ge 100 ]; then URL="$u"; NET="$net"; break 2; fi
+              sleep $((i * 20))
+            done
           done
-          if [ "$funded" != 1 ]; then echo "The devnet faucet did not fund the wallet (it rate-limits shared addresses)." | tee -a onchain/out/build.log; exit 1; fi
+          if [ -z "$URL" ]; then echo "No public faucet funded the wallet (they rate-limit shared addresses)." | tee -a onchain/out/build.log; exit 1; fi
+          echo "funded on $NET" | tee -a onchain/out/build.log
           solana program deploy --url "$URL" --keypair "$RUNNER_TEMP/payer.json" --program-id "$RUNNER_TEMP/program.json" onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
-          node onchain/invoke.mjs "$URL" "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/devnet.json
+          node onchain/invoke.mjs "$URL" "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | jq --arg net "$NET" '. + {network: $net}' | tee onchain/out/devnet.json
       - name: Record the result
         if: always()
         run: |
