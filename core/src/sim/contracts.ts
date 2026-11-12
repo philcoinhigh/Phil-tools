@@ -1,5 +1,5 @@
 // The contract library: Phil programs for common token mechanics. Each scenario is also a test.
-import { LOCKER_SOURCE, HOOKS_SOURCE, LAUNCHHOOKS_SOURCE, VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
+import { LOCKER_SOURCE, HOOKS_SOURCE, LAUNCHHOOKS_SOURCE, STOCKREWARDS_SOURCE, VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
 
 export interface Scenario { name: string; inputs: Record<string, string>; says: string[] }
 export interface Contract {
@@ -86,6 +86,34 @@ export const CONTRACTS: Contract[] = [
       { name: "Creator keeps their share", inputs: { early_spend: "40000", late_spend: "60000", late_block: "20", sniper_window: "0", target: "85000", creator_keeps: "true", creator_lock_pct: "5", check_day: "37" }, says: ["creator 250 platform 250 pool 250", "holder reward 100", "holder reward 150", "495000 unlocked on day 37"] },
       { name: "Both sniped", inputs: { early_spend: "40000", late_spend: "60000", late_block: "2", sniper_window: "3", target: "85000", creator_keeps: "false", creator_lock_pct: "5", check_day: "7" }, says: ["buy in block 2 flagged", "no eligible holders, unclaimed rewards 500", "0 unlocked on day 7"] },
       { name: "Does not graduate", inputs: { early_spend: "10000", late_spend: "20000", late_block: "20", sniper_window: "3", target: "85000", creator_keeps: "false", creator_lock_pct: "5", check_day: "22" }, says: ["did not graduate, 29700 of 85000", "not graduated, nothing to do", "holder reward 150"] },
+    ],
+  },
+  {
+    id: "stockrewards", title: "Stock rewards hook", file: "contracts/stockrewards.phil", source: STOCKREWARDS_SOURCE,
+    summary: "Pay holders in tokenized stock instead of cash. Each round the hook takes the holders' share of fees, buys stock from a desk at a quoted price, and hands it out by tokens held. Flagged holders are left out.",
+    guarantees: [
+      "The pot is fully accounted for: every unit of cash is either paid to the desk or carried to the next round.",
+      "The hook never buys above its price limit. Above it, the whole pot is carried over.",
+      "The desk is paid exactly price times units, and the hook checks it received exactly the units it paid for.",
+      "Every unit of stock bought reaches a holder, split by tokens held. Nothing is bought when nobody is eligible.",
+    ],
+    port: [
+      "Tokenized stock is a regulated product. Who may issue it, and which holders may receive it, depends on the issuer and on each holder's country. That has to be settled before anything is built on chain. This is not legal advice.",
+      "The desk here quotes a fixed price. On chain the hook would buy through a real venue and need protection against a moved price, which the price limit stands in for.",
+      "Two holders here. A real token has thousands, so stock would be claimed by each holder rather than pushed to all of them in one go.",
+      "Holdings are numbers handed over by the token program. On chain they would come from a snapshot.",
+    ],
+    fields: [
+      { key: "pot", label: "Reward pot this round (cash)" }, { key: "stock_price", label: "Stock price per unit", note: "at least 1" }, { key: "max_price", label: "Hook's price limit" },
+      { key: "inventory", label: "Units the desk has" }, { key: "first_tokens", label: "First holder's tokens" }, { key: "second_tokens", label: "Second holder's tokens" },
+      { key: "second_flagged", label: "Second holder is flagged", bool: true },
+    ],
+    scenarios: [
+      { name: "Stock by holdings", inputs: { pot: "5000", stock_price: "240", max_price: "300", inventory: "1000", first_tokens: "600000", second_tokens: "400000", second_flagged: "false" }, says: ["sold 20 units for 4800", "carried to next round 200", "received 12 units of stock", "received 8 units of stock"] },
+      { name: "Flagged holder left out", inputs: { pot: "5000", stock_price: "240", max_price: "300", inventory: "1000", first_tokens: "600000", second_tokens: "400000", second_flagged: "true" }, says: ["received 20 units of stock", "received nothing this round"] },
+      { name: "Price above the limit", inputs: { pot: "5000", stock_price: "340", max_price: "300", inventory: "1000", first_tokens: "600000", second_tokens: "400000", second_flagged: "false" }, says: ["price 340 is above the limit of 300", "no sale", "carried to next round 5000"] },
+      { name: "Pot too small", inputs: { pot: "200", stock_price: "240", max_price: "300", inventory: "1000", first_tokens: "600000", second_tokens: "400000", second_flagged: "false" }, says: ["nothing bought", "carried to next round 200"] },
+      { name: "Desk runs short", inputs: { pot: "5000", stock_price: "240", max_price: "300", inventory: "7", first_tokens: "600000", second_tokens: "400000", second_flagged: "false" }, says: ["sold 7 units for 1680", "carried to next round 3320", "received 4 units of stock", "received 3 units of stock"] },
     ],
   },
   {

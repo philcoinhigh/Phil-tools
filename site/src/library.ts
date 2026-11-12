@@ -23,6 +23,7 @@ function fill(values: Record<string, string>): void {
 function describeCoin(text: string): string | undefined {
   const m = /^(\w+) \{ (\w+) = (\d+) \}$/.exec(text);
   if (!m) return undefined;
+  if (m[2] === "units") return `${m[3]} units of ${m[1].toLowerCase()}`;
   return m[2] === "amount" ? `${m[3]} ${m[1] === "Token" ? "tokens" : m[1].toLowerCase()}` : `the ${m[1].toLowerCase()}`;
 }
 

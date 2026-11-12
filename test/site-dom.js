@@ -116,7 +116,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // Contract library
   p = load("docs/library/index.html", "https://example.test/library/");
   const lres = () => p.d.getElementById("result").textContent;
-  check("library: seven utilities, the locker first", p.d.querySelectorAll("#picker button").length === 7 && p.d.getElementById("c-title").textContent === "Token locker" && /recipient holds 1200/.test(lres()) && p.d.querySelectorAll("#c-port li").length === 3, lres());
+  check("library: eight utilities, the locker first", p.d.querySelectorAll("#picker button").length === 8 && p.d.getElementById("c-title").textContent === "Token locker" && /recipient holds 1200/.test(lres()) && p.d.querySelectorAll("#c-port li").length === 3, lres());
   p.d.querySelector('[data-scenario="1"]').click();
   check("library: locker cancelled half way splits the lock", /sender got back 600/.test(lres()) && /recipient holds 600/.test(lres()) && /hands Sender 600 tokens/.test(lres()), lres());
   p.d.getElementById("f-cancelable").checked = false; p.d.getElementById("run").click();
@@ -130,6 +130,10 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("library: launch hooks say what they are modelled on", !p.d.getElementById("c-basis").hidden && p.d.querySelector("#c-basis a").href === "https://higher.fun/docs" && /not higher.fun's code/.test(p.d.getElementById("c-basis").textContent));
   p.d.getElementById("f-creator_keeps").checked = true; type(p.w, p.d.getElementById("f-sniper_window"), "0"); p.d.getElementById("run").click();
   check("library: creator keeping their share changes the split", /creator 250 platform 250 pool 250/.test(lres()) && /holder reward 100/.test(lres()) && /holder reward 150/.test(lres()), lres());
+  p.d.querySelector('[data-id="stockrewards"]').click();
+  check("library: stock rewards buy and split by holdings", /sold 20 units for 4800/.test(lres()) && /received 12 units/.test(lres()) && /received 8 units/.test(lres()) && /hands Stock desk 4800 cash/.test(lres()) && /hands First holder 12 units of stock/.test(lres()), lres());
+  type(p.w, p.d.getElementById("f-stock_price"), "340"); p.d.getElementById("run").click();
+  check("library: stock rewards refuse a price above the limit", /above the limit of 300/.test(lres()) && /carried to next round 5000/.test(lres()), lres());
   p.d.querySelector('[data-id="vesting"]').click();
   check("library: a utility without porting notes hides that box", p.d.getElementById("port-box").hidden && p.d.getElementById("c-basis").hidden && /beneficiary holds 1000/.test(lres()));
   p.d.querySelector('[data-scenario="1"]').click();
