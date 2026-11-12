@@ -16,6 +16,8 @@ npm run test:site      # drives every page in jsdom
 | `src/home.*`, `src/learn.*`, `src/hacks.*`, `src/otc.*`, `src/library.*` | One page each. `library` is the token utilities page |
 | `src/changelog.*`, `src/fuzz.*`, `src/conformance.*` | The three pages built from data the daily jobs write (`changelog/`, `fuzz/`, `conformance/`) |
 | `src/foot.ts` | The shared footer |
+
+The header and its list of pages (`PAGES`) are in `build.js`. On screens narrower than 980px the links fold into a Menu. The home page builds its "Built in Phil" list from `CONTRACTS` and its daily figures from the data files, so a new utility or a new day's numbers appear without editing the page.
 | `src/base.css` | Colours, header, buttons and code styling shared by the pages |
 | `build.js` | Bundles each page into one self-contained HTML file |
 

@@ -25,7 +25,11 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("home: demo reports the double spend", /Ownership error, line 17/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
-  check("home: links to all three pages", ["playground/", "learn/", "hacks/", "otc/", "library/", "changelog/", "fuzz/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
+  const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
+  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
+  check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 9 && p.d.querySelectorAll(".site nav.full a").length === 9);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
