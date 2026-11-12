@@ -40,7 +40,7 @@ jobs:
       - name: Run it on a local test validator
         run: |
           set -o pipefail
-          npm install --no-save @solana/web3.js >/dev/null 2>&1
+          npm install --no-save @solana/web3.js@1.99.0 >/dev/null 2>&1
           solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/program.json"
           solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
           PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
