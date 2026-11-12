@@ -1,0 +1,26 @@
+{
+ "phil": {
+  "commit": "13808408f9",
+  "date": "2026-11-12"
+ },
+ "seed": 20261112,
+ "seconds": 120,
+ "tried": {
+  "scalar": 7187,
+  "mutated": 4790,
+  "stress": 47,
+  "total": 12024
+ },
+ "accepted": 5471,
+ "refused": 6097,
+ "refusalKinds": 9,
+ "compared": 7187,
+ "simCompared": 5150,
+ "findings": {
+  "crash": 1,
+  "hang": 0,
+  "disagreement": 0,
+  "inconsistent": 0,
+  "slow": 2
+ }
+}

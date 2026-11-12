@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Fuzzing Phil's compiler</title>
+<meta name="description" content="A fuzzer that generates programs and runs Phil's own compiler on them, looking for crashes, hangs and wrong answers.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 34px 0 8px; }
+.top h1 { font: 600 clamp(26px, 4.5vw, 38px)/1.1 var(--font-mark); letter-spacing: -.035em; margin: 0 0 12px; }
+.top p { margin: 0 0 10px; max-width: 68ch; }
+.against { font: 13px var(--font-code); color: var(--muted); overflow-wrap: anywhere; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 36px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.figs div { padding: 14px 16px; } .figs div + div { border-left: 1px solid var(--rule); }
+.figs b { display: block; font: 600 26px/1 var(--font-code); letter-spacing: -.03em; } .figs span { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+.figs .zero b { color: var(--good); }
+.kinds { list-style: none; margin: 0; padding: 0; }
+.kinds li { display: grid; grid-template-columns: 56px 170px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.kinds .n { font: 600 22px var(--font-code); } .kinds .n.zero { color: var(--muted); font-weight: 400; }
+.kinds b { font-size: 16px; } .kinds span.d { color: var(--muted); font-size: 14.5px; }
+.note { margin: 14px 0 0; padding: 12px 16px; border-left: 3px solid var(--ink); background: var(--sheet); max-width: 74ch; font-size: 14.5px; }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+pre.cmd { margin: 12px 0 0; padding: 12px 16px; border: 1px solid var(--rule); background: var(--code-bg); font: 13px/1.6 var(--font-code); overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 14px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th { font: 600 11.5px var(--font-mark); color: var(--muted); border-bottom-color: var(--ink); } th:first-child, td:first-child { text-align: left; padding-left: 0; font-family: var(--font-code); font-size: 13px; }
+.scroll { overflow-x: auto; }
+@media (max-width: 720px) {
+  .figs { grid-template-columns: repeat(2, minmax(0, 1fr)); } .figs div + div { border-left: 0; } .figs div:nth-child(even) { border-left: 1px solid var(--rule); } .figs div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .kinds li { grid-template-columns: 40px minmax(0, 1fr); } .kinds span.d { grid-column: 2; }
+}
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>Fuzzing Phil's compiler</h1>
+    <p>A fuzzer writes thousands of programs, some sensible and some deliberately broken, and runs Phil's own compiler on every one. It is looking for the compiler falling over, never answering, or giving a wrong answer.</p>
+    <p class="against" id="against"></p>
+  </div>
+  <div class="figs" id="figs"></div>
+  <p class="note" id="verdict"></p>
+
+  <h2 class="sec">What it looks for, and what it has found</h2>
+  <ul class="kinds" id="kinds"></ul>
+  <p class="note">Only counts are published here. The inputs that trigger each finding go to Phil's author first, as Phil's security policy asks for anything that could be an acceptance problem.</p>
+
+  <h2 class="sec">How it works</h2>
+  <p class="lead">The compiler is the unmodified <code>philc</code> from the Phil repository, built to WebAssembly, so each run takes a few milliseconds and cannot affect anything outside itself. Three kinds of input are generated: small programs whose result is worked out as they are built, so the compiler's answer can be checked; damaged copies of real programs, where the only rule is “do not crash or hang”; and inputs of growing size, to see how the compiler's time grows. Each finding is shrunk to the smallest input that still shows it.</p>
+  <p class="lead">Phil's compiler accepts a small part of the language today, so the programs with checkable answers are simple: bindings and a return. The search widens as the compiler does.</p>
+  <pre class="cmd">npm run fuzz -- --seconds 120 --seed 1</pre>
+  <p class="lead">A run is reproducible from its seed. The source is in <a href="__REPO__/tree/main/fuzz">fuzz/</a>.</p>
+
+  <h2 class="sec">Runs so far</h2>
+  <div class="scroll"><table id="history"></table></div>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

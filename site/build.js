@@ -39,3 +39,4 @@ page("conformance", "docs/conformance/index.html", "../", "conformance");
 page("library", "docs/library/index.html", "../", "library");
 page("hacks", "docs/hacks/index.html", "../", "hacks");
 page("changelog", "docs/changelog/index.html", "../", "changelog");
+page("fuzz", "docs/fuzz/index.html", "../", "fuzz");

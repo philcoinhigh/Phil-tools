@@ -8,7 +8,7 @@ export const PHILC_TARGETS = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin"
 
 class Exit { constructor(readonly code: number) {} }
 
-export async function runPhilc(module: WebAssembly.Module, source: string, target: string): Promise<PhilcResult> {
+export async function runPhilc(module: WebAssembly.Module, source: string | Uint8Array, target: string): Promise<PhilcResult> {
   const t0 = Date.now();
   const dec = new TextDecoder();
   let stdout = "", stderr = "";
@@ -16,7 +16,7 @@ export async function runPhilc(module: WebAssembly.Module, source: string, targe
     new OpenFile(new File([])),
     new ConsoleStdout((b: Uint8Array) => { stdout += dec.decode(b, { stream: true }); }),
     new ConsoleStdout((b: Uint8Array) => { stderr += dec.decode(b, { stream: true }); }),
-    new PreopenDirectory("/", new Map([["main.phil", new File(new TextEncoder().encode(source))]])),
+    new PreopenDirectory("/", new Map([["main.phil", new File(typeof source === "string" ? new TextEncoder().encode(source) : source)]])),
   ];
   const wasi = new WASI(["philc", "emit-llvm", "--target", target, "/main.phil"], [], fds, { debug: false });
   let exit = 0;

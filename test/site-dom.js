@@ -25,7 +25,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("home: demo reports the double spend", /Ownership error, line 17/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
-  check("home: links to all three pages", ["playground/", "learn/", "hacks/", "otc/", "library/", "changelog/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
+  check("home: links to all three pages", ["playground/", "learn/", "hacks/", "otc/", "library/", "changelog/", "fuzz/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -158,6 +158,14 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("changelog: history table has a row per run", p.d.querySelectorAll("#history tbody tr").length === ch.history.length);
   check("changelog: days are newest first and dates are well formed", ch.days.every((d, i) => /^\d{4}-\d\d-\d\d$/.test(d.date) && (i === 0 || d.date < ch.days[i - 1].date)));
   check("changelog: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Fuzzing page
+  p = load("docs/fuzz/index.html", "https://example.test/fuzz/");
+  const fz = JSON.parse(fs.readFileSync("fuzz/data.json", "utf8"));
+  check("fuzz: shows the five kinds with their counts", p.d.querySelectorAll("#kinds li").length === 5 && p.d.querySelector("#kinds .n").textContent === String(fz.findings.disagreement));
+  check("fuzz: names the commit and the seed", p.d.getElementById("against").textContent.includes(fz.phil.commit) && p.d.getElementById("against").textContent.includes(String(fz.seed)));
+  check("fuzz: publishes no inputs", !/component main|bytes \(hex\)/.test(fs.readFileSync("docs/fuzz/index.html", "utf8").replace(/<style[\s\S]*?<\/style>/, "").split("<script>")[0]) && !fs.readFileSync("fuzz/data.json", "utf8").includes("main.phil"));
+  check("fuzz: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));

@@ -17,6 +17,7 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | **Hacks Phil would have stopped** | Four well-known losses, each reduced to the shape of the mistake and refused in the page, with sources | [`core/src/sim/hacks.ts`](core/src/sim/hacks.ts) |
 | **Contract library** | Vesting, a 2-of-3 treasury, an auction and a bonding-curve launch, written in Phil. Simulation only | [`contracts/`](contracts) |
 | **What changed in Phil** | A day-by-day record of what landed in the Phil repository, counted from its git history and refreshed daily | [`changelog/`](changelog) |
+| **Compiler fuzzer** | Generates programs and runs Phil's own compiler on them daily, looking for crashes, hangs and wrong answers | [`fuzz/`](fuzz) |
 | **Conformance report** | Every test program in the Phil repository, run through these tools once a day | [`conformance/`](conformance) |
 | **Phil core** | The shared checker and experimental simulator, plus the command-line checker and the MCP server for AI assistants | [`core/`](core) |
 
