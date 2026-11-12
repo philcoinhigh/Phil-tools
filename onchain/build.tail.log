@@ -3,7 +3,7 @@ solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
 Fetching Solana's compiler toolchain
 LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
--rwxr-xr-x 1 runner runner 2160 Nov 12 22:11 onchain/out/phil_first.so
+-rwxr-xr-x 1 runner runner 2160 Nov 12 22:12 onchain/out/phil_first.so
 
 onchain/out/phil_first.so:	file format elf64-sbf
 
@@ -29,6 +29,20 @@ Disassembly of section .text:
 00000000000001a0 <phil_main>:
      1a0:      	mov64 r0, 0x2a
      1a8:      	exit
+Error: Dynamic program error: No default signer found, run "solana-keygen new -o /home/runner/.config/solana/id.json" to create a new one
+/home/runner/work/Phil-tools/Phil-tools/node_modules/@solana/web3.js/lib/index.cjs.js:6262
+			throwSolanaRpcErrorIfNeeded(error, `airdrop to ${to.toBase58()} failed`);
+			                                                    ^
+
+TypeError: Cannot read properties of undefined (reading 'toBase58')
+    at Connection.requestAirdrop (/home/runner/work/Phil-tools/Phil-tools/node_modules/@solana/web3.js/lib/index.cjs.js:6262:56)
+    at file:///home/runner/work/Phil-tools/Phil-tools/onchain/invoke.mjs:10:26
+    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v20.20.2
+--- local run failed; validator log:
 
 Notice! No wallet available. `solana airdrop` localnet SOL after creating one
 
