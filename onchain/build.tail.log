@@ -3,7 +3,7 @@ solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
 Fetching Solana's compiler toolchain
 LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
--rwxr-xr-x 1 runner runner 2160 Nov 12 22:14 onchain/out/phil_first.so
+-rwxr-xr-x 1 runner runner 2160 Nov 12 22:16 onchain/out/phil_first.so
 
 onchain/out/phil_first.so:	file format elf64-sbf
 
@@ -29,7 +29,15 @@ Disassembly of section .text:
 00000000000001a0 <phil_main>:
      1a0:      	mov64 r0, 0x2a
      1a8:      	exit
-transaction failed: Invalid public key input
+file:///home/runner/work/Phil-tools/Phil-tools/onchain/invoke.mjs:14
+console.error(`program ${programId}: ${info ? `owner ${info.owner.toBase58()}, executable ${info.executable}, ${info.data.length} bytes` : "account not found"}; payer ${payer.publicKey.toBase58()} has ${await conn.getBalance(payer.publicKey)} lamports`);
+                                                                                                                                                                                         ^
+
+TypeError: Cannot read properties of undefined (reading 'toBase58')
+    at file:///home/runner/work/Phil-tools/Phil-tools/onchain/invoke.mjs:14:186
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+Node.js v20.20.2
 --- local run failed; validator log:
 Waiting for first slot 1...
 Waiting for first slot 2...
