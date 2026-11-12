@@ -8,11 +8,19 @@ const dog = fs.readFileSync("playground/src/dogmark.svg", "utf8").trim();
 const REPO = "https://github.com/philcoinhigh/Phil-tools";
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Martian+Mono:wght@500;600&display=swap" rel="stylesheet">';
 
+// Every page, in the order a newcomer would want them. The same list feeds the menu on small screens.
+const PAGES = [
+  ["learn", "learn/", "Learn"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Hacks"],
+  ["library", "library/", "Utilities"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
+  ["fuzz", "fuzz/", "Fuzzer"], ["conformance", "conformance/", "Report"],
+];
 function header(root, active) {
-  const link = (id, href, label, cls = "") => `<a href="${href}"${cls ? ` class="${cls}"` : ""}${active === id ? ' aria-current="page"' : ""}>${label}</a>`;
+  const link = ([id, href, label]) => `<a href="${root + href}"${active === id ? ' aria-current="page"' : ""}>${label}</a>`;
+  const links = PAGES.map(link).join("") + `<a href="${REPO}">GitHub</a>`;
   return `<header class="site"><div class="wrap">
   <a class="mark" href="${root || "./"}" aria-label="Phil tools home">${dog}<span class="wordmark">phil <span>tools</span></span></a>
-  <nav aria-label="Site">${link("playground", root + "playground/", "Playground")}${link("learn", root + "learn/", "Learn")}${link("otc", root + "otc/", "OTC")}${link("hacks", root + "hacks/", "Hacks")}${link("library", root + "library/", "Utilities", "wide")}${link("changelog", root + "changelog/", "Changes", "wide")}${link("conformance", root + "conformance/", "Report", "wide")}${link("gh", REPO, "GitHub", "wide")}</nav>
+  <nav class="full" aria-label="Site">${links}</nav>
+  <details class="menu"><summary>Menu</summary><nav aria-label="Site">${links}</nav></details>
 </div></header>`;
 }
 const footer = `<footer class="foot"><div class="wrap"><span>Built by the Philcoin community. Independent of the Phil project.</span><span class="ca">CA <span id="ca"></span></span><button type="button" id="copy-ca">Copy CA</button><a href="${REPO}">Source (Apache-2.0)</a></div></footer>`;

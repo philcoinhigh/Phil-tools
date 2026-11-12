@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "6fb69ee6f5",
+  "commit": "7e31cfd867",
   "date": "2026-11-12",
-  "subject": "Merge pull request #1586 from abiggerhammer/hamster/rocq-refinement/generic-requirement-recursive-grouping"
+  "subject": "test(fsem02): verify half-closed Ping peer refusal and stale replay (#1748)"
  },
  "files": 338,
  "grammar": {

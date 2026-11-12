@@ -1,24 +1,44 @@
 {
  "phil": {
-  "commit": "6fb69ee6f5",
+  "commit": "7e31cfd867",
   "date": "2026-11-12"
  },
  "since": "2026-10-22",
  "days": [
   {
    "date": "2026-11-12",
-   "commits": 6,
+   "commits": 11,
    "merges": 4,
    "streams": [
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 6
+     "n": 9
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-half-close-stale-peer-fsem02-v1.md",
+     "title": "FSEM-02: Ping half-closed peer refusal, stale replay and eventual Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-double-refusal-retry-fsem02-v1.md",
+     "title": "FSEM-02: paired refused terminal Closes and deterministic retry"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-close-refusal-retry-fsem02-v1.md",
+     "title": "FSEM-02: source Ping terminal Close refusal and exact retry"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-close-diamond-fsem02-v1.md",
+     "title": "FSEM-02: source Ping post-rendezvous terminal Close diamond"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-nominal-refusal-fsem02-v1.md",
+     "title": "FSEM-02: source Ping two-process nominal refusal"
+    },
     {
      "path": "docs/phase-1/surface-parser-generic-requirement-recursive-grouping-v1.md",
      "title": "Generic-requirement recursive grouping correspondence v1"
@@ -48,26 +68,26 @@
      "title": "FSEM-02: source offer successor freshness and spectator frame"
     }
    ],
-   "proofsAdded": 9,
+   "proofsAdded": 14,
    "proofsChanged": 19,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "9d166c0707",
-     "subject": "FSEM-02: source Ping joint successor freshness and atomic peer refusal"
+     "sha": "b080526f0b",
+     "subject": "FSEM-02: replay rejected Ping terminal Closes with exact peer-state preservation"
     },
     {
-     "sha": "6fb69ee6f5",
-     "subject": "Merged: rocq refinement / generic requirement recursive grouping"
+     "sha": "7e31cfd867",
+     "subject": "test(fsem02): verify half-closed Ping peer refusal and stale replay"
     },
     {
-     "sha": "18a436b07c",
-     "subject": "FSEM-02: source Ping successor-name freshness and borrowed owner frame"
+     "sha": "4a5de0e224",
+     "subject": "feat(fsem02): verify two ordered Ping Close refusals and deterministic retry"
     },
     {
-     "sha": "295481db69",
-     "subject": "Merged: impl audit / p11 source 13808408 candidate evidence"
+     "sha": "8c8a71320e",
+     "subject": "FSEM-02: source Ping joint terminal Close diamond and exact stale refusal"
     }
    ]
   },
@@ -865,6 +885,18 @@
   {
    "date": "2026-11-12",
    "commit": "6fb69ee6f5",
+   "files": 338,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-12",
+   "commit": "7e31cfd867",
    "files": 338,
    "grammar": "64/64",
    "ranClean": 45,
