@@ -4,8 +4,20 @@
   "solana": "solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)",
   "programBytes": 2160,
   "local": {
-    "ok": false,
-    "run": null
+    "ok": true,
+    "run": {
+      "signature": "57g64BXswjA6yfahupDcyyTyrT4t7Y5Zbej8ufk6udm8VPKnZ855hqwgToLjTuEb1xahSDcWsoyrZNjkNDv5Twsf",
+      "slot": 10,
+      "returned": 42,
+      "unitsConsumed": 217,
+      "logs": [
+        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv invoke [1]",
+        "Program log: Phil main returned:",
+        "Program log: 0x0, 0x0, 0x0, 0x0, 0x2a",
+        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv consumed 217 of 200000 compute units",
+        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv success"
+      ]
+    }
   },
   "devnet": {
     "ok": false,
