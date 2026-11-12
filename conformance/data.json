@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "7b7c51a527",
-  "date": "2026-11-11",
-  "subject": "FSEM-02: source choice branch End outcome isolation and cross-close rejection (#1733)"
+  "commit": "6fb69ee6f5",
+  "date": "2026-11-12",
+  "subject": "Merge pull request #1586 from abiggerhammer/hamster/rocq-refinement/generic-requirement-recursive-grouping"
  },
  "files": 338,
  "grammar": {
