@@ -6,16 +6,16 @@
   "local": {
     "ok": true,
     "run": {
-      "signature": "57g64BXswjA6yfahupDcyyTyrT4t7Y5Zbej8ufk6udm8VPKnZ855hqwgToLjTuEb1xahSDcWsoyrZNjkNDv5Twsf",
+      "signature": "jdnz271ViQBPmQ7VUp3c3xtLNxyFH3Exy9ABGZqUZXzdngud82ygJ2XpcFdH6udxwwDk76WzSBgKLqPTHWMJ19t",
       "slot": 10,
       "returned": 42,
       "unitsConsumed": 217,
       "logs": [
-        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv invoke [1]",
+        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW invoke [1]",
         "Program log: Phil main returned:",
         "Program log: 0x0, 0x0, 0x0, 0x0, 0x2a",
-        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv consumed 217 of 200000 compute units",
-        "Program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv success"
+        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW consumed 217 of 200000 compute units",
+        "Program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW success"
       ]
     }
   },

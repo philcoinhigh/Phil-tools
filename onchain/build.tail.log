@@ -3,7 +3,7 @@ solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
 Fetching Solana's compiler toolchain
 LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
--rwxr-xr-x 1 runner runner 2160 Nov 12 22:19 onchain/out/phil_first.so
+-rwxr-xr-x 1 runner runner 2160 Nov 12 22:30 onchain/out/phil_first.so
 
 onchain/out/phil_first.so:	file format elf64-sbf
 
@@ -29,21 +29,15 @@ Disassembly of section .text:
 00000000000001a0 <phil_main>:
      1a0:      	mov64 r0, 0x2a
      1a8:      	exit
-program 2zQN1UT1bzmvzPYuphVQjGpLshSyzaPuEfx5Zfk5zRMv: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer D4masWgGDHWdWixnArN4bVN4Up5y4s6CnKCBycXBg6yi has 500000000000000000 lamports
-Requesting airdrop of 1 SOL
+program Ymg4VtiAWLSTVmojJxde4GPsFiummznxbmATk4MPpfW: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer AyCtN6dN9zgVo2FWohtvX351hdxuj9xNemVFTF738GJh has 500000000000000000 lamports
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-Requesting airdrop of 1 SOL
 Error: airdrop request failed. This can happen when the rate limit is reached.
-The devnet faucet did not fund the wallet (it rate-limits shared addresses).
+Error: airdrop request failed. This can happen when the rate limit is reached.
+Error: airdrop request failed. This can happen when the rate limit is reached.
+No public faucet funded the wallet (they rate-limit shared addresses).
