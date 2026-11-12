@@ -2,7 +2,7 @@
   "day": "2026-11-12",
   "philCommit": "13808408f9de0f67cefd6fa744f87d81a2d22fbb",
   "solana": "solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)",
-  "programBytes": 0,
+  "programBytes": 2160,
   "local": {
     "ok": false,
     "run": null
