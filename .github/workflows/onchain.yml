@@ -1,0 +1,91 @@
+name: Phil on Solana
+# Compiles onchain/first.phil with Phil's own compiler, builds a Solana program from the LLVM it
+# emits, proves it runs on a local test validator, then deploys it to devnet and calls it.
+# The devnet wallet is generated here, funded from the devnet faucet (test SOL has no value),
+# used once and thrown away. No key is stored or committed.
+on:
+  push:
+    branches: [onchain]
+    paths: ["onchain/**", ".github/workflows/onchain.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install the Solana tools
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)" 2>&1 | tail -5
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Compile the Phil program with philc
+        run: |
+          mkdir -p onchain/out
+          npx esbuild onchain/emit.ts --bundle --platform=node --outfile=out/onchain-emit.js --log-level=error
+          node out/onchain-emit.js onchain/first.phil onchain/out/first.ll 2>&1 | tee onchain/out/build.log
+      - name: Build the Solana program
+        run: |
+          set -o pipefail
+          solana --version | tee -a onchain/out/build.log
+          onchain/build.sh onchain/out/first.ll onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
+      - name: Run it on a local test validator
+        run: |
+          set -o pipefail
+          npm install --no-save @solana/web3.js >/dev/null 2>&1
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/program.json"
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
+          PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
+          echo "PROGRAM=$PROGRAM" >> "$GITHUB_ENV"
+          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
+          for i in $(seq 1 60); do solana cluster-version --url http://127.0.0.1:8899 >/dev/null 2>&1 && break; sleep 2; done
+          node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" --airdrop | tee onchain/out/local.json || { tail -40 "$RUNNER_TEMP/validator.log" | tee -a onchain/out/build.log; exit 1; }
+          pkill -f solana-test-validator || true
+      - name: Deploy to devnet and call it
+        id: devnet
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          URL=https://api.devnet.solana.com
+          WALLET=$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")
+          funded=0
+          for i in 1 2 3 4 5 6 7 8; do
+            if solana airdrop 1 "$WALLET" --url "$URL" 2>&1 | tail -2 | tee -a onchain/out/build.log; then
+              bal=$(solana balance "$WALLET" --url "$URL" | awk '{print $1}')
+              if [ "$(printf '%.0f' "$(echo "$bal * 1000" | bc)")" -ge 500 ]; then funded=1; break; fi
+            fi
+            sleep $((i * 15))
+          done
+          if [ "$funded" != 1 ]; then echo "The devnet faucet did not fund the wallet (it rate-limits shared addresses)." | tee -a onchain/out/build.log; exit 1; fi
+          solana program deploy --url "$URL" --keypair "$RUNNER_TEMP/payer.json" --program-id "$RUNNER_TEMP/program.json" onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
+          node onchain/invoke.mjs "$URL" "$PROGRAM" "$RUNNER_TEMP/payer.json" | tee onchain/out/devnet.json
+      - name: Record the result
+        if: always()
+        run: |
+          mkdir -p onchain/out
+          phil=$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)
+          local_ok=$( [ -s onchain/out/local.json ] && jq -e '.returned != null' onchain/out/local.json >/dev/null 2>&1 && echo true || echo false )
+          devnet_ok=$( [ -s onchain/out/devnet.json ] && jq -e '.returned != null' onchain/out/devnet.json >/dev/null 2>&1 && echo true || echo false )
+          jq -n --arg phil "$phil" --arg program "${PROGRAM:-}" --arg solana "$(solana --version 2>/dev/null || true)" --arg day "$(date -u +%F)" \
+             --argjson localOk "$local_ok" --argjson devnetOk "$devnet_ok" \
+             --slurpfile local <( [ "$local_ok" = true ] && cat onchain/out/local.json || echo null ) \
+             --slurpfile devnet <( [ "$devnet_ok" = true ] && cat onchain/out/devnet.json || echo null ) \
+             --arg bytes "$(stat -c %s onchain/out/phil_first.so 2>/dev/null || echo 0)" \
+             '{day: $day, philCommit: $phil, solana: $solana, programBytes: ($bytes|tonumber), local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: (if $devnetOk then $program else null end), run: $devnet[0]}}' > onchain/deployment.json
+          cat onchain/deployment.json
+      - name: Commit the result and the build log
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tail -c 60000 onchain/out/build.log > onchain/build.tail.log 2>/dev/null || true
+          cp onchain/out/first.philc.ll onchain/first.philc.ll 2>/dev/null || true
+          cp onchain/out/phil_first.so onchain/phil_first.so 2>/dev/null || true
+          git add onchain/deployment.json onchain/build.tail.log onchain/first.philc.ll onchain/phil_first.so 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing to commit."; else git commit -m "Phil on Solana: build and deployment record"; git push; fi
