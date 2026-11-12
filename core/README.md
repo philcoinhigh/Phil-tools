@@ -1,6 +1,6 @@
 # Phil core
 
-The shared engine behind the [VS Code extension](../vscode) and the [playground](../playground), plus two command-line tools. Plain TypeScript with no editor or browser dependencies.
+The shared engine behind the [VS Code extension](../vscode), the [playground](../playground) and the [site](../site), plus two command-line tools. Plain TypeScript with no editor or browser dependencies.
 
 | File | What it is |
 | --- | --- |
@@ -13,7 +13,11 @@ The shared engine behind the [VS Code extension](../vscode) and the [playground]
 | `src/sim/explore.ts` | Bounded bug hunter |
 | `src/sim/designer.ts` | Protocol program generator |
 | `src/sim/inspect.ts` | Static views: protocol scripts, role duality check, architecture wiring |
+| `src/sim/earlier.ts` | Reads simple programs in Phil's earlier syntax (no semicolons) without moving source positions |
 | `src/sim/examples.ts` | Example programs that double as tests |
+| `src/sim/contracts.ts` | The token utilities: guarantees, input fields, tested scenarios, porting notes |
+| `src/sim/hacks.ts` | The hacks exhibits: the mistake, the fix, sources |
+| `src/sim/otc-source.ts`, `contracts-source.ts` | Generated from `otc/*.phil` and `contracts/*.phil` by `npm run gen:otc` |
 | `src/cli.ts` | `phil-check` command-line checker |
 | `src/mcp.ts` | `phil-mcp` server for AI assistants |
 
@@ -58,6 +62,7 @@ It is an interpretation of Phil's published design, not an official semantics. S
 ```sh
 npm run test:sim
 npm run test:designer
+npm run test:learn                 # lessons, the OTC desk, utilities and hacks exhibits
 npm run test:corpus -- ../phil
-npm run test:conformance -- ../phil
+npm run conformance -- ../phil     # see ../conformance
 ```
