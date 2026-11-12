@@ -1,7 +1,7 @@
 // Learn Phil: lessons with a live editor. Progress is kept in this browser when storage is available.
 import { LESSONS, Lesson } from "./lessons";
 import { checkLesson } from "./check";
-import { mountEditor, runPhil, KIND_TITLE, esc, store, Editor } from "./shared";
+import { mountEditor, runPhil, KIND_TITLE, esc, store, Editor, landed } from "./shared";
 import { wireFooter } from "./foot";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -82,6 +82,7 @@ function runLesson(): void {
     if (LESSONS.indexOf(lesson) === LESSONS.length - 1 || done.size === LESSONS.length) $("finish").hidden = false;
   } else if (lesson.task && o.ok && why) html += `<div class="verdict">${esc(why)}</div>`;
   $("out").innerHTML = html;
+  landed($("out"), null, "");
 }
 
 $("run").addEventListener("click", runLesson);

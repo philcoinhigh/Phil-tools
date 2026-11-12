@@ -1,6 +1,6 @@
 // "Hacks Phil would have stopped": runs each exhibit's broken and fixed program in the simulator.
 import { HACKS, NOT_STOPPED, Hack } from "../../core/src/sim/hacks";
-import { runPhil, highlightHtml, KIND_TITLE, esc } from "./shared";
+import { runPhil, highlightHtml, KIND_TITLE, esc, landed } from "./shared";
 import { wireFooter } from "./foot";
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -42,5 +42,7 @@ $("hacks").addEventListener("click", (e) => {
   if (!h) return;
   if (fixedNow.has(h.id)) fixedNow.delete(h.id); else fixedNow.add(h.id);
   $("demo-" + h.id).innerHTML = demo(h);
+  const says = $("demo-" + h.id).querySelector<HTMLElement>(".says");
+  if (says) landed(says, null, "");
 });
 wireFooter();

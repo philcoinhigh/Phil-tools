@@ -103,6 +103,8 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("book: hunt finds nothing", /runs, no failure found/.test(p.d.getElementById("hunt-out").textContent), p.d.getElementById("hunt-out").textContent);
   p.d.getElementById("mode-single").click();
   check("book: switching back restores the single listing", /Sold out/.test(res()) && !p.d.getElementById("terms-single").hidden);
+  p.d.getElementById("trade").click();
+  check("otc: pressing Run shows that it ran, and the hunt result sits under the buttons", /^Ran just now/.test(p.d.getElementById("ran").textContent) && p.d.getElementById("result").classList.contains("flash") && p.d.querySelector(".go").nextElementSibling.id === "hunt-out");
   check("otc: source is shown", p.d.getElementById("src").textContent.includes("protocol Listing"));
   check("otc: no script errors", p.errors.length === 0, p.errors.join("|"));
 
@@ -157,6 +159,9 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.querySelector('[data-scenario="0"]').click();
   p.d.getElementById("hunt").click(); await wait(3600);
   check("library: hunt finds nothing", /runs, no failure found/.test(p.d.getElementById("hunt-out").textContent), p.d.getElementById("hunt-out").textContent);
+  p.d.getElementById("run").click();
+  check("library: pressing Run shows that it ran", /^Ran just now \(run \d+\)$/.test(p.d.getElementById("ran").textContent) && p.d.getElementById("result").classList.contains("flash"), p.d.getElementById("ran").textContent);
+  check("library: the bug-hunt result sits right under the buttons", p.d.querySelector(".go").nextElementSibling.id === "hunt-out" && p.d.getElementById("hunt").textContent === "Try to break it" && !p.d.getElementById("hunt").classList.contains("busy"));
   check("library: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Hacks

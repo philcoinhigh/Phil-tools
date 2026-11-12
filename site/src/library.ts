@@ -2,7 +2,7 @@
 import { CONTRACTS, Contract } from "../../core/src/sim/contracts";
 import { buildAst } from "../../core/src/sim/ast";
 import { explore } from "../../core/src/sim/explore";
-import { runPhil, highlightHtml, KIND_TITLE, esc } from "./shared";
+import { runPhil, highlightHtml, KIND_TITLE, esc, landed, runLabel } from "./shared";
 import { wireFooter } from "./foot";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -45,8 +45,10 @@ function run(): void {
 }
 
 function hunt(): void {
-  const out = $("hunt-out");
-  out.textContent = "Trying boundary amounts and different schedules…";
+  const out = $("hunt-out"), btn = $("hunt");
+  out.textContent = "Searching: trying boundary amounts and different schedules. This takes a few seconds…";
+  btn.classList.add("busy"); btn.textContent = "Searching…";
+  landed(out, null, "");
   setTimeout(() => {
     try {
       const h = explore(buildAst(current.source), inputs(), { budgetMs: 2500 });
@@ -54,7 +56,9 @@ function hunt(): void {
         ? `<b>Found ${h.findings.length} failure${h.findings.length === 1 ? "" : "s"} in ${h.runs} runs.</b> ${esc(h.findings[0].message)} (${esc(h.findings[0].inputs.map((i) => `${i.name} = ${i.text}`).join(", "))})`
         : `<b>${h.runs} runs, no failure found.</b> No run lost a coin, copied one, broke a promise or got stuck. This is a bounded search, not a proof.`;
     } catch (e) { out.textContent = "The search could not run: " + String((e as Error).message ?? e); }
-  }, 30);
+    btn.classList.remove("busy"); btn.textContent = "Try to break it";
+    landed(out, null, "");
+  }, 60);
 }
 
 function show(id: string): void {
@@ -79,6 +83,7 @@ function show(id: string): void {
   gh.textContent = current.file;
   gh.href = gh.href.replace(/\/blob\/.*$/, "").replace(/\/$/, "") + "/blob/main/" + current.file;
   $("hunt-out").textContent = "";
+  $("ran").textContent = "";
   run();
 }
 
@@ -88,9 +93,9 @@ $("picker").addEventListener("click", (e) => {
 });
 $("terms").addEventListener("click", (e) => {
   const i = (e.target as HTMLElement).closest<HTMLElement>("[data-scenario]")?.dataset.scenario;
-  if (i !== undefined) { fill(current.scenarios[+i].inputs); run(); }
+  if (i !== undefined) { fill(current.scenarios[+i].inputs); run(); landed($("result"), $("ran"), `Ran “${current.scenarios[+i].name}”`); }
 });
-$("run").addEventListener("click", run);
+$("run").addEventListener("click", () => { run(); landed($("result"), $("ran"), runLabel()); });
 $("hunt").addEventListener("click", hunt);
 window.addEventListener("hashchange", () => show(location.hash.slice(1)));
 show(location.hash.slice(1));

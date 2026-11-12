@@ -2,7 +2,7 @@
 import { OTC_SOURCE, BOOK_SOURCE } from "../../core/src/sim/otc-source";
 import { buildAst } from "../../core/src/sim/ast";
 import { explore } from "../../core/src/sim/explore";
-import { runPhil, highlightHtml, KIND_TITLE, esc } from "./shared";
+import { runPhil, highlightHtml, KIND_TITLE, esc, landed, runLabel } from "./shared";
 import { wireFooter } from "./foot";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -128,8 +128,10 @@ function trade(): void {
 }
 
 function hunt(): void {
-  const out = $("hunt-out");
-  out.textContent = "Trying boundary amounts and different schedules…";
+  const out = $("hunt-out"), btn = $("hunt");
+  out.textContent = "Searching: trying boundary amounts and different schedules. This takes a few seconds…";
+  btn.classList.add("busy"); btn.textContent = "Searching…";
+  landed(out, null, "");
   setTimeout(() => {
     try {
       const h = explore(buildAst(mode.source), terms(), { budgetMs: 3000 });
@@ -137,7 +139,9 @@ function hunt(): void {
         ? `<b>Found ${h.findings.length} failure${h.findings.length === 1 ? "" : "s"} in ${h.runs} runs.</b> ${esc(h.findings[0].message)} (${esc(h.findings[0].inputs.map((i) => `${i.name} = ${i.text}`).join(", "))})`
         : `<b>${h.runs} runs, no failure found.</b> No run lost a coin, copied one, broke a promise or got stuck. This is a bounded search, not a proof.`;
     } catch (e) { out.textContent = "The search could not run: " + String((e as Error).message ?? e); }
-  }, 30);
+    btn.classList.remove("busy"); btn.textContent = "Try to break it";
+    landed(out, null, "");
+  }, 60);
 }
 
 function setMode(m: Mode): void {
@@ -149,11 +153,12 @@ function setMode(m: Mode): void {
   $("src").innerHTML = highlightHtml(m.source);
   $<HTMLAnchorElement>("pg-link").href = "../playground/#" + m.example;
   $("hunt-out").textContent = "";
+  $("ran").textContent = "";
   feeNote();
   trade();
 }
 
-$("trade").addEventListener("click", trade);
+$("trade").addEventListener("click", () => { trade(); landed($("result"), $("ran"), runLabel()); });
 $("hunt").addEventListener("click", hunt);
 $("mode-single").addEventListener("click", () => setMode(SINGLE));
 $("mode-book").addEventListener("click", () => setMode(BOOK));
@@ -162,6 +167,7 @@ document.querySelectorAll<HTMLElement>("[data-preset]").forEach((b) => b.addEven
   for (const [k, v] of Object.entries(mode.presets[b.dataset.preset!])) $<HTMLInputElement>(mode.ids[k]).value = v;
   feeNote();
   trade();
+  landed($("result"), $("ran"), `Ran “${b.textContent}”`);
 }));
 setMode(location.hash === "#book" ? BOOK : SINGLE);
 wireFooter();

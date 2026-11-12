@@ -90,9 +90,9 @@ __HEADER__
     <label><span>Desk fee (basis points)</span><input id="b-fee" inputmode="numeric" value="100" autocomplete="off"><small id=fee-pct-b></small></label>
     <div class="presets"><span>Try</span><button type="button" data-preset="b-best">Cheaper first</button><button type="button" data-preset="b-deep">Both sell out</button><button type="button" data-preset="b-cancel">Makers cancel</button><button type="button" data-preset="b-tie">Same price</button></div>
   </div>
-  <div class="go"><button type="button" class="btn" id="trade">Run the trade</button><button type="button" class="btn ghost" id="hunt">Try to break it</button></div>
-  <div id="result"></div>
+  <div class="go"><button type="button" class="btn" id="trade">Run the trade</button><button type="button" class="btn ghost" id="hunt">Try to break it</button><span class="ran" id="ran" aria-live="polite"></span></div>
   <div class="hunt" id="hunt-out" aria-live="polite"></div>
+  <div id="result"></div>
   <details class="src"><summary>Read the Phil program</summary><pre class="code" id="src"></pre><p><a id="pg-link" href="../playground/#otc">Open it in the playground</a> to replay it step by step, or <a href="../learn/#otc">read it as a lesson</a>.</p></details>
 
   <h2 class="sec">From simulation to a real desk</h2>
