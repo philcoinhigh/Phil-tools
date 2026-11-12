@@ -6,7 +6,7 @@
   "local": {
     "ok": true,
     "run": {
-      "signature": "584i738rAoba5qvgMa5woXBrK9pYSUgKboUK1qpYEbujHmVtsJVySNQnkmP5p2hPbXw5PdXuUYuSKsuKUihynb5Q",
+      "signature": "3bYKXpvaafDYEtgziDdbnAC4SsV79zWvZJ5qrM286Wja9zvp1u3U43CgHtoccgwsg8WjebeXAq74yJuEtkerPmJZ",
       "slot": 10,
       "returned": 42,
       "unitsConsumed": 217,
@@ -20,9 +20,22 @@
     }
   },
   "devnet": {
-    "ok": false,
+    "ok": true,
     "programId": "4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB",
     "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
-    "run": null
+    "run": {
+      "signature": "3Pw1tkvRaN6izxfzxfZw58HAFAjUPP3r8ZjkmGFqSLTtjKF75hWYGmLqCXpsCqAPJ4apUVQNDRvmxXAaoWNUCoyS",
+      "slot": 521622840,
+      "returned": 42,
+      "unitsConsumed": 217,
+      "logs": [
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB invoke [1]",
+        "Program log: Phil main returned:",
+        "Program log: 0x0, 0x0, 0x0, 0x0, 0x2a",
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB consumed 217 of 200000 compute units",
+        "Program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB success"
+      ],
+      "network": "devnet"
+    }
   }
 }
