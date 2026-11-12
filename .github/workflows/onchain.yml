@@ -31,6 +31,8 @@ jobs:
           npx esbuild onchain/emit.ts --bundle --platform=node --outfile=out/onchain-emit.js --log-level=error
           node out/onchain-emit.js onchain/first.phil onchain/out/first.ll 2>&1 | tee onchain/out/build.log
       - name: Build the Solana program
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -o pipefail
           solana --version | tee -a onchain/out/build.log
