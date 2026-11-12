@@ -69,15 +69,15 @@ jobs:
         if: always()
         run: |
           mkdir -p onchain/out
-          phil=$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)
-          local_ok=$( [ -s onchain/out/local.json ] && jq -e '.returned != null' onchain/out/local.json >/dev/null 2>&1 && echo true || echo false )
-          devnet_ok=$( [ -s onchain/out/devnet.json ] && jq -e '.returned != null' onchain/out/devnet.json >/dev/null 2>&1 && echo true || echo false )
-          jq -n --arg phil "$phil" --arg program "${PROGRAM:-}" --arg solana "$(solana --version 2>/dev/null || true)" --arg day "$(date -u +%F)" \
-             --argjson localOk "$local_ok" --argjson devnetOk "$devnet_ok" \
-             --slurpfile local <( [ "$local_ok" = true ] && cat onchain/out/local.json || echo null ) \
-             --slurpfile devnet <( [ "$devnet_ok" = true ] && cat onchain/out/devnet.json || echo null ) \
-             --arg bytes "$(stat -c %s onchain/out/phil_first.so 2>/dev/null || echo 0)" \
-             '{day: $day, philCommit: $phil, solana: $solana, programBytes: ($bytes|tonumber), local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: (if $devnetOk then $program else null end), run: $devnet[0]}}' > onchain/deployment.json
+          touch onchain/out/build.log
+          ok() { [ -s "$1" ] && jq -e '.returned != null' "$1" >/dev/null 2>&1; }
+          if ok onchain/out/local.json; then cp onchain/out/local.json "$RUNNER_TEMP/l.json"; L=true; else echo null > "$RUNNER_TEMP/l.json"; L=false; fi
+          if ok onchain/out/devnet.json; then cp onchain/out/devnet.json "$RUNNER_TEMP/d.json"; D=true; else echo null > "$RUNNER_TEMP/d.json"; D=false; fi
+          bytes=$(stat -c %s onchain/out/phil_first.so 2>/dev/null || echo 0)
+          jq -n --arg phil "$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)" --arg program "${PROGRAM:-}" \
+             --arg solana "$(solana --version 2>/dev/null || echo unknown)" --arg day "$(date -u +%F)" --argjson bytes "$bytes" \
+             --argjson localOk "$L" --argjson devnetOk "$D" --slurpfile local "$RUNNER_TEMP/l.json" --slurpfile devnet "$RUNNER_TEMP/d.json" \
+             '{day: $day, philCommit: $phil, solana: $solana, programBytes: $bytes, local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: (if $devnetOk then $program else null end), run: $devnet[0]}}' > onchain/deployment.json || echo '{"error":"could not record"}' > onchain/deployment.json
           cat onchain/deployment.json
       - name: Commit the result and the build log
         if: always()
@@ -87,5 +87,5 @@ jobs:
           tail -c 60000 onchain/out/build.log > onchain/build.tail.log 2>/dev/null || true
           cp onchain/out/first.philc.ll onchain/first.philc.ll 2>/dev/null || true
           cp onchain/out/phil_first.so onchain/phil_first.so 2>/dev/null || true
-          git add onchain/deployment.json onchain/build.tail.log onchain/first.philc.ll onchain/phil_first.so 2>/dev/null || true
+          for f in onchain/deployment.json onchain/build.tail.log onchain/first.philc.ll onchain/phil_first.so; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; else git commit -m "Phil on Solana: build and deployment record"; git push; fi
