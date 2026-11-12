@@ -2,7 +2,7 @@
 
 A single-page web app for writing, running and exploring [Phil](https://github.com/abiggerhammer/phil) programs in the browser. Nothing to install, no server: everything runs on the page.
 
-> **Unofficial.** Phil's own compiler does not run general programs yet, so **Run** uses the experimental simulator in [`core/`](../core). It is an interpretation of Phil's published design, not an official semantics.
+> **Unofficial.** Phil's own compiler does not run general programs yet, so **Run** uses the experimental simulator in [`core/`](../core). It is an interpretation of Phil's published design, not an official semantics. The one exception is the "Phil's compiler" tab, which runs Phil's real compiler.
 
 ## What it does
 
@@ -16,7 +16,7 @@ A single-page web app for writing, running and exploring [Phil](https://github.c
 - **Phil's compiler:** runs `philc`, the real compiler from the Phil repository, compiled to WebAssembly, on the program in the editor and shows the LLVM IR it emits or its refusal. See [philc/](../philc). It accepts only a small part of the language today.
 - **Hunt:** tries boundary inputs, several schedules and peer choices, and lists each distinct way the program can fail, with a Replay button. A bounded search, not a proof.
 - **Design:** list the messages between two roles and get a complete program whose two sides match by construction.
-- **Examples and puzzles:** 15 examples and 7 "fix it" puzzles. A puzzle is solved when it runs and a hunt finds nothing.
+- **Examples and puzzles:** 33 examples, including the OTC desk, the order book and every token utility, and 7 "fix it" puzzles. A puzzle is solved when it runs and a hunt finds nothing.
 - **Docs:** searchable reference for every keyword, error code and host operation.
 - **Phone layout:** Code/Results switch, a Run bar and a row of symbol keys.
 
@@ -31,7 +31,7 @@ npm install
 npm run build:playground    # writes docs/playground/index.html
 ```
 
-Open `docs/playground/index.html` in a browser. The file is self-contained (it loads only web fonts).
+Open `docs/playground/index.html` in a browser. The file is self-contained (it loads only web fonts). The "Phil's compiler" tab also fetches `philc.wasm` from the same folder, which works when the page is served over HTTP but not when it is opened as a file.
 
 To publish it with GitHub Pages: repository **Settings → Pages → Deploy from a branch → `main` / `docs`**.
 
@@ -40,6 +40,7 @@ To publish it with GitHub Pages: repository **Settings → Pages → Deploy from
 | Path | Contents |
 | --- | --- |
 | `src/main.ts` | UI logic |
+| `src/philc.ts` | Runs Phil's compiler (`docs/playground/philc.wasm`) on the editor's text |
 | `src/template.html` | Markup and styles |
 | `src/dogmark.svg` | Logo (original artwork for this project) |
 | `build.js` | Bundles everything into `docs/playground/index.html` |
@@ -53,6 +54,7 @@ Add an entry to `core/src/sim/examples.ts` with its `expect` outcome (`ok`, `lin
 
 ```sh
 npm run test:playground     # drives the built page like a user (jsdom)
+npm run test:philc          # the compiler runner, against a stand-in and the real binary
 ```
 
 ## Simulator choices that are not Phil
@@ -60,6 +62,7 @@ npm run test:playground     # drives the built page like a user (jsdom)
 - Host operations `lt`, `le`, `gt`, `ge`, `eq`, `ne` and `console_write`, because ordinary Phil expressions have no comparison operators.
 - Inside an `offer` arm, the offered endpoint's name refers to its next state.
 - Roles marked `external` are played by an automatic peer.
+- Simple programs in Phil's earlier syntax (no semicolons, the form `philc` compiles) are run by treating each line as a statement.
 - Effects, authority, providers, generics and byte-level operations are parsed but not executed.
 
 ## Credits

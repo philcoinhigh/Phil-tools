@@ -19,7 +19,7 @@ The OTC desk and order book are in [`otc/`](../otc).
 
 ## How they are checked
 
-`core/src/sim/contracts.ts` lists each contract with its guarantees, input fields and named scenarios. `npm run test:learn` runs every scenario and checks what it prints, then runs a bounded bug hunt over boundary inputs and schedules. A bounded search is not a proof.
+`core/src/sim/contracts.ts` lists each utility with its guarantees, input fields and named scenarios. An entry can also carry `port` (what an on-chain version still needs) and `basis` (whose published rules it is modelled on, with a link and a statement that it is not their code). `npm run test:learn` runs every scenario and checks what it prints, then runs a bounded bug hunt over boundary inputs and schedules. A bounded search is not a proof.
 
 ## The pattern they share
 
