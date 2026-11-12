@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Phil on Solana</title>
+<meta name="description" content="A Phil program, compiled by Phil's own compiler, deployed to Solana devnet and called.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 36px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.facts div { padding: 14px 16px; } .facts div + div { border-left: 1px solid var(--rule); }
+.facts b { display: block; font: 600 26px/1 var(--font-code); letter-spacing: -.03em; } .facts span { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+.addr { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-top: 0; background: var(--sheet); }
+.addr li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 10px 16px; border-top: 1px solid var(--rule); align-items: baseline; }
+.addr li:first-child { border-top: 0; }
+.addr span { font-size: 13.5px; color: var(--muted); } .addr a, .addr code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+pre.log { margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--ink); background: var(--code-bg); font: 12.5px/1.65 var(--font-code); overflow-x: auto; }
+pre.log b { color: var(--good); }
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.steps > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.steps h3 { margin: 0 0 6px; font-size: 17px; } .steps p { margin: 0 0 10px; max-width: 70ch; color: var(--muted); }
+.steps pre.code { max-height: 300px; }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 6px 0; }
+@media (max-width: 720px) { .facts { grid-template-columns: minmax(0, 1fr); } .facts div + div { border-left: 0; border-top: 1px solid var(--rule); } .addr li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Solana devnet</span>
+    <h1>Phil is on a blockchain</h1>
+    <p>A program written in Phil, compiled by Phil's own compiler, is deployed on Solana's public test network. Anyone can call it, and when they do, the code that runs is what Phil's compiler produced.</p>
+    <p class="muted" style="font-size:15px">It is a small program: it returns a number. That is everything Phil's compiler can build today, and it is the first step, not the last.</p>
+  </div>
+  <div class="facts" id="facts"></div>
+  <ul class="addr" id="addr"></ul>
+  <pre class="log" id="log" aria-label="Transaction log"></pre>
+
+  <h2 class="sec">How it got there</h2>
+  <ol class="steps">
+    <li><div><h3>The Phil program</h3><p>Written in the form Phil's compiler reads today.</p><pre class="code" id="src-phil"></pre></div></li>
+    <li><div><h3>Phil's compiler turns it into LLVM</h3><p>This is the output of <code>philc</code>, unmodified. The same compiler runs in the <a href="../playground/">playground</a>.</p><pre class="code" id="src-ll"></pre></div></li>
+    <li><div><h3>Solana's toolchain builds a program from it</h3><p>Two adjustments are made first: the lines naming a desktop target are dropped, and <code>main</code> is renamed so that Solana's entry point can call it. A few lines of C form that entry point; they call the Phil function and write its result to the log. The finished program is <span id="bytes"></span> bytes.</p><pre class="code" id="src-c"></pre></div></li>
+    <li><div><h3>It is deployed and called</h3><p>A workflow on GitHub deploys the program to devnet and sends it one transaction. The log above is what Solana recorded.</p></div></li>
+  </ol>
+
+  <h2 class="sec">What this is and is not</h2>
+  <ul class="limits">
+    <li>It is real: Phil source, Phil's compiler, Solana's virtual machine. It is not our simulator.</li>
+    <li>It is tiny. It holds no tokens and takes no input. The <a href="../library/">utilities</a> and the <a href="../otc/">OTC desk</a> are still simulations.</li>
+    <li>It is on devnet, Solana's public test network. Devnet SOL has no value, and devnet is reset from time to time, which would remove the program until it is deployed again.</li>
+    <li>As Phil's compiler accepts more of the language, more of Phil can go on chain through the same steps.</li>
+  </ul>
+  <p class="lead">The pipeline is in <a href="__REPO__/tree/main/onchain">onchain/</a>. This is a community project and is not affiliated with Phil or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

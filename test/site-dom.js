@@ -26,10 +26,10 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 9 && p.d.querySelectorAll(".site nav.full a").length === 9);
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 10 && p.d.querySelectorAll(".site nav.full a").length === 10);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -194,6 +194,15 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("fuzz: names the commit and the seed", p.d.getElementById("against").textContent.includes(fz.phil.commit) && p.d.getElementById("against").textContent.includes(String(fz.seed)));
   check("fuzz: publishes no inputs", !/component main|bytes \(hex\)/.test(fs.readFileSync("docs/fuzz/index.html", "utf8").replace(/<style[\s\S]*?<\/style>/, "").split("<script>")[0]) && !fs.readFileSync("fuzz/data.json", "utf8").includes("main.phil"));
   check("fuzz: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // On chain
+  p = load("docs/onchain/index.html", "https://example.test/onchain/");
+  const oc = JSON.parse(fs.readFileSync("onchain/deployment.json", "utf8"));
+  check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.ok ? oc.devnet.run : oc.local.run).returned));
+  check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.ok || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
+  check("onchain: shows the log, the Phil source and philc's LLVM", /Phil main returned/.test(p.d.getElementById("log").textContent) && /component main provides U32/.test(p.d.getElementById("src-phil").textContent) && /define i32 @main\(\)/.test(p.d.getElementById("src-ll").textContent) && /phil_main/.test(p.d.getElementById("src-c").textContent));
+  check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+/.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
+  check("onchain: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));
