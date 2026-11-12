@@ -116,7 +116,17 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // Contract library
   p = load("docs/library/index.html", "https://example.test/library/");
   const lres = () => p.d.getElementById("result").textContent;
-  check("library: four contracts, vesting first", p.d.querySelectorAll("#picker button").length === 4 && p.d.getElementById("c-title").textContent === "Vesting with revocation" && /beneficiary holds 1000/.test(lres()), lres());
+  check("library: six utilities, the locker first", p.d.querySelectorAll("#picker button").length === 6 && p.d.getElementById("c-title").textContent === "Token locker" && /recipient holds 1200/.test(lres()) && p.d.querySelectorAll("#c-port li").length === 3, lres());
+  p.d.querySelector('[data-scenario="1"]').click();
+  check("library: locker cancelled half way splits the lock", /sender got back 600/.test(lres()) && /recipient holds 600/.test(lres()) && /hands Sender 600 tokens/.test(lres()), lres());
+  p.d.getElementById("f-cancelable").checked = false; p.d.getElementById("run").click();
+  check("library: a lock that is not cancelable refuses the cancel", /cancel refused/.test(lres()) && /recipient holds 1200/.test(lres()), lres());
+  p.d.querySelector('[data-id="hooks"]').click();
+  check("library: hooks take a 1% fee", /fee hook: kept 10/.test(lres()) && /received 990/.test(lres()), lres());
+  type(p.w, p.d.getElementById("f-amount"), "9000"); p.d.getElementById("run").click();
+  check("library: the limit hook blocks and everything comes back", /tokens returned: 9000/.test(lres()) && /nothing arrived/.test(lres()), lres());
+  p.d.querySelector('[data-id="vesting"]').click();
+  check("library: a utility without porting notes hides that box", p.d.getElementById("port-box").hidden && /beneficiary holds 1000/.test(lres()));
   p.d.querySelector('[data-scenario="1"]').click();
   check("library: a scenario button reruns", /grantor revoked after 1 periods/.test(lres()) && /beneficiary holds 250/.test(lres()) && /hands Grantor 750 tokens/.test(lres()), lres());
   p.d.querySelector('[data-id="multisig"]').click();

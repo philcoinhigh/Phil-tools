@@ -1,15 +1,62 @@
 // The contract library: Phil programs for common token mechanics. Each scenario is also a test.
-import { VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
+import { LOCKER_SOURCE, HOOKS_SOURCE, VESTING_SOURCE, MULTISIG_SOURCE, AUCTION_SOURCE, LAUNCH_SOURCE } from "./contracts-source";
 
 export interface Scenario { name: string; inputs: Record<string, string>; says: string[] }
 export interface Contract {
   id: string; title: string; summary: string; file: string; source: string;
   guarantees: string[];
+  /** What an on-chain version would need that this program does not model. */
+  port?: string[];
   fields: { key: string; label: string; note?: string; bool?: boolean }[];
   scenarios: Scenario[];
 }
 
 export const CONTRACTS: Contract[] = [
+  {
+    id: "locker", title: "Token locker", file: "contracts/locker.phil", source: LOCKER_SOURCE,
+    summary: "Lock tokens for someone with a cliff, a release every period, claiming on demand, and an optional cancel. The same shape as a vesting or streaming service.",
+    guarantees: [
+      "The sender's share and the recipient's share always add up to exactly what was locked.",
+      "Nothing unlocks before the cliff, and the last period releases whatever is left.",
+      "A lock created as not cancelable cannot be cancelled: the request is refused and the schedule carries on.",
+      "On cancel, everything already unlocked still goes to the recipient.",
+    ],
+    port: [
+      "Real time: periods here are counted steps. On chain they would be read from the clock.",
+      "Custody: the locker would be a program-owned token account.",
+      "Who may cancel or claim would be checked by signature; here it is fixed by which program holds which end of the protocol.",
+    ],
+    fields: [
+      { key: "total", label: "Tokens locked" }, { key: "periods", label: "Periods", note: "at least 1" }, { key: "cliff", label: "Cliff (periods)", note: "0 means no cliff" },
+      { key: "claim_every", label: "Recipient claims every (periods)", note: "at least 1" }, { key: "cancel_at", label: "Sender cancels before period", note: "0 means never" }, { key: "cancelable", label: "Cancelable by the sender", bool: true },
+    ],
+    scenarios: [
+      { name: "Cliff, then monthly", inputs: { total: "1200", periods: "12", cliff: "3", cancelable: "true", cancel_at: "0", claim_every: "1" }, says: ["period 3 recipient claims 300", "period 12 recipient claims 100", "recipient holds 1200", "sender got back 0"] },
+      { name: "Cancelled half way", inputs: { total: "1200", periods: "12", cliff: "3", cancelable: "true", cancel_at: "7", claim_every: "4" }, says: ["sender cancelled before period 7", "sender got back 600", "recipient holds 600"] },
+      { name: "Cancel refused", inputs: { total: "1200", periods: "12", cliff: "3", cancelable: "false", cancel_at: "7", claim_every: "4" }, says: ["cancel refused", "recipient holds 1200", "sender got back 0"] },
+      { name: "Hard lock until the end", inputs: { total: "1000", periods: "12", cliff: "12", cancelable: "false", cancel_at: "0", claim_every: "1" }, says: ["period 12 recipient claims 1000", "recipient holds 1000"] },
+    ],
+  },
+  {
+    id: "hooks", title: "Transfer hooks", file: "contracts/hooks.phil", source: HOOKS_SOURCE,
+    summary: "Programs that run on every transfer of a token. A limit hook allows or blocks the transfer; a fee hook is handed the tokens, keeps a cut and passes the rest on.",
+    guarantees: [
+      "A blocked transfer returns every token to the sender, and the later hooks are told to stand down.",
+      "A hook that is handed tokens cannot lose any: each one is passed on or kept as its fee.",
+      "The token program checks what a hook hands back, so a hook that keeps more than 5% halts the transfer.",
+      "What the receiver gets and what the fee hook kept add up to what was sent.",
+    ],
+    port: [
+      "On Solana this is the Token-2022 transfer-hook interface, where a hook can approve or reject but does not take custody; the fee would use the transfer-fee extension.",
+      "Hooks here are fixed when the program is wired up. On chain they would be registered on the mint.",
+    ],
+    fields: [{ key: "amount", label: "Tokens sent" }, { key: "max_transfer", label: "Limit hook: largest transfer allowed" }, { key: "fee_bps", label: "Fee hook: fee (basis points)", note: "at most 500" }],
+    scenarios: [
+      { name: "Allowed, 1% fee", inputs: { amount: "1000", max_transfer: "5000", fee_bps: "100" }, says: ["fee hook: kept 10", "receiver: received 990", "transfer went through"] },
+      { name: "Blocked by the limit", inputs: { amount: "9000", max_transfer: "5000", fee_bps: "100" }, says: ["over the limit of 5000", "nothing arrived", "tokens returned: 9000"] },
+      { name: "No fee", inputs: { amount: "1000", max_transfer: "5000", fee_bps: "0" }, says: ["fee hook: kept 0", "receiver: received 1000"] },
+    ],
+  },
   {
     id: "vesting", title: "Vesting with revocation", file: "contracts/vesting.phil", source: VESTING_SOURCE,
     summary: "A grantor locks tokens in a vault for a beneficiary. They are released in equal parts, one per period, and the grantor may revoke before any period.",

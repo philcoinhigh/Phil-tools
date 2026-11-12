@@ -62,6 +62,8 @@ function show(id: string): void {
   $("c-title").textContent = current.title;
   $("c-summary").textContent = current.summary;
   $("c-holds").innerHTML = current.guarantees.map((g) => `<li>${esc(g)}</li>`).join("");
+  $("port-box").hidden = !current.port?.length;
+  $("c-port").innerHTML = (current.port ?? []).map((g) => `<li>${esc(g)}</li>`).join("");
   $("terms").innerHTML = current.fields.map((f) => f.bool
     ? `<label class="bool"><input type="checkbox" id="f-${f.key}"><span>${esc(f.label)}</span></label>`
     : `<label><span>${esc(f.label)}</span><input type="text" id="f-${f.key}" inputmode="numeric" autocomplete="off"><small>${esc(f.note ?? "")}</small></label>`).join("")

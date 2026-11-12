@@ -1,0 +1,269 @@
+// Token locker: lock, cliff, stream, claim, cancel.
+//
+// A sender locks tokens for a recipient. Nothing unlocks before the cliff.
+// From the cliff on, an equal part unlocks every period, and the recipient
+// claims whenever they like: unlocked tokens wait in the locker until then.
+// If the lock was created as cancelable, the sender can cancel before any
+// period: what has not unlocked goes back to the sender, and everything that
+// has unlocked still goes to the recipient. A lock that is not cancelable
+// cannot be cancelled by anyone.
+//
+// Tokens are linear, so on every path the sender's share and the recipient's
+// share add up to exactly what was locked. Nothing can stay in the locker.
+
+record Token mode linear {
+  amount : U64
+}
+
+callable Carve(pot : Token, part : U64) -> (Token, Token) {
+  requires part <= pot.amount;
+  outcomes { success (Token, Token) };
+}
+
+fn carve(pot : Token, part : U64) -> (Token, Token) satisfies Carve {
+  let Token { amount = total } = pot;
+  return (construct Token { amount = part }, construct Token { amount = total - part });
+}
+
+callable Stack(a : Token, b : Token) -> Token {
+  outcomes { success Token };
+}
+
+fn stack(a : Token, b : Token) -> Token satisfies Stack {
+  let Token { amount = x } = a;
+  let Token { amount = y } = b;
+  return construct Token { amount = x + y };
+}
+
+// How much of the lock has unlocked once `period` periods have passed.
+// Nothing before the cliff; everything at the end, so rounding strands nothing.
+callable Unlocked(total : U64, periods : U64, cliff : U64, period : U64) -> U64 {
+  requires periods > 0;
+  requires period <= periods;
+  requires total <= 1000000000000;
+  outcomes { success U64 };
+}
+
+fn unlocked(total : U64, periods : U64, cliff : U64, period : U64) -> U64 satisfies Unlocked {
+  if lt(period, cliff) {
+    return 0;
+  } else {
+    if eq(period, periods) {
+      return total;
+    } else {
+      return total / periods * period;
+    };
+  };
+}
+
+// Sender and locker. Before every period the sender keeps the lock or asks to cancel.
+protocol Lock {
+  role Sender = send (deposit : Token) then recursive Period = offer {
+    Due => select {
+      Keep => continue Period |
+      Cancel => offer {
+        Cancelled => receive (unvested : Token) then end Cancelled |
+        Refused => continue Period
+      }
+    } |
+    Complete => end Complete
+  };
+  role Locker = receive (deposit : Token) then recursive Period = select {
+    Due => offer {
+      Keep => continue Period |
+      Cancel => select {
+        Cancelled => send (unvested : Token) then end Cancelled |
+        Refused => continue Period
+      }
+    } |
+    Complete => end Complete
+  };
+}
+
+// Locker and recipient. Each period the locker says what can be claimed; the recipient takes it or waits.
+protocol Claim {
+  role Locker = recursive Period = select {
+    Open => send (claimable : U64) then offer {
+      Withdraw => send (tokens : Token) then continue Period |
+      Wait => continue Period
+    } |
+    Closed => send (rest : Token) then end Closed
+  };
+  role Recipient = recursive Period = offer {
+    Open => receive (claimable : U64) then select {
+      Withdraw => receive (tokens : Token) then continue Period |
+      Wait => continue Period
+    } |
+    Closed => receive (rest : Token) then end Closed
+  };
+}
+
+component Sender(locker : Sender[Lock], total : {v : U64 | v <= 1000000000000}, cancel_at : U64) provides Token {
+  let locked = send construct Token { amount = total } on locker;
+  let back = loop state (ep = locked, period : U64 = 1) {
+    offer ep {
+      Due => {
+        if eq(period, cancel_at) {
+          let asking = select Cancel on ep;
+          offer asking {
+            Cancelled => {
+              let (done, unvested) = receive Token on asking;
+              close done;
+              console_write("sender cancelled before period", period);
+              break (unvested);
+            }
+            Refused => {
+              console_write("cancel refused: this lock is not cancelable");
+              continue (asking, period + 1);
+            }
+          };
+        } else {
+          let keeping = select Keep on ep;
+          continue (keeping, period + 1);
+        };
+      }
+      Complete => {
+        close ep;
+        break (construct Token { amount = 0 });
+      }
+    };
+  };
+  let returned = borrow back as b { return b.amount; };
+  console_write("sender got back", returned);
+  return back;
+}
+
+component Locker(
+  sender : Locker[Lock],
+  recipient : Locker[Claim],
+  periods : {v : U64 | v > 0},
+  cliff : U64,
+  cancelable : Bool
+) {
+  let (s1, deposit) = receive Token on sender;
+  let total = borrow deposit as d { return d.amount; };
+  loop state (s = s1, r = recipient, pot = deposit, period : U64 = 1, claimed : U64 = 0) {
+    if gt(period, periods) {
+      // Finished: whatever is unlocked and unclaimed goes to the recipient.
+      let s_done = select Complete on s;
+      close s_done;
+      let closing = select Closed on r;
+      let r_done = send pot on closing;
+      close r_done;
+      break;
+    } else {
+      let asked = select Due on s;
+      offer asked {
+        Keep => {
+          let open = unlocked(total, periods, cliff, period) - claimed;
+          let r1 = select Open on r;
+          let r2 = send open on r1;
+          offer r2 {
+            Withdraw => {
+              let (out, rest) = carve(pot, open);
+              let r3 = send out on r2;
+              continue (asked, r3, rest, period + 1, claimed + open);
+            }
+            Wait => {
+              continue (asked, r2, pot, period + 1, claimed);
+            }
+          };
+        }
+        Cancel => {
+          if cancelable {
+            // Split what is left: unlocked-but-unclaimed to the recipient, the rest back to the sender.
+            let owed = unlocked(total, periods, cliff, period - 1) - claimed;
+            let (for_recipient, for_sender) = carve(pot, owed);
+            let cancelled = select Cancelled on asked;
+            let s_done = send for_sender on cancelled;
+            close s_done;
+            let closing = select Closed on r;
+            let r_done = send for_recipient on closing;
+            close r_done;
+            break;
+          } else {
+            let refused = select Refused on asked;
+            let open = unlocked(total, periods, cliff, period) - claimed;
+            let r1 = select Open on r;
+            let r2 = send open on r1;
+            offer r2 {
+              Withdraw => {
+                let (out, rest) = carve(pot, open);
+                let r3 = send out on r2;
+                continue (refused, r3, rest, period + 1, claimed + open);
+              }
+              Wait => {
+                continue (refused, r2, pot, period + 1, claimed);
+              }
+            };
+          };
+        }
+      };
+    };
+  };
+}
+
+component Recipient(locker : Recipient[Claim], claim_every : {v : U64 | v > 0}) provides Token {
+  let held = loop state (ep = locker, mine = construct Token { amount = 0 }, period : U64 = 1) {
+    offer ep {
+      Open => {
+        let (e1, claimable) = receive U64 on ep;
+        if eq(period / claim_every * claim_every, period) {
+          if gt(claimable, 0) {
+            let taking = select Withdraw on e1;
+            let (e2, tokens) = receive Token on taking;
+            console_write("period", period, "recipient claims", claimable);
+            continue (e2, stack(mine, tokens), period + 1);
+          } else {
+            let waiting = select Wait on e1;
+            continue (waiting, mine, period + 1);
+          };
+        } else {
+          let waiting = select Wait on e1;
+          continue (waiting, mine, period + 1);
+        };
+      }
+      Closed => {
+        let (done, rest) = receive Token on ep;
+        close done;
+        break (stack(mine, rest));
+      }
+    };
+  };
+  let amount = borrow held as h { return h.amount; };
+  console_write("recipient holds", amount);
+  return held;
+}
+
+architecture TokenLocker {
+  instance sender = Sender;
+  instance locker = Locker;
+  instance recipient = Recipient;
+  process sender_run = sender;
+  process locker_run = locker;
+  process recipient_run = recipient;
+  protocol lock = Lock;
+  protocol payout = Claim;
+  role lock.Sender = sender;
+  role lock.Locker = locker;
+  role payout.Locker = locker;
+  role payout.Recipient = recipient;
+  entry total : U64;
+  entry periods : U64;
+  entry cliff : U64;
+  entry cancelable : Bool;
+  entry cancel_at : U64;
+  entry claim_every : U64;
+  bind sender.locker = lock.Sender;
+  bind sender.total = total;
+  bind sender.cancel_at = cancel_at;
+  bind locker.sender = lock.Locker;
+  bind locker.recipient = payout.Locker;
+  bind locker.periods = periods;
+  bind locker.cliff = cliff;
+  bind locker.cancelable = cancelable;
+  bind recipient.locker = payout.Recipient;
+  bind recipient.claim_every = claim_every;
+}
+
+program main = instantiate TokenLocker;
