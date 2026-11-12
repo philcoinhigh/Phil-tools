@@ -32,7 +32,8 @@
     "test:learn": "esbuild test/learn.ts --bundle --platform=node --outfile=out/learn.js --log-level=error && node out/learn.js",
     "test:site": "node test/site-dom.js",
     "conformance": "esbuild conformance/run.ts --bundle --platform=node --outfile=out/conformance.js --log-level=error && node out/conformance.js",
-    "test:philc": "(command -v go >/dev/null && cd test/standin && GOOS=wasip1 GOARCH=wasm go build -o ../../out/standin.wasm main.go || echo \"no Go: skipping the stand-in build\") && esbuild test/philc-runner.ts --bundle --platform=node --outfile=out/philc-runner.js --log-level=error && node out/philc-runner.js"
+    "test:philc": "(command -v go >/dev/null && cd test/standin && GOOS=wasip1 GOARCH=wasm go build -o ../../out/standin.wasm main.go || echo \"no Go: skipping the stand-in build\") && esbuild test/philc-runner.ts --bundle --platform=node --outfile=out/philc-runner.js --log-level=error && node out/philc-runner.js",
+    "changelog": "esbuild changelog/run.ts --bundle --platform=node --outfile=out/changelog.js --log-level=error && node out/changelog.js"
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",

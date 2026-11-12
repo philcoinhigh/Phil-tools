@@ -1,0 +1,878 @@
+{
+ "phil": {
+  "commit": "6fb69ee6f5",
+  "date": "2026-11-12"
+ },
+ "since": "2026-10-22",
+ "days": [
+  {
+   "date": "2026-11-12",
+   "commits": 6,
+   "merges": 4,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 6
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/surface-parser-generic-requirement-recursive-grouping-v1.md",
+     "title": "Generic-requirement recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-atomicity-fsem02-v1.md",
+     "title": "FSEM-02: source Ping joint successor freshness and atomic refusal"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-ping-successor-freshness-fsem02-v1.md",
+     "title": "FSEM-02: source Ping successor freshness and borrowed-owner frame"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-ping-terminal-nominal-gates-fsem02-v1.md",
+     "title": "FSEM-02: source Ping terminal Close nominal gates"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-ping-nominal-origin-gates-fsem02-v1.md",
+     "title": "FSEM-02: source-derived Ping nominal Send/Receive gates"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-offer-nominal-origin-gates-fsem02-v1.md",
+     "title": "FSEM-02: source-offer nominal instance and role fail-closed gates"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-offer-successor-freshness-fsem02-v1.md",
+     "title": "FSEM-02: source offer successor freshness and spectator frame"
+    }
+   ],
+   "proofsAdded": 9,
+   "proofsChanged": 19,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "9d166c0707",
+     "subject": "FSEM-02: source Ping joint successor freshness and atomic peer refusal"
+    },
+    {
+     "sha": "6fb69ee6f5",
+     "subject": "Merged: rocq refinement / generic requirement recursive grouping"
+    },
+    {
+     "sha": "18a436b07c",
+     "subject": "FSEM-02: source Ping successor-name freshness and borrowed owner frame"
+    },
+    {
+     "sha": "295481db69",
+     "subject": "Merged: impl audit / p11 source 13808408 candidate evidence"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-11",
+   "commits": 6,
+   "merges": 3,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 6
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem02-branch-outcome-separation-v1",
+     "accepted": 0,
+     "rejected": 1
+    },
+    {
+     "suite": "fsem02-offer-arm-order-v1",
+     "accepted": 0,
+     "rejected": 1
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-branch-outcome-separation-fsem02-v1.md",
+     "title": "FSEM-02: checked-source choice branch isolation and End outcome separation"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-offer-arm-order-fsem02-v1.md",
+     "title": "FSEM-02: two-branch offer-arm order and exact replay (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-typed-head-prefix-fsem02-v1.md",
+     "title": "FSEM-02: source Select/Offer typed heads and two End prefix states (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/audit-verified-final-origin-production-v1.md",
+     "title": "P7 — mandatory verified final origin through the actual ordinary-source producer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-typed-head-prefix-fsem02-v1.md",
+     "title": "FSEM-02 — typed restricted Send/Receive head to one-sided End-prefix composition"
+    },
+    {
+     "path": "docs/phase-1/audit-verified-source-systems-production-v1.md",
+     "title": "#1584 P2: source-owned production from actual checked source"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-terminal-heads-fsem02-v1.md",
+     "title": "FSEM-02 restricted Send/Receive: typed terminal-head correspondence (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-close-prefix-ledgers-fsem02-v1.md",
+     "title": "FSEM-02 restricted send/receive one-sided terminal owner ledgers"
+    }
+   ],
+   "proofsAdded": 6,
+   "proofsChanged": 2,
+   "modules": [
+    "Phil.Verification.VerifiedFinalOriginProduction",
+    "Phil.Verification.VerifiedStageClosureProduction",
+    "Phil.Surface.GrammarV1.ComponentRestrictedTerminalHead"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "7b7c51a527",
+     "subject": "FSEM-02: source choice branch End outcome isolation and cross-close rejection"
+    },
+    {
+     "sha": "467abb8836",
+     "subject": "FSEM-02: checked Select/Offer source arm-order and Core replay parity"
+    },
+    {
+     "sha": "6fd601f258",
+     "subject": "FSEM-02: source-replay typed Select/Offer heads through both End-prefix states"
+    },
+    {
+     "sha": "5074ce4382",
+     "subject": "Merged: impl audit / mandatory verified final origin"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-10",
+   "commits": 10,
+   "merges": 3,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 7
+    },
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 2
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-source-closure-capture-v1",
+     "accepted": 0,
+     "rejected": 17
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-choice-close-prefix-ledgers-fsem02-v1.md",
+     "title": "FSEM-02: both one-sided End-close prefix ledgers (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-source-successor-trace-fsem02-v1.md",
+     "title": "FSEM-02: select/offer source-relative successor and terminal owner trace (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-successor-trace-fsem02-v1.md",
+     "title": "FSEM-02: restricted source successor-identity trace (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-close-diamond-fsem02-v1.md",
+     "title": "FSEM-02: restricted send/receive terminal End close order diamond (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-terminal-close-diamond-fsem02-v1.md",
+     "title": "FSEM-02: terminal End close order diamond (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-explicit-peer-close-fsem02-v1.md",
+     "title": "FSEM-02: explicitly authorized peer End closure after source choice (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-selected-client-close-fsem02-v1.md",
+     "title": "FSEM-02: exact source-selected client close after stateful choice (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-fsem01-coverage1-v1.md",
+     "title": "FSEM-01 COVERAGE-1 — Grammar-v1 resource/local-typing competence register"
+    },
+    {
+     "path": "docs/phase-1/fsem-claim-release-recovery-v1.md",
+     "title": "FSEM claim-release recovery after Actions startup failures"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-closure-capture-fsem01-v1.md",
+     "title": "FSEM-01 C-1 — parsed closure capture ownership and bounded scoped-loan validity"
+    }
+   ],
+   "proofsAdded": 8,
+   "proofsChanged": 2,
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceClosureCapture"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "fe0944c1b5",
+     "subject": "FSEM-02: source Select/Offer one-sided End prefix owner ledgers"
+    },
+    {
+     "sha": "b4561988e3",
+     "subject": "FSEM-01 COVERAGE-1: audit Grammar-v1 resource competence and gaps"
+    },
+    {
+     "sha": "99dd8f588b",
+     "subject": "FSEM-02: source Select/Offer successor and End owner trace"
+    },
+    {
+     "sha": "3313d69d7c",
+     "subject": "FSEM-02: source-relative predecessor/successor identity trace across restricted End closure"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-09",
+   "commits": 12,
+   "merges": 11,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 8
+    },
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 4
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-linear-loop-transfer-v1",
+     "accepted": 4,
+     "rejected": 19
+    },
+    {
+     "suite": "fsem01-source-bool-break-v1",
+     "accepted": 3,
+     "rejected": 16
+    },
+    {
+     "suite": "fsem01-source-bool-loop-v1",
+     "accepted": 5,
+     "rejected": 13
+    },
+    {
+     "suite": "fsem01-scoped-linear-loop-loan-v1",
+     "accepted": 3,
+     "rejected": 8
+    },
+    {
+     "suite": "fsem02-restricted-source-transfer-v1",
+     "accepted": 1,
+     "rejected": 1
+    },
+    {
+     "suite": "fsem02-source-joint-choice-v1",
+     "accepted": 0,
+     "rejected": 1
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-scoped-loop-loan-fsem01-v1.md",
+     "title": "FSEM-01 L-3 — source-scoped loan before a Linear loop backedge"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-linear-loop-transfer-fsem01-v1.md",
+     "title": "FSEM-01 L-2 — parsed-source Linear Bytes loop owner transfer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-predecessor-replay-fsem02-v1.md",
+     "title": "FSEM-02: exact restricted rendezvous predecessor replay (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-bool-break-fsem01-v1.md",
+     "title": "FSEM-01 L-1 — source loop break, lexical exit and terminal linear completion"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-close-carrier-fsem02-v1.md",
+     "title": "FSEM-02: source-close carrier projection integrity (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-bool-loop-fsem01-v1.md",
+     "title": "FSEM-01 L-1 — parsed-source Bool loop entry and backedge"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-terminal-close-replay-fsem02-v1.md",
+     "title": "FSEM-02: source terminal-close state replay correspondence (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-terminal-obligations-fsem02-v1.md",
+     "title": "FSEM-02: checked-source process and root terminal obligation gate (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-terminal-close-fsem02-v1.md",
+     "title": "FSEM-02 / checked source terminal endpoint closure (bounded)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-source-transfer-fsem02-v1.md",
+     "title": "FSEM-02 / source-checked restricted send/receive ownership transfer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-stateful-choice-fsem02-v1.md",
+     "title": "FSEM-02 / source-checked stateful choice and endpoint owner ledger"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-joint-choice-fsem02-v1.md",
+     "title": "FSEM-02 / bounded source select–offer joint choice"
+    }
+   ],
+   "proofsAdded": 12,
+   "proofsChanged": 11,
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceLinearLoopTransfer",
+    "Phil.Surface.GrammarV1.SourceBoolLoopBreak",
+    "Phil.Surface.GrammarV1.SourceBoolLoopResource",
+    "Phil.Surface.GrammarV1.ComponentRestrictedSourceTerminal",
+    "Phil.Surface.GrammarV1.ComponentRestrictedSourceClose",
+    "Phil.Surface.GrammarV1.ComponentRestrictedRendezvous",
+    "Phil.Surface.GrammarV1.ComponentChoiceStatefulRendezvous",
+    "Phil.Surface.GrammarV1.ComponentChoiceRendezvous"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "1724452c56",
+     "subject": "FSEM-01 L-3: source-scoped loan closure before Linear loop reentry"
+    },
+    {
+     "sha": "27e63cc663",
+     "subject": "FSEM-02: replay original restricted rendezvous predecessor at terminal gate"
+    },
+    {
+     "sha": "57812a055f",
+     "subject": "Merged: impl audit / atom manifest checked occurrence revision i replay"
+    },
+    {
+     "sha": "ddcfbfb2a2",
+     "subject": "FSEM-01 L-2: source Linear loop owner transfer and checked backedge rebind"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "commits": 19,
+   "merges": 12,
+   "streams": [
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 14
+    },
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 4
+    },
+    {
+     "name": "CI",
+     "about": "build and test automation",
+     "n": 1
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-two-bool-join-telescope-v1",
+     "accepted": 5,
+     "rejected": 18
+    },
+    {
+     "suite": "fsem01-bool-join-telescope-v1",
+     "accepted": 4,
+     "rejected": 15
+    },
+    {
+     "suite": "fsem01-scoped-borrow-join-v1",
+     "accepted": 4,
+     "rejected": 14
+    },
+    {
+     "suite": "fsem01-affine-join-scope-v1",
+     "accepted": 1,
+     "rejected": 14
+    },
+    {
+     "suite": "fsem01-source-product-elimination-v1",
+     "accepted": 1,
+     "rejected": 14
+    },
+    {
+     "suite": "fsem01-nominal-affine-product-v1",
+     "accepted": 1,
+     "rejected": 12
+    },
+    {
+     "suite": "fsem01-source-branch-join-v1",
+     "accepted": 1,
+     "rejected": 10
+    },
+    {
+     "suite": "fsem01-mixed-affine-linear-v1",
+     "accepted": 1,
+     "rejected": 7
+    },
+    {
+     "suite": "fsem01-two-owner-source-v1",
+     "accepted": 1,
+     "rejected": 5
+    },
+    {
+     "suite": "fsem01-source-affine-v1",
+     "accepted": 0,
+     "rejected": 5
+    },
+    {
+     "suite": "fsem02-source-offer-v1",
+     "accepted": 1,
+     "rejected": 3
+    },
+    {
+     "suite": "fsem02-source-choice-v1",
+     "accepted": 1,
+     "rejected": 2
+    },
+    {
+     "suite": "fsem02-protocol-progression-v1",
+     "accepted": 1,
+     "rejected": 1
+    },
+    {
+     "suite": "fsem02-source-offer-replay-v1",
+     "accepted": 0,
+     "rejected": 1
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-two-bool-join-telescope-fsem01-v1.md",
+     "title": "FSEM-01 — source-checked two-slot Bool join telescope"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-offer-replay-fsem02-v1.md",
+     "title": "FSEM-02 / bounded source-offer unit-arm branch replay"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-bool-join-telescope-fsem01-v1.md",
+     "title": "FSEM-01 — source-checked nonempty Bool join-state telescope and invariants"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-scoped-borrow-join-fsem01-v1.md",
+     "title": "FSEM-01 — lexical shared loans at source branch/join boundaries"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-offer-fsem02-v1.md",
+     "title": "FSEM-02 / source offer catalog totality (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-affine-join-scope-fsem01-v1.md",
+     "title": "FSEM-01 — source-declared affine branch asymmetry and scoped-local cleanup"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-choice-fsem02-v1.md",
+     "title": "FSEM-02 / source-selected choice with checked local successor (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-branch-join-fsem01-v1.md",
+     "title": "FSEM-01 J-1/J-2 — two source predecessors, exact join and terminal exclusion"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-protocol-progression-fsem02-v1.md",
+     "title": "FSEM-02 / exact local protocol-head progression (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-fsem01-exit-matrix-v1.md",
+     "title": "FSEM-01 resource and local typing: exit-evidence matrix (v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-product-elimination-fsem01-v1.md",
+     "title": "FSEM-01 — source product elimination with restored affine and linear owners"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-nominal-affine-product-fsem01-v1.md",
+     "title": "FSEM-01 — source-checked nominal affine and linear product return"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-mixed-affine-linear-fsem01-v1.md",
+     "title": "FSEM-01 — one parsed source function with affine and linear ownership"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-affine-fsem01-v1.md",
+     "title": "FSEM-01 — checked source nominal affine ownership and lifecycle"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-finite-context-fsem01-v1.md",
+     "title": "FSEM-01 — finite resource-context projection and general frame models"
+    },
+    {
+     "path": "docs/phase-1/ci-hackage-update-retry-v1.md",
+     "title": "CI: Hackage package-index retry pilot"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-flat-product-fsem01-v1.md",
+     "title": "FSEM-01 — flat source products and mixed-mode contract preservation"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-product-return-fsem01-v1.md",
+     "title": "FSEM-01 — checked two-Bytes product return in one source function"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-owner-source-fsem01-v1.md",
+     "title": "FSEM-01 — single-source two-linear-owner borrow conformance"
+    }
+   ],
+   "proofsAdded": 12,
+   "proofsChanged": 13,
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceTwoBoolJoinTelescope",
+    "Phil.Surface.GrammarV1.ComponentOfferReplay",
+    "Phil.Surface.GrammarV1.SourceBoolJoinTelescope",
+    "Phil.Surface.GrammarV1.SourceScopedBorrowJoin",
+    "Phil.Surface.GrammarV1.ComponentOfferCoverage",
+    "Phil.Surface.GrammarV1.SourceAffineIfJoinResource",
+    "Phil.Surface.GrammarV1.ComponentSelectClose",
+    "Phil.Surface.GrammarV1.SourceIfJoinResource",
+    "Phil.Surface.GrammarV1.SourceProductElimination",
+    "Phil.Surface.GrammarV1.SourceAffineProduct",
+    "Phil.Surface.GrammarV1.SourceAffineResource",
+    "Phil.Surface.GrammarV1.TwoOwnerBorrowResourceSurface"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "644be6944b",
+     "subject": "FSEM-01: checked two-slot Bool join-state telescope and ordered resource insertion"
+    },
+    {
+     "sha": "00b640b4e1",
+     "subject": "FSEM-02: replay checked source offer arm through exact local Core progression"
+    },
+    {
+     "sha": "d19d7eafa7",
+     "subject": "CI: retry Hackage update over HTTP/1.1 in certificate jobs"
+    },
+    {
+     "sha": "94661934f0",
+     "subject": "Merged: impl audit / semantic record atom hm fields"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-07",
+   "commits": 17,
+   "merges": 16,
+   "streams": [
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 14
+    },
+    {
+     "name": "CI",
+     "about": "build and test automation",
+     "n": 2
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-observation-v1",
+     "accepted": 1,
+     "rejected": 1
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-two-owner-context-fsem01-v1.md",
+     "title": "FSEM-01 — bounded two-owner resource-context frame bridge"
+    },
+    {
+     "path": "docs/phase-1/pr-head-ci-supersession-policy-v1.md",
+     "title": "PR-head CI supersession — bounded first rollout"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-resource-context-wire-fsem01-v1.md",
+     "title": "FSEM-01 — exact bounded resource-context extraction and transition evidence"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-checker-state-observation-fsem01-v1.md",
+     "title": "FSEM-01 — resource-context to loan-observation refinement"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-producer-fidelity-fsem01-v1.md",
+     "title": "FSEM-01 — bounded observation producer-fidelity proof"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-simulation-fsem01-v1.md",
+     "title": "FSEM-01 — bounded source-run to model simulation"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-observation-wire-fsem01-v1.md",
+     "title": "FSEM-01 — source-derived observation wire v1 and formally checked decoder"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-step-error-bridge-fsem01-v1.md",
+     "title": "FSEM-01 — bounded transition and BorrowEscape error bridge"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-represented-loan-trace-fsem01-v1.md",
+     "title": "FSEM-01 — represented owner identity across production loan checkpoints"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-declaration-identity-bridge-fsem01-v1.md",
+     "title": "FSEM-01 — bounded declaration identity representation bridge"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-binder-name-encoding-fsem01-v1.md",
+     "title": "FSEM-01 — exact local-binder Core.Name encoding (first correspondence slice)"
+    },
+    {
+     "path": "docs/formal-semantics-coordination.md",
+     "title": "Formal-semantics slice claims (FSEM lane)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-exact-loan-transition-model-fsem01-v1.md",
+     "title": "FSEM-01 — exact owner/loan transition model (first proved slice)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-loan-transition-trace-fsem01-v1.md",
+     "title": "FSEM-01 — concrete production loan-state checkpoints (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-loan-state-correspondence-fsem01-v0.md",
+     "title": "FSEM-01 — source, production loan-state, and Rocq correspondence (proposed v0)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-borrow-resource-bridge-fsem01-v1.md",
+     "title": "FSEM-01 — exact Grammar-v1 borrow identities in the production loan checker"
+    }
+   ],
+   "proofsAdded": 11,
+   "proofsChanged": 7,
+   "modules": [
+    "Phil.Surface.GrammarV1.BorrowResourceSurface"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "26d584751b",
+     "subject": "FSEM-01: prove two-owner resource frames and source-bound context2 wire"
+    },
+    {
+     "sha": "257a6c38ce",
+     "subject": "CI: expand PR-head supersession to INT-008/009 and FSEM-01 checks"
+    },
+    {
+     "sha": "f13e4d2642",
+     "subject": "Merged: impl audit / subject instance realization revision wires"
+    },
+    {
+     "sha": "d448eac9f4",
+     "subject": "Merged: impl audit / reconcile 1654 typed stage revisions"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "commits": 0,
+   "merges": 33,
+   "streams": [],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-borrow-scope-fsem01-v0.md",
+     "title": "FSEM-01 — Phase 1 borrow-scope judgment boundary and executable controls"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-judgment-inventory-v0.md",
+     "title": "Phase 1 formal semantics: judgment and correspondence inventory (FSEM-00)"
+    },
+    {
+     "path": "docs/phase-1/typing-and-semantics-reader-guide-v1.md",
+     "title": "Phil Phase 1 typing and semantics: a reader's guide (draft v1)"
+    },
+    {
+     "path": "docs/phase-1/typing-rules-worked-examples-draft-v1.md",
+     "title": "Phase 1 typing judgments: three worked rule families (review draft)"
+    },
+    {
+     "path": "docs/assets/mascots/README.md",
+     "title": "Phil mascot artwork — asset provenance"
+    },
+    {
+     "path": "docs/brand/mascots.md",
+     "title": "Phil mascot gallery"
+    },
+    {
+     "path": "docs/mhb-atc.md",
+     "title": "Mecha Hamster Ball — Air Traffic Control (MHB-ATC)"
+    }
+   ],
+   "proofsAdded": 0,
+   "proofsChanged": 12,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "55d7ef9e0d",
+     "subject": "Merged: impl audit / retain exact certified release final witness"
+    },
+    {
+     "sha": "99405d423a",
+     "subject": "Merged: impl audit / reconcile exact stage closure 1619"
+    },
+    {
+     "sha": "23103f2399",
+     "subject": "Merged: formal semantics / fsem01 borrow scope controls"
+    },
+    {
+     "sha": "667daed29d",
+     "subject": "Merged: formal semantics / phase1 judgment inventory"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-05",
+   "commits": 18,
+   "merges": 13,
+   "streams": [
+    {
+     "name": "Docs",
+     "about": "documentation",
+     "n": 9
+    },
+    {
+     "name": "Audit",
+     "about": "audits of the implementation",
+     "n": 4
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/audit-native-final-instance-typed-correspondence-v1.md",
+     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — typed native final-instance intermediate"
+    },
+    {
+     "path": "docs/phase-1/audit-generic-actual-instance-binding-v1.md",
+     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — exact generic actual/instance correspondence"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-effect-set-recursive-grouping-v1.md",
+     "title": "Effect-set recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/audit-source-manifest-producer-binding-v1.md",
+     "title": "Source-to-manifest producer binding — bounded verification continuation"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-effect-expression-recursive-grouping-v1.md",
+     "title": "Effect-expression recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-term-arguments-recursive-grouping-v1.md",
+     "title": "Term-argument recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/audit-final-authority-native-adapter-v1.md",
+     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — bounded native final-authority projection"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-expression-recursive-grouping-v1.md",
+     "title": "Expression recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-arithmetic-recursive-grouping-v1.md",
+     "title": "Arithmetic recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-primary-postfix-recursive-grouping-v1.md",
+     "title": "Primary and postfix recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/implementation-correspondence-inventory-v1.md",
+     "title": "Phase 1 implementation-correspondence inventory v1"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-recursive-grouping-correspondence-v1.md",
+     "title": "Recursive grouping correspondence v1"
+    },
+    {
+     "path": "docs/phase-1/audit-steve-cas-cleanup-v1.md",
+     "title": "E-STEVE-CLEANUP-01 — CAS temporary-handle lifetime"
+    }
+   ],
+   "proofsAdded": 35,
+   "proofsChanged": 98,
+   "modules": [
+    "Phil.Verification.NativeFinalInstanceCorrespondence",
+    "Phil.Verification.SourceManifestBinding",
+    "Phil.Verification.FinalAuthorityAdapter"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "39edd8e0c6",
+     "subject": "audit: bind generic static arguments to canonical architecture instance"
+    },
+    {
+     "sha": "6a4e9ffd82",
+     "subject": "docs(audit): record #1579 checked producer binding and remaining representation premises"
+    },
+    {
+     "sha": "ce630833e4",
+     "subject": "Merged: impl audit / native final instance coordinates"
+    },
+    {
+     "sha": "46cfd1c2b0",
+     "subject": "Merged: rocq refinement / effect set recursive grouping"
+    }
+   ]
+  }
+ ],
+ "history": [
+  {
+   "date": "2026-11-12",
+   "commit": "6fb69ee6f5",
+   "files": 338,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  }
+ ]
+}

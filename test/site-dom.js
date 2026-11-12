@@ -25,7 +25,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("home: demo reports the double spend", /Ownership error, line 17/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
-  check("home: links to all three pages", ["playground/", "learn/", "hacks/", "otc/", "library/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
+  check("home: links to all three pages", ["playground/", "learn/", "hacks/", "otc/", "library/", "changelog/", "conformance/"].every((h) => p.d.querySelector(`.rows a[href="${h}"]`)));
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -147,6 +147,17 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("hacks: flipping back shows the mistake", /A promise was broken/.test(says("wormhole")));
   check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 8 && p.d.querySelectorAll("#limits li").length === 4);
   check("hacks: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Changelog
+  p = load("docs/changelog/index.html", "https://example.test/changelog/");
+  const ch = JSON.parse(fs.readFileSync("changelog/data.json", "utf8"));
+  check("changelog: one entry per active day", p.d.querySelectorAll(".day").length === ch.days.length && ch.days.length > 0);
+  check("changelog: names the Phil commit", p.d.getElementById("against").textContent.includes(ch.phil.commit));
+  check("changelog: the grammar line matches the data", /grammar/.test(p.d.getElementById("grammar").textContent) && p.d.getElementById("grammar").classList.contains("changed") === ch.days.some((d) => d.grammar.length > 0));
+  check("changelog: commit subjects link to Phil's commits", [...p.d.querySelectorAll(".words a")].every((a) => a.href.startsWith("https://github.com/abiggerhammer/phil/commit/")) && p.d.querySelectorAll(".words a").length > 0);
+  check("changelog: history table has a row per run", p.d.querySelectorAll("#history tbody tr").length === ch.history.length);
+  check("changelog: days are newest first and dates are well formed", ch.days.every((d, i) => /^\d{4}-\d\d-\d\d$/.test(d.date) && (i === 0 || d.date < ch.days[i - 1].date)));
+  check("changelog: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));

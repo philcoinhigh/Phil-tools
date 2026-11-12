@@ -23,6 +23,7 @@
     "playground/src",
     "site/src",
     "conformance",
+    "changelog",
     "test"
   ]
 }
