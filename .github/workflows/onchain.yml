@@ -45,10 +45,10 @@ jobs:
           solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
           PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
           echo "PROGRAM=$PROGRAM" >> "$GITHUB_ENV"
-          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
+          # The payer is funded at genesis: a test validator started without a wallet has no faucet.
+          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
           for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
-          solana program show "$PROGRAM" --url http://127.0.0.1:8899 2>&1 | tee -a onchain/out/build.log || true
-          node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" --airdrop 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/local.json || { echo "--- local run failed; validator log:" >> onchain/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> onchain/out/build.log; exit 1; }
+          node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/local.json || { echo "--- local run failed; validator log:" >> onchain/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> onchain/out/build.log; exit 1; }
           pkill -f solana-test-validator || true
       - name: Deploy to devnet and call it
         id: devnet
