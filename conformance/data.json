@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "7b7c51a527",
-  "date": "2026-11-11",
-  "subject": "FSEM-02: source choice branch End outcome isolation and cross-close rejection (#1733)"
+  "commit": "13808408f9",
+  "date": "2026-11-12",
+  "subject": "FSEM-02: fail-closed nominal protocol instance and role gates for source Offer replay (#1738)"
  },
  "files": 338,
  "grammar": {
