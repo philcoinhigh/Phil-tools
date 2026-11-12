@@ -9,6 +9,7 @@ import changes from "../../changelog/data.json";
 import fuzz from "../../fuzz/data.json";
 import fuzzHistory from "../../fuzz/history.json";
 import philc from "../../philc/build.json";
+import onchain from "../../onchain/deployment.json";
 
 // Links shared before the site had a home page pointed at the root with a hash.
 if (location.hash.length > 1) location.replace("playground/" + location.hash);
@@ -82,4 +83,8 @@ set("s-fuzz", num(tried));
 set("s-fuzz-l", `programs thrown at Phil's compiler so far. Wrong answers in the latest run: ${fuzz.findings.disagreement}`);
 set("s-philc", "philc");
 set("s-philc-l", `Phil's real compiler, ${(philc.bytes / 1048576).toFixed(1)} MB, built from commit ${String(philc.commit).slice(0, 10)} of ${philc.date}`);
+const oc = onchain.devnet.ok ? onchain.devnet.run : onchain.local.run;
+set("oc-net", onchain.devnet.ok ? "Solana devnet · live" : "Proven locally · devnet pending");
+set("oc-val", String(oc?.returned ?? "–"));
+set("oc-l", `from a ${onchain.programBytes.toLocaleString("en-GB")}-byte program, using ${oc?.unitsConsumed ?? "–"} compute units`);
 wireFooter();

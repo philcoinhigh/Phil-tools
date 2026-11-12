@@ -1,0 +1,50 @@
+philc emitted 16 lines of LLVM for onchain/first.phil
+solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
+Fetching Solana's compiler toolchain
+LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+-rwxr-xr-x 1 runner runner 2160 Nov 12 23:05 onchain/out/phil_first.so
+
+onchain/out/phil_first.so:	file format elf64-sbf
+
+Disassembly of section .text:
+
+0000000000000120 <entrypoint>:
+     120:      	call -0x1
+     128:      	mov64 r6, r0
+     130:      	lddw r1, 0x1b0
+     140:      	mov64 r2, 0x13
+     148:      	call -0x1
+     150:      	lsh64 r6, 0x20
+     158:      	rsh64 r6, 0x20
+     160:      	mov64 r1, 0x0
+     168:      	mov64 r2, 0x0
+     170:      	mov64 r3, 0x0
+     178:      	mov64 r4, 0x0
+     180:      	mov64 r5, r6
+     188:      	call -0x1
+     190:      	mov64 r0, 0x0
+     198:      	exit
+
+00000000000001a0 <phil_main>:
+     1a0:      	mov64 r0, 0x2a
+     1a8:      	exit
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 500000000000000000 lamports
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 20 SOL
+==============================================================================
+Recover the intermediate account's ephemeral keypair file with
+`solana-keygen recover` and the following 12-word seed phrase:
+==============================================================================
+differ inform depend ranch snap leader vapor raccoon slam social cross utility
+==============================================================================
+To resume a deploy, pass the recovered keypair as the
+[BUFFER_SIGNER] to `solana program deploy` or `solana program write-buffer'.
+Or to recover the account's lamports, use:
+==============================================================================
+solana program close Gj9rUarucE43wTLZnbSJEfGMocHFZX3ps9Fj6berRv7h
+==============================================================================
+Program Id: 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB
+
+Signature: YYrD8CaWrzA1GyYn7XNx3pgLTV2uCGjc4zLsB1WcapdD8v44Wb99zNXyeBbhCFGNaRoYHryAigHkBc6o7Tj4Diz
+
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 19987280240 lamports

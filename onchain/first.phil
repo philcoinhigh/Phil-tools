@@ -1,0 +1,6 @@
+// The first Phil program on a blockchain.
+// Compiled by philc, Phil's own compiler, and run inside Solana's virtual machine.
+component main provides U32 {
+    let answer = 42
+    return answer
+}
