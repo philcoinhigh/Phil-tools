@@ -1,8 +1,9 @@
 name: Phil on Solana
 # Compiles onchain/first.phil with Phil's own compiler, builds a Solana program from the LLVM it
 # emits, proves it runs on a local test validator, then deploys it to devnet and calls it.
-# The devnet wallet is generated here, funded from the devnet faucet (test SOL has no value),
-# used once and thrown away. No key is stored or committed.
+# The devnet wallet is generated here on first run and kept in this repository's Actions cache so
+# that it can be funded once from the web faucet and reused. It is a devnet-only key: test SOL has
+# no value. The key is never committed, printed or written to the log; only its address is.
 on:
   push:
     branches: [onchain]
@@ -25,6 +26,18 @@ jobs:
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)" 2>&1 | tail -5
           echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Restore the devnet wallet, if one was made before
+        uses: actions/cache@v4
+        with:
+          path: ~/.phil-devnet
+          key: phil-devnet-wallet-v1
+      - name: Make the devnet wallet on first run
+        run: |
+          mkdir -p ~/.phil-devnet && chmod 700 ~/.phil-devnet
+          [ -s ~/.phil-devnet/payer.json ] || solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/payer.json
+          [ -s ~/.phil-devnet/program.json ] || solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/program.json
+          echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
+          echo "PROGRAM=$(solana-keygen pubkey ~/.phil-devnet/program.json)" >> "$GITHUB_ENV"
       - name: Compile the Phil program with philc
         run: |
           mkdir -p onchain/out
@@ -41,37 +54,28 @@ jobs:
         run: |
           set -o pipefail
           npm install --no-save @solana/web3.js@1.99.0 >/dev/null 2>&1
-          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/program.json"
-          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
-          PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
-          echo "PROGRAM=$PROGRAM" >> "$GITHUB_ENV"
+          cp ~/.phil-devnet/payer.json "$RUNNER_TEMP/payer.json"
           # The payer is funded at genesis: a test validator started without a wallet has no faucet.
           solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
           for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
           node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/local.json || { echo "--- local run failed; validator log:" >> onchain/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> onchain/out/build.log; exit 1; }
           pkill -f solana-test-validator || true
-      - name: Deploy to a public test network and call it
+      - name: Deploy to devnet and call it
         id: devnet
         continue-on-error: true
         run: |
           set -o pipefail
-          WALLET=$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")
-          # A 2 KB program needs well under 0.1 SOL. Public faucets rate-limit shared addresses such as
-          # GitHub's, so ask for a little, wait between tries, and fall back from devnet to testnet.
-          URL=""
-          for net in devnet testnet; do
-            u="https://api.$net.solana.com"
-            for i in 1 2 3 4 5; do
-              solana airdrop 0.3 "$WALLET" --url "$u" 2>&1 | tail -1 | tee -a onchain/out/build.log || true
-              bal=$(solana balance "$WALLET" --url "$u" 2>/dev/null | awk '{print $1}')
-              if [ "$(printf '%.0f' "$(echo "${bal:-0} * 1000" | bc)")" -ge 100 ]; then URL="$u"; NET="$net"; break 2; fi
-              sleep $((i * 20))
-            done
-          done
-          if [ -z "$URL" ]; then echo "No public faucet funded the wallet (they rate-limit shared addresses)." | tee -a onchain/out/build.log; exit 1; fi
-          echo "funded on $NET" | tee -a onchain/out/build.log
-          solana program deploy --url "$URL" --keypair "$RUNNER_TEMP/payer.json" --program-id "$RUNNER_TEMP/program.json" onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
-          node onchain/invoke.mjs "$URL" "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | jq --arg net "$NET" '. + {network: $net}' | tee onchain/out/devnet.json
+          URL=https://api.devnet.solana.com
+          bal=$(solana balance "$WALLET" --url "$URL" 2>/dev/null | awk '{print $1}')
+          echo "devnet wallet $WALLET holds ${bal:-0} SOL" | tee -a onchain/out/build.log
+          if [ "$(printf '%.0f' "$(echo "${bal:-0} * 1000" | bc)")" -lt 50 ]; then
+            echo "Not enough test SOL to deploy. Send 0.5 devnet SOL to $WALLET from https://faucet.solana.com and run this again." | tee -a onchain/out/build.log
+            exit 1
+          fi
+          if solana program show "$PROGRAM" --url "$URL" >/dev/null 2>&1; then echo "program $PROGRAM is already deployed" | tee -a onchain/out/build.log; else
+            solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-devnet/program.json onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
+          fi
+          node onchain/invoke.mjs "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a onchain/out/build.log >&2) | jq '. + {network: "devnet"}' | tee onchain/out/devnet.json
       - name: Record the result
         if: always()
         run: |
@@ -81,10 +85,10 @@ jobs:
           if ok onchain/out/local.json; then cp onchain/out/local.json "$RUNNER_TEMP/l.json"; L=true; else echo null > "$RUNNER_TEMP/l.json"; L=false; fi
           if ok onchain/out/devnet.json; then cp onchain/out/devnet.json "$RUNNER_TEMP/d.json"; D=true; else echo null > "$RUNNER_TEMP/d.json"; D=false; fi
           bytes=$(stat -c %s onchain/out/phil_first.so 2>/dev/null || echo 0)
-          jq -n --arg phil "$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)" --arg program "${PROGRAM:-}" \
+          jq -n --arg phil "$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)" --arg program "${PROGRAM:-}" --arg wallet "${WALLET:-}" \
              --arg solana "$(solana --version 2>/dev/null || echo unknown)" --arg day "$(date -u +%F)" --argjson bytes "$bytes" \
              --argjson localOk "$L" --argjson devnetOk "$D" --slurpfile local "$RUNNER_TEMP/l.json" --slurpfile devnet "$RUNNER_TEMP/d.json" \
-             '{day: $day, philCommit: $phil, solana: $solana, programBytes: $bytes, local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: (if $devnetOk then $program else null end), run: $devnet[0]}}' > onchain/deployment.json || echo '{"error":"could not record"}' > onchain/deployment.json
+             '{day: $day, philCommit: $phil, solana: $solana, programBytes: $bytes, local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: $program, wallet: $wallet, run: $devnet[0]}}' > onchain/deployment.json || echo '{"error":"could not record"}' > onchain/deployment.json
           cat onchain/deployment.json
       - name: Commit the result and the build log
         if: always()
