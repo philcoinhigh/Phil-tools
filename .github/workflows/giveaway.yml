@@ -1,0 +1,60 @@
+name: Giveaway program
+# Builds the LLVM emitters from Phil's repository and records what they emit, so that the
+# giveaway program can be built on top of Phil's own upload-server code.
+on:
+  push:
+    branches: [onchain]
+    paths: ["giveaway/**", ".github/workflows/giveaway.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: phil-giveaway
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out Phil
+        run: |
+          git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
+          echo "PHIL=$(git -C ../phil rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: "9.6.7"
+          cabal-version: "3.18.1.0"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            ~/.local/state/cabal
+            ../phil/dist-newstyle
+          key: phil-emitters-${{ env.PHIL }}
+          restore-keys: phil-emitters-
+      - name: Build Phil's LLVM emitters
+        run: |
+          set -o pipefail
+          cd ../phil
+          exes=$(grep -E '^executable phil-llvm-phase0' phil-core.cabal | awk '{print "exe:" $2}' | tr '\n' ' ')
+          { cabal update && cabal build $exes; } 2>&1 | tail -60 | tee "$GITHUB_WORKSPACE/giveaway/emit.log"
+      - name: Emit
+        if: always()
+        run: |
+          mkdir -p giveaway/phil-llvm
+          cd ../phil
+          for name in $(grep -E '^executable phil-llvm-phase0' phil-core.cabal | awk '{print $2}'); do
+            bin=$(cabal list-bin "exe:$name" 2>/dev/null || true)
+            if [ -x "$bin" ]; then "$bin" > "$GITHUB_WORKSPACE/giveaway/phil-llvm/$name.ll" 2>> "$GITHUB_WORKSPACE/giveaway/emit.log" && echo "ok   $name $(wc -l < "$GITHUB_WORKSPACE/giveaway/phil-llvm/$name.ll") lines" || echo "FAIL $name"; else echo "none $name"; fi
+          done | tee -a "$GITHUB_WORKSPACE/giveaway/emit.log"
+          jq -n --arg commit "$PHIL" --arg day "$(date -u +%F)" --arg ghc "$(ghc --numeric-version)" '{commit: $commit, day: $day, ghc: $ghc}' > "$GITHUB_WORKSPACE/giveaway/emitted.json"
+      - name: Commit what was emitted
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add giveaway
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Giveaway: LLVM emitted by Phil $(echo "$PHIL" | cut -c1-10)"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase; done; exit 1
