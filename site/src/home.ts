@@ -10,6 +10,7 @@ import fuzz from "../../fuzz/data.json";
 import fuzzHistory from "../../fuzz/history.json";
 import philc from "../../philc/build.json";
 import onchain from "../../onchain/deployment.json";
+import { DRAWS } from "./giveaway-data";
 
 // Links shared before the site had a home page pointed at the root with a hash.
 if (location.hash.length > 1) location.replace("playground/" + location.hash);
@@ -87,4 +88,10 @@ const oc = onchain.devnet.run ?? onchain.local.run;
 set("oc-net", onchain.devnet.ok ? "Solana devnet · live" : onchain.devnet.run ? "Solana devnet" : "Proven locally · devnet pending");
 set("oc-val", String(oc?.returned ?? "–"));
 set("oc-l", `from a ${onchain.programBytes.toLocaleString("en-GB")}-byte program, using ${oc?.unitsConsumed ?? "–"} compute units`);
+const latest = DRAWS.find((g) => g.winners.length > 0);
+if (latest) {
+  set("gv-k", `Latest draw · ${latest.title}`);
+  set("gv-val", latest.winners.map((w: { entry: string }) => w.entry).join(", "));
+  set("gv-l", `picked from ${latest.entries.length} entries by the block at slot ${latest.draw.hashSlot.toLocaleString("en-GB")}`);
+}
 wireFooter();

@@ -16,6 +16,7 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | **Phil OTC desk** | An escrow desk and a two-listing order book, written in Phil. Simulation only: no real tokens move | [`otc/`](otc) |
 | **Hacks Phil would have stopped** | Four well-known losses, each reduced to the shape of the mistake and refused in the page, with sources | [`core/src/sim/hacks.ts`](core/src/sim/hacks.ts) |
 | **Phil on Solana** | A Phil program compiled by Phil's own compiler, deployed on Solana devnet and called. Real, and tiny | [`onchain/`](onchain) |
+| **Giveaways** | Provably fair draws on Solana devnet. The entry list is locked through the upload server Phil's backend emits; a future block picks the winner; anyone can check without a wallet | [`giveaway/`](giveaway) |
 | **Token utilities** | A token locker (cliff, streaming, cancel), transfer hooks, launchpad hooks modelled on higher.fun's published rules, a hook that pays holders in tokenized stock, vesting, a 2-of-3 treasury, an auction and a bonding-curve launch. Written in Phil and meant to be forked. Simulation only | [`contracts/`](contracts) |
 | **What changed in Phil** | A day-by-day record of what landed in the Phil repository, counted from its git history and refreshed daily | [`changelog/`](changelog) |
 | **Compiler fuzzer** | Generates programs and runs Phil's own compiler on them daily, looking for crashes, hangs and wrong answers | [`fuzz/`](fuzz) |
@@ -61,6 +62,7 @@ Exit status is 0 with no errors, 1 with syntax errors, 2 on usage errors.
 | OTC desk | `otc/` |
 | Token utilities | `library/` |
 | Phil on Solana | `onchain/` |
+| Giveaways | `giveaway/` |
 | What changed in Phil | `changelog/` |
 | Compiler fuzzer | `fuzz/` |
 | Conformance report | `conformance/` |
@@ -101,7 +103,7 @@ npm run fuzz -- --seconds 120 --seed 1   # run Phil's own compiler on generated 
 - The checker validates **syntax only**. A program that parses can still be rejected by Phil for ownership, protocol, authority or proof reasons.
 - The simulator is **an interpretation of Phil's published design**, not an official semantics. It checks at run time what Phil establishes statically. A program that runs here can still be rejected by Phil, and the other way round.
 - The bug hunter is a **bounded search, not a proof**.
-- Programs written against these tools are models. Phil's own compiler does not yet build general programs. One small program, compiled by that compiler, is deployed on Solana devnet ([`onchain/`](onchain)); nothing else here is on a blockchain.
+- Programs written against these tools are models. Phil's own compiler does not yet build general programs. Two things here are on Solana devnet: one small program compiled by that compiler ([`onchain/`](onchain)), and the giveaway program, which runs the upload server emitted by Phil's LLVM backend ([`giveaway/`](giveaway)). Everything else is a simulation.
 - The OTC desk, the utilities and the hacks exhibits are **simulations**. No real tokens move, and several are simplified models of something larger; each page says how.
 - Simulator choices that are not Phil: host operations `lt`, `le`, `gt`, `ge`, `eq`, `ne` and `console_write` (ordinary Phil expressions have no comparison operators); inside an `offer` arm the endpoint's name refers to its next state; roles marked `external` are played by an automatic peer; simple programs in Phil's earlier syntax (no semicolons) are read by treating each line as a statement.
 
