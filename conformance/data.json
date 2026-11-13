@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "7e31cfd867",
-  "date": "2026-11-12",
-  "subject": "test(fsem02): verify half-closed Ping peer refusal and stale replay (#1748)"
+  "commit": "e14d9e7106",
+  "date": "2026-11-13",
+  "subject": "FSEM-02: forbid source choice and terminal End resurrection after complete Close (#1754)"
  },
  "files": 338,
  "grammar": {
