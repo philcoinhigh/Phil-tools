@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Giveaways nobody can rig</title>
+<meta name="description" content="Giveaways drawn on Solana. The entry list is locked through Phil's upload protocol, a block that does not exist yet picks the winner, and anyone can check it.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.pick { display: flex; gap: 8px; overflow-x: auto; margin-top: 18px; padding-bottom: 2px; }
+.pick button { flex: none; border: 1px solid var(--ink); background: var(--sheet); color: var(--ink); padding: 7px 12px; font: 600 13px var(--font-mark); border-radius: 3px; cursor: pointer; }
+.pick button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.card { border: 1px solid var(--ink); background: var(--sheet); margin-top: 14px; }
+.card .head { padding: 18px 18px 16px; border-bottom: 1px solid var(--rule); }
+.card .head .k { font: 12px var(--font-code); color: var(--muted); }
+.card .head h2 { margin: 6px 0 0; font: 600 24px/1.15 var(--font-mark); letter-spacing: -.02em; }
+.winners { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.winners div { padding: 16px 18px; border-bottom: 1px solid var(--rule); }
+.winners b { display: block; font: 600 26px/1.1 var(--font-code); letter-spacing: -.02em; color: var(--good); overflow-wrap: anywhere; }
+.winners span { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.facts { margin: 0; padding: 0; list-style: none; }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 18px; border-bottom: 1px solid var(--rule); align-items: baseline; font-size: 14.5px; }
+.facts span { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.act { padding: 16px 18px 18px; }
+.act h3 { margin: 0 0 6px; font: 600 18px var(--font-mark); letter-spacing: -.01em; } .act p { margin: 0 0 12px; max-width: 64ch; }
+.act + .act { border-top: 1px solid var(--rule); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.checks { list-style: none; margin: 14px 0 0; padding: 0; }
+.checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 6px; padding: 7px 0; border-top: 1px solid var(--rule); font-size: 14.5px; }
+.checks li::before { content: "·"; font: 600 15px var(--font-code); color: var(--muted); }
+.checks li.yes::before { content: "✓"; color: var(--good); } .checks li.no::before { content: "✗"; color: var(--bad); }
+.checks li.no { color: var(--bad); } .checks small { display: block; color: var(--muted); font-size: 13px; }
+.verdict { margin: 14px 0 0; font-size: 17px; font-weight: 600; } .verdict.good { color: var(--good); } .verdict.bad { color: var(--bad); }
+textarea.list { width: 100%; min-height: 150px; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 14px/1.5 var(--font-code); padding: 10px 12px; border-radius: 0; resize: vertical; }
+.steps { list-style: none; margin: 14px 0 0; padding: 0; border-left: 2px solid var(--ink); }
+.steps li { padding: 5px 0 5px 14px; font: 13.5px var(--font-code); } .steps li.bad { color: var(--bad); font-weight: 600; } .steps li.good { color: var(--good); font-weight: 600; }
+.find { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-body, inherit); padding: 9px 12px; border-radius: 0; }
+.entries { list-style: none; margin: 12px 0 0; padding: 0; max-height: 300px; overflow-y: auto; border: 1px solid var(--rule); columns: 2; column-gap: 0; }
+.entries li { padding: 6px 12px; font: 13.5px var(--font-code); border-bottom: 1px solid var(--rule); break-inside: avoid; overflow-wrap: anywhere; }
+.entries li.won { color: var(--good); font-weight: 600; } .entries li.won::after { content: "  winner"; font: 600 11px var(--font-mark); }
+.entries li[hidden] { display: none; }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.how > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.how > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.how h3 { margin: 0 0 4px; font-size: 17px; } .how p { margin: 0; max-width: 70ch; color: var(--muted); }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.empty { border: 1px dashed var(--ink); padding: 22px 18px; margin-top: 18px; color: var(--muted); }
+.flash { animation: flash 1s ease-out; }
+@media (max-width: 720px) { .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } .entries { columns: 1; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net">Solana devnet</span>
+    <h1>Giveaways nobody can rig</h1>
+    <p>The list of entries is locked on Solana first. Then a block that does not exist yet picks the winner. Nobody can know that block in advance, including whoever runs the giveaway, and anyone can check the result from this page.</p>
+    <p class="muted" style="font-size:15px">The code that decides whether a list is accepted on chain is Phil's: the upload server that Phil's compiler backend emits, running on Solana.</p>
+  </div>
+
+  <div id="none" class="empty" hidden>No giveaway has been drawn yet. The first one will appear here.</div>
+  <div class="pick" id="pick" role="group" aria-label="Giveaways"></div>
+  <article class="card" id="card" hidden>
+    <div class="head"><span class="k" id="g-when"></span><h2 id="g-title"></h2></div>
+    <div class="winners" id="g-winners"></div>
+    <ul class="facts" id="g-facts"></ul>
+
+    <section class="act" aria-labelledby="v-h">
+      <h3 id="v-h">Check it yourself</h3>
+      <p>This reads the giveaway straight from Solana and redoes the draw in your browser. It needs no wallet and costs nothing.</p>
+      <div class="row"><button class="btn" id="verify" type="button">Check this giveaway</button><span class="muted" id="verify-note" role="status"></span></div>
+      <div id="verify-out" hidden><ul class="checks" id="checks"></ul><p class="verdict" id="verify-verdict"></p></div>
+    </section>
+
+    <section class="act" aria-labelledby="t-h">
+      <h3 id="t-h">Try to cheat</h3>
+      <p>This is the locked list. Change a name, add your own, or delete someone, then ask Phil on Solana whether it is still the list that was locked.</p>
+      <textarea class="list" id="tamper" spellcheck="false" aria-label="Entry list to test"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn" id="ask" type="button">Ask Phil</button><button class="btn ghost small" id="reset" type="button">Put the real list back</button><span class="muted" id="ask-note" role="status"></span></div>
+      <div id="ask-out" hidden><p class="verdict" id="ask-verdict"></p><ol class="steps" id="ask-steps"></ol></div>
+    </section>
+
+    <section class="act" aria-labelledby="e-h">
+      <h3 id="e-h">The entries</h3>
+      <input class="find" id="find" type="search" placeholder="Find a name" aria-label="Find a name in the entries">
+      <ul class="entries" id="entries"></ul>
+    </section>
+  </article>
+
+  <h2 class="sec">How a draw works</h2>
+  <ol class="how">
+    <li><div><h3>The list is locked through Phil</h3><p>The entries are sent to Solana as an upload, in the protocol Phil defines: say hello, agree a version, declare the size and fingerprint, send the bytes. Phil's server checks every step and accepts only bytes that match what was declared. Once accepted, the list's fingerprint is written to an account that can never be written again.</p></div></li>
+    <li><div><h3>A future block is named</h3><p>At the moment of locking, the program writes down a slot a short time ahead. That block has not been produced yet, so its hash is unknown to everyone.</p></div></li>
+    <li><div><h3>That block picks the winner</h3><p>After the slot passes, anyone can tell the program to draw. It reads the block's hash from Solana, mixes it with the locked list's fingerprint, and the result points at an entry. There is no step where a person chooses.</p></div></li>
+    <li><div><h3>Anyone checks</h3><p>The account, both transactions and the list are public. The button above reads them and redoes the arithmetic.</p></div></li>
+  </ol>
+
+  <h2 class="sec">What this proves, and what it does not</h2>
+  <ul class="limits">
+    <li><b>Proves:</b> the list was fixed before the winning block existed, the winner follows from that block and nothing else, and the list shown here is the one that was locked.</li>
+    <li><b>Does not prove</b> the list is complete or honest. Whoever runs a giveaway decides who is on the list. Entrants should find their own name in it; the list is public for that reason.</li>
+    <li><b>Share the giveaway before the draw.</b> Someone could run many draws in private and show only the one they like. A draw that was announced before its result is worth far more than one that was not. Every draw made with this tool stays listed here.</li>
+    <li>Whoever produces the winning block could, in principle, influence its hash. For a community giveaway on a test network this does not matter; for large sums it would.</li>
+    <li>This runs on devnet, Solana's test network. Devnet is reset from time to time, which would remove the accounts; the records in the repository would remain.</li>
+  </ul>
+
+  <h2 class="sec">Where Phil is in this</h2>
+  <p class="lead" id="phil-lead"></p>
+  <ul class="facts card" id="p-facts" style="margin-top:14px"></ul>
+
+  <h2 class="sec">Run one</h2>
+  <p class="lead">Official draws are started by the maintainers of this repository: on GitHub, open <a href="__REPO__/actions/workflows/giveaway-start.yml">Actions, Start a giveaway</a>, press Run workflow, and fill in a title and the entries. The result appears on this page a few minutes later. To run your own, fork the repository; the whole pipeline is in <a href="__REPO__/tree/main/giveaway">giveaway/</a>.</p>
+  <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

@@ -25,6 +25,7 @@
     "conformance",
     "changelog",
     "fuzz",
-    "test"
+    "test",
+    "giveaway"
   ]
 }

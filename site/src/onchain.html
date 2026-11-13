@@ -28,6 +28,18 @@ pre.log b { color: var(--good); }
 .steps > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
 .steps h3 { margin: 0 0 6px; font-size: 17px; } .steps p { margin: 0 0 10px; max-width: 70ch; color: var(--muted); }
 .steps pre.code { max-height: 300px; }
+.call { margin-top: 22px; border: 1px solid var(--ink); background: var(--sheet); padding: 18px 18px 16px; }
+.call h2 { margin: 0 0 6px; font: 600 20px var(--font-mark); letter-spacing: -.02em; }
+.call p { margin: 0 0 12px; max-width: 64ch; }
+.call .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.call .verdict { margin: 16px 0 0; font-size: 17px; font-weight: 600; } .call .verdict.bad { color: var(--bad); font-weight: 500; }
+.call .verdict b { font: 600 22px var(--font-code); color: var(--good); }
+.call .fine { margin: 14px 0 0; font-size: 13.5px; color: var(--muted); }
+.call .flash { animation: flash 1s ease-out; }
+.nights { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); background: var(--sheet); max-height: 320px; overflow-y: auto; }
+.nights li { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14px; align-items: baseline; }
+.nights li:first-child { border-top: 0; } .nights time { font: 13px var(--font-code); } .nights .st { font: 600 12px var(--font-mark); }
+.nights .st.good { color: var(--good); } .nights .st.bad { color: var(--bad); } .nights a { font: 13px var(--font-code); }
 .lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
 .limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 6px 0; }
 @media (max-width: 720px) { .facts { grid-template-columns: minmax(0, 1fr); } .facts div + div { border-left: 0; border-top: 1px solid var(--rule); } .addr li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
@@ -42,9 +54,25 @@ __HEADER__
     <p>A program written in Phil, compiled by Phil's own compiler, is deployed on Solana's public test network. Anyone can call it, and when they do, the code that runs is what Phil's compiler produced.</p>
     <p class="muted" style="font-size:15px">It is a small program: it returns a number. That is everything Phil's compiler can build today, and it is the first step, not the last.</p>
   </div>
+  <section class="call" aria-labelledby="call-h">
+    <h2 id="call-h">Run it yourself</h2>
+    <p>Press the button and a Solana devnet node runs the Phil program now and sends back its log. No wallet is needed and it costs nothing.</p>
+    <div class="row"><button class="btn" id="call" type="button">Call the Phil program</button><span class="muted" id="call-note" role="status"></span></div>
+    <div id="call-out" hidden>
+      <p class="verdict" id="call-verdict"></p>
+      <pre class="log" id="call-log" aria-label="Log from the call"></pre>
+    </div>
+    <p class="fine">The node executes the program against the live chain and returns the result without recording a transaction, which is why it is free. The recorded transaction below was signed and paid for.</p>
+  </section>
+
+  <h2 class="sec">The recorded call</h2>
   <div class="facts" id="facts"></div>
   <ul class="addr" id="addr"></ul>
   <pre class="log" id="log" aria-label="Transaction log"></pre>
+
+  <h2 class="sec">Checked every night</h2>
+  <p class="lead" id="night-lead"></p>
+  <ol class="nights" id="nights"></ol>
 
   <h2 class="sec">How it got there</h2>
   <ol class="steps">

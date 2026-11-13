@@ -1,0 +1,19 @@
+name: Phil on Solana, nightly
+# Starts the "Phil on Solana" workflow on the `onchain` branch each night, after Phil's compiler
+# has been rebuilt for the browser (04:41 UTC) and the daily report has run (05:17 UTC).
+# It is started on that branch because the devnet wallet is readable only from there; the run
+# itself builds from main and commits to main. See onchain.yml.
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh workflow run onchain.yml --repo "$GITHUB_REPOSITORY" --ref onchain
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,36 @@
+name: Start a giveaway
+# The form to use. It hands the giveaway to the "Giveaway" workflow on the `onchain` branch,
+# which is the only place the devnet wallet can be read from. See giveaway.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "Giveaway title"
+        type: string
+        required: true
+      entries:
+        description: "Entries, separated by commas"
+        type: string
+        required: true
+      winners:
+        description: "How many winners"
+        type: string
+        default: "1"
+      delay_minutes:
+        description: "Minutes between locking the list and the draw"
+        type: string
+        default: "1"
+permissions:
+  actions: write
+  contents: read
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ inputs.title }}
+          ENTRIES: ${{ inputs.entries }}
+          WINNERS: ${{ inputs.winners }}
+          DELAY: ${{ inputs.delay_minutes }}
+        run: gh workflow run giveaway.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f "title=$TITLE" -f "entries=$ENTRIES" -f "winners=$WINNERS" -f "delay_minutes=$DELAY"

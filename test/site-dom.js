@@ -26,10 +26,10 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "giveaway/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 10 && p.d.querySelectorAll(".site nav.full a").length === 10);
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 11 && p.d.querySelectorAll(".site nav.full a").length === 11);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -198,11 +198,89 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // On chain
   p = load("docs/onchain/index.html", "https://example.test/onchain/");
   const oc = JSON.parse(fs.readFileSync("onchain/deployment.json", "utf8"));
-  check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.ok ? oc.devnet.run : oc.local.run).returned));
-  check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.ok || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
+  check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.run || oc.local.run).returned));
+  check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.run || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
   check("onchain: shows the log, the Phil source and philc's LLVM", /Phil main returned/.test(p.d.getElementById("log").textContent) && /component main provides U32/.test(p.d.getElementById("src-phil").textContent) && /define i32 @main\(\)/.test(p.d.getElementById("src-ll").textContent) && /phil_main/.test(p.d.getElementById("src-c").textContent));
-  check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+/.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
+  check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+|seed phrase|^([a-z]+ ){11}[a-z]+$/m.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
+  {
+    // The button builds a transaction by hand and asks a node to simulate it. Stand in for the node.
+    let asked = null;
+    p.w.fetch = async (url, init) => { asked = { url, body: JSON.parse(init.body) }; return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 123456 }, value: { err: null, unitsConsumed: 217, logs: oc.devnet.run.logs } } }) }; };
+    p.d.getElementById("call").click(); await wait(30);
+    const tx = Buffer.from(asked.body.params[0], "base64");
+    const web3 = require("@solana/web3.js");
+    const want = new web3.Transaction({ feePayer: new web3.PublicKey(oc.devnet.wallet), recentBlockhash: "11111111111111111111111111111111" }).add(new web3.TransactionInstruction({ programId: new web3.PublicKey(oc.devnet.programId), keys: [], data: Buffer.alloc(0) })).serialize({ requireAllSignatures: false, verifySignatures: false });
+    check("onchain: the button asks devnet to simulate, unsigned", asked.url === "https://api.devnet.solana.com" && asked.body.method === "simulateTransaction" && asked.body.params[1].sigVerify === false && asked.body.params[1].replaceRecentBlockhash === true);
+    check("onchain: the hand-built transaction is byte-for-byte what Solana's own library builds", want.equals(tx), `${tx.length} vs ${want.length}`);
+    check("onchain: the answer is shown with the value, the units and the log", !p.d.getElementById("call-out").hidden && /returned 42 using 217 compute units, at slot 123,456/.test(p.d.getElementById("call-verdict").textContent) && /Phil main returned/.test(p.d.getElementById("call-log").textContent) && /call 1/.test(p.d.getElementById("call-note").textContent) && p.d.getElementById("call").textContent === "Call it again");
+    p.w.fetch = async () => ({ ok: true, status: 200, json: async () => ({ result: { context: { slot: 1 }, value: { err: "ProgramAccountNotFound", logs: [] } } }) });
+    p.d.getElementById("call").click(); await wait(30);
+    check("onchain: a missing program is explained, not shown as a result", /not on devnet right now/.test(p.d.getElementById("call-verdict").textContent) && p.d.getElementById("call-verdict").classList.contains("bad"));
+    p.w.fetch = async () => { throw new Error("offline"); };
+    p.d.getElementById("call").click(); await wait(30);
+    check("onchain: being offline is explained", /Could not reach Solana devnet/.test(p.d.getElementById("call-verdict").textContent));
+    check("onchain: the nightly record lists each night with its transaction", p.d.querySelectorAll("#nights li").length === JSON.parse(fs.readFileSync("onchain/history.json", "utf8")).length && /nights? passed/.test(p.d.getElementById("night-lead").textContent));
+  }
   check("onchain: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Giveaways
+  p = load("docs/giveaway/index.html", "https://example.test/giveaway/");
+  check("giveaway: the page loads and says where Phil is", /UploadServer/.test(p.d.getElementById("phil-lead").textContent) && /46 signatures/.test(p.d.getElementById("p-facts").textContent) && p.errors.length === 0, p.errors.join("|"));
+  {
+    const dir = "giveaway/draws";
+    const draws = (fs.existsSync(dir) ? fs.readdirSync(dir) : []).filter((f) => f.endsWith(".json") && !f.endsWith(".pending.json")).map((f) => JSON.parse(fs.readFileSync(`${dir}/${f}`, "utf8"))).sort((a, b) => b.lock.time - a.lock.time);
+    const g = draws.find((x) => x.winners.length > 0);
+    if (!g) check("giveaway: with no draws the page says so", !p.d.getElementById("none").hidden && p.d.getElementById("card").hidden);
+    else {
+      const web3 = require("@solana/web3.js");
+      check("giveaway: shows the latest draw, its winners and the entries", p.d.getElementById("g-title").textContent === draws[0].title && (draws[0] !== g || (p.d.querySelectorAll("#g-winners b").length === g.winners.length && p.d.querySelector("#g-winners b").textContent === g.winners[0].entry && p.d.querySelectorAll("#entries li").length === g.entries.length && p.d.querySelectorAll("#entries li.won").length === g.winners.length)));
+      if (draws[0] !== g) { const b = [...p.d.querySelectorAll("#pick button")].find((x) => x.dataset.id === g.id); b.click(); }
+      check("giveaway: links the account and both transactions on the explorer", [g.account, g.lock.signature, g.draw.signature].every((id) => [...p.d.querySelectorAll("#g-facts a")].some((a) => a.href.includes(id) && a.href.endsWith("?cluster=devnet"))));
+      // Stand in for the Solana node: the account as the chain holds it, and a simulation answer.
+      const account = Buffer.alloc(256);
+      account.write("PHILDRAW", 0); account[8] = 2; account[9] = g.kind; account[10] = g.winnerCount; account[11] = Buffer.byteLength(g.title);
+      account.writeUInt32LE(g.entries.length, 12); account.writeUInt32LE(g.delaySlots, 16); account.writeUInt32LE(g.payloadLength, 20);
+      account.writeBigUInt64LE(BigInt(g.lock.slot), 24); account.writeBigUInt64LE(BigInt(g.lock.time), 32); account.writeBigUInt64LE(BigInt(g.draw.targetSlot), 40);
+      Buffer.from(g.payloadDigest, "hex").copy(account, 48); Buffer.from(g.listDigest, "hex").copy(account, 80);
+      account.writeBigUInt64LE(BigInt(g.draw.hashSlot), 112); Buffer.from(g.draw.slotHash, "hex").copy(account, 120); Buffer.from(g.draw.randomness, "hex").copy(account, 152);
+      account.writeBigUInt64LE(BigInt(g.winners[0].index), 184); account.write(g.title, 192);
+      const asked = [];
+      const node = (data, logs, err = null) => async (url, init) => {
+        const q = JSON.parse(init.body); asked.push(q);
+        if (q.method === "getAccountInfo") return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 9 }, value: { data: [data.toString("base64"), "base64"], owner: g.program } } }) };
+        return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 9 }, value: { err, unitsConsumed: 2109, logs } } }) };
+      };
+      const accepted = ["Program log: Phil: UploadServer started", "Program log: Phil: SHA-256 matches the declared digest", "Program log: Phil draw: this is byte for byte the giveaway that is locked", "Program log: Phil: ACCEPTED"];
+      const rejected = ["Program log: Phil: UploadServer started", "Program log: Phil: payload received, exactly the declared length", "Program log: Phil: REJECTED, the bytes do not match the declared digest"];
+      p.w.fetch = node(account, accepted);
+      p.d.getElementById("verify").click(); await wait(60);
+      check("giveaway: checking reads the account, redoes the draw and asks Phil; every check passes", p.d.querySelectorAll("#checks li").length === 8 && p.d.querySelectorAll("#checks li.no").length === 0 && /won fairly/.test(p.d.getElementById("verify-verdict").textContent) && asked[0].method === "getAccountInfo" && asked[0].params[0] === g.account, p.d.getElementById("checks").textContent);
+      const sim = asked.find((q) => q.method === "simulateTransaction");
+      const tx = web3.Transaction.from(Buffer.from(sim.params[0], "base64"));
+      check("giveaway: the question to Phil is a well-formed call to the giveaway program about this account", tx.instructions.length === 1 && tx.instructions[0].programId.toBase58() === g.program && tx.instructions[0].keys[0].pubkey.toBase58() === g.account && !tx.instructions[0].keys[0].isWritable && tx.instructions[0].data[0] === 3 && tx.instructions[0].data.slice(1, 5).toString() === "PHIL");
+      const forged = Buffer.from(account); forged.writeBigUInt64LE(BigInt((g.winners[0].index + 1) % g.entries.length), 184);
+      p.w.fetch = node(forged, accepted);
+      p.d.getElementById("verify").click(); await wait(60);
+      check("giveaway: a record that names a different winner from the chain's arithmetic is called out", p.d.querySelectorAll("#checks li.no").length >= 1 && /Do not trust/.test(p.d.getElementById("verify-verdict").textContent));
+      p.w.fetch = async () => ({ ok: true, status: 200, json: async () => ({ result: { context: { slot: 9 }, value: null } }) });
+      p.d.getElementById("verify").click(); await wait(60);
+      check("giveaway: a missing account is explained", /not on devnet/.test(p.d.getElementById("checks").textContent));
+      // Try to cheat.
+      const ta = p.d.getElementById("tamper");
+      check("giveaway: the cheat box starts with the locked list", ta.value === g.entries.join("\n"));
+      asked.length = 0; p.w.fetch = node(account, rejected, { InstructionError: [0, { Custom: 1201 }] });
+      ta.value = [...g.entries.slice(0, -1), "@me_instead"].join("\n");
+      p.d.getElementById("ask").click(); await wait(60);
+      const cheat = web3.Transaction.from(Buffer.from(asked[0].params[0], "base64")).instructions[0].data;
+      check("giveaway: an altered list is sent under the locked fingerprint, and Phil's refusal is shown step by step", cheat.includes(Buffer.from(g.payloadDigest, "hex")) && cheat.includes(Buffer.from("@me_instead")) && /not the ones that were declared/.test(p.d.getElementById("ask-verdict").textContent) && p.d.querySelectorAll("#ask-steps li.bad").length === 1 && p.d.getElementById("ask-verdict").classList.contains("bad"));
+      p.w.fetch = node(account, accepted);
+      p.d.getElementById("reset").click(); p.d.getElementById("ask").click(); await wait(60);
+      check("giveaway: the real list is accepted", /real list, unchanged/.test(p.d.getElementById("ask-verdict").textContent) && p.d.getElementById("ask-verdict").classList.contains("good"));
+      type(p.w, p.d.getElementById("find"), g.entries[1].slice(1, 4));
+      check("giveaway: the entries can be searched", [...p.d.querySelectorAll("#entries li")].filter((li) => !li.hidden).length >= 1 && [...p.d.querySelectorAll("#entries li")].filter((li) => !li.hidden).length < g.entries.length);
+      check("giveaway: no script errors", p.errors.length === 0, p.errors.join("|"));
+    }
+  }
 
   // Old shared links to the root still reach the playground
   check("home: forwards old playground links", fs.readFileSync("site/src/home.ts", "utf8").includes('location.replace("playground/" + location.hash)'));
