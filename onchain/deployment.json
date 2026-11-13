@@ -1,12 +1,13 @@
 {
- "day": "2026-11-12",
+ "day": "2026-11-13",
  "philCommit": "13808408f9de0f67cefd6fa744f87d81a2d22fbb",
  "solana": "solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)",
  "programBytes": 2160,
+ "programSha256": "2539c6c6ef793de7da88bad40f8b35292d9dfe16d3aaf466513973ca24b38686",
  "local": {
   "ok": true,
   "run": {
-   "signature": "3bYKXpvaafDYEtgziDdbnAC4SsV79zWvZJ5qrM286Wja9zvp1u3U43CgHtoccgwsg8WjebeXAq74yJuEtkerPmJZ",
+   "signature": "39efnLSaMNubfrzx4LBmWkwWsxHrSQ6eVRxiD3ZKpSZzdTKTMhLe6pg5JyH4QiLK7HHnnsU9kY43k3gpo26LThWp",
    "slot": 10,
    "returned": 42,
    "unitsConsumed": 217,
@@ -24,8 +25,8 @@
   "programId": "4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB",
   "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
   "run": {
-   "signature": "3Pw1tkvRaN6izxfzxfZw58HAFAjUPP3r8ZjkmGFqSLTtjKF75hWYGmLqCXpsCqAPJ4apUVQNDRvmxXAaoWNUCoyS",
-   "slot": 521622840,
+   "signature": "2q5oFcxa2iXATX7NSJBW4cg5z37v2tubS5eNw6ma26bFUuTAGdQ5d3qDrwbh1Lqo37wr5LxMupSmAFFvMDyzwZVj",
+   "slot": 521670924,
    "returned": 42,
    "unitsConsumed": 217,
    "logs": [
@@ -37,11 +38,16 @@
    ],
    "network": "devnet"
   },
-  "runDay": "2026-11-12",
+  "runDay": "2026-11-13",
   "deployedSha256": "2539c6c6ef793de7da88bad40f8b35292d9dfe16d3aaf466513973ca24b38686",
-  "deployedOn": "2026-11-12",
+  "deployedOn": "2026-11-13",
   "deployedPhil": "13808408f9de0f67cefd6fa744f87d81a2d22fbb",
-  "browserCall": null
- },
- "programSha256": "2539c6c6ef793de7da88bad40f8b35292d9dfe16d3aaf466513973ca24b38686"
+  "browserCall": {
+   "ok": true,
+   "returned": 42,
+   "units": 217,
+   "cors": "https://philcoinhigh.github.io",
+   "error": null
+  }
+ }
 }
