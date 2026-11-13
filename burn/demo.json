@@ -1,0 +1,27 @@
+{
+ "program": "HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq",
+ "mint": "GCkYrBHDEprKbvLHMsjXZx9BeqSURMCQQWW4uHE3Koj3",
+ "vault": "FS3n89HtUJDFM5ZZMKnLqSDnhHLpaQmuavrYh6fopczL",
+ "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+ "decimals": 6,
+ "threshold": "1000000000000",
+ "opened": "4yEzao9o2Fj84Lx7t7ephnfJFWcwdknr4M7WCeqiHAprk4PoSx8vC5KznhSsLpaxUcUbNfyncxEbccALSHV6fXRS",
+ "history": [
+  {
+   "day": "2026-11-13",
+   "time": 1794581365,
+   "fees": "3y9Sb8euYbN1AD5S9VzYJA9LTkdgKdQiqu7rs5qSf2Vz6Ds32QPKyaGdCkSzE8BzWHo6VAyXEeVmaW9gUzWVjgsA",
+   "burn": "4dwwku9agmkMsjLaEjmHFFVFpYk2Wh39WVVZXzXyuwE6MrvQBCgsX5SrLZth3u3rHfKEKnJFeWurSXgxsRzmaVVq",
+   "paid": "10000000",
+   "burned": "1000000000000",
+   "supply": "999000000000000",
+   "units": 8199
+  }
+ ],
+ "totals": {
+  "burns": 1,
+  "burned": "1000000000000",
+  "paid": "10000000",
+  "supply": "999000000000000"
+ }
+}
