@@ -1,0 +1,16 @@
+{
+  "programId": "GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH",
+  "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+  "deployedSha256": "048bcdc45f9fea899961f3a3787d19574fa91859243315a35f8a95c9f163fbd9",
+  "programBytes": 26184,
+  "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
+  "stackSlotsMoved": true,
+  "checkedOn": "2026-11-13",
+  "selftest": {
+    "ok": true,
+    "lockUnits": 5023,
+    "drawUnits": 1795,
+    "checkUnits": 2109
+  },
+  "deployedOn": "2026-11-13"
+}

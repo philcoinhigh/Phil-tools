@@ -1,0 +1,54 @@
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.xPCMxImtso/phil.ll -o /tmp/tmp.xPCMxImtso/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 26184 Nov 13 13:04 giveaway/out/phil_draw.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
+    34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+ok   a tampered upload is rejected by Phil on chain 
+ok   and leaves the account empty 
+ok   an unsupported protocol version is refused 
+draw account CpdL5yNSbcSaGb6ZZQ76AyxFSm2o6ro8DvqGkyoJRYgL; uploading 78 bytes (the list itself)
+locked at slot 12; target slot 32
+ok   Phil accepts the giveaway and it is drawn 
+ok   a drawn giveaway cannot be locked again 
+ok   or drawn again 
+ok   the website can read the draw account 
+ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
+ok   wallet-free: Phil rejects an edited list 
+{"ok":true,"lockUnits":5023,"drawUnits":1795,"checkUnits":2109,"winners":["@carol","@alice"]}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.98723524 SOL
+deploying because the program is not on devnet
+Program Id: GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH
+
+Signature: 25cpsAkxtMYRpXUMFg39oL6ZQJoAFCRCzeXWSGAizv5RJKnTUpwCz5mtj1UG6ZppFZGe7dkAMbJRXWxqGW84ZHZq
+
+ok   a tampered upload is rejected by Phil on chain 
+ok   and leaves the account empty 
+ok   an unsupported protocol version is refused 
+draw account EPJmStU5xs8gNW74wMyMn6R8gXVNG6zkBLtYfEGk8YoG; uploading 78 bytes (the list itself)
+locked at slot 521833380; target slot 521833400
+ok   Phil accepts the giveaway and it is drawn 
+ok   a drawn giveaway cannot be locked again 
+ok   or drawn again 
+ok   the website can read the draw account 
+ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
+ok   wallet-free: Phil rejects an edited list 
+{"ok":true,"lockUnits":5023,"drawUnits":1930,"checkUnits":2109,"winners":["@erin","@frank"]}
+--- giveaway 2026-11-13-test-draw
+draw account 95hz32NnW6EtFruDv4ZYwdscpShrY3NGgEqfvMX7ghH; uploading 120 bytes (the list itself)
+locked at slot 521833434; target slot 521833584
+Error: ENOENT: no such file or directory, open 'giveaway/draws/2026-11-13-test-draw.json'
+    at Object.writeFileSync (node:fs:2380:20)
+    at run (/home/runner/work/Phil-tools/Phil-tools/out/giveaway-run.js:469:6)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+giveaway 2026-11-13-test-draw failed
