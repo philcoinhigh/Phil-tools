@@ -1,60 +1,194 @@
-name: Giveaway program
-# Builds the LLVM emitters from Phil's repository and records what they emit, so that the
-# giveaway program can be built on top of Phil's own upload-server code.
+name: Giveaway
+# Builds the giveaway program (Phil's emitted upload server + giveaway/runtime.c), proves it on a
+# local Solana validator, deploys it to devnet when it changed, and runs any giveaway that has
+# been requested: by the form below, or by a file in giveaway/requests/.
+#
+# Like onchain.yml, this must run on the `onchain` branch to read the devnet wallet;
+# giveaway-start.yml on main starts it there. A run started that way builds from main and
+# commits its results to main.
 on:
   push:
     branches: [onchain]
     paths: ["giveaway/**", ".github/workflows/giveaway.yml"]
   workflow_dispatch:
+    inputs:
+      title:
+        description: "Giveaway title (leave empty to only rebuild)"
+        type: string
+      entries:
+        description: "Entries, separated by commas"
+        type: string
+      winners:
+        description: "How many winners"
+        type: string
+        default: "1"
+      delay_minutes:
+        description: "Minutes between locking the list and the draw"
+        type: string
+        default: "1"
+      refresh_phil_llvm:
+        description: "Emit Phil's LLVM again from Phil's latest commit"
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
   group: phil-giveaway
 jobs:
-  emit:
+  giveaway:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      # ---- Phil's LLVM, only when asked: it is committed in giveaway/phil-llvm ----
       - name: Check out Phil
+        if: inputs.refresh_phil_llvm
         run: |
           git clone --depth 1 https://github.com/abiggerhammer/phil ../phil
           echo "PHIL=$(git -C ../phil rev-parse HEAD)" >> "$GITHUB_ENV"
       - uses: haskell-actions/setup@v2
+        if: inputs.refresh_phil_llvm
         with:
           ghc-version: "9.6.7"
           cabal-version: "3.18.1.0"
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cabal/packages
-            ~/.cabal/store
-            ~/.local/state/cabal
-            ../phil/dist-newstyle
-          key: phil-emitters-${{ env.PHIL }}
-          restore-keys: phil-emitters-
-      - name: Build Phil's LLVM emitters
+      - name: Emit Phil's LLVM
+        if: inputs.refresh_phil_llvm
         run: |
           set -o pipefail
           cd ../phil
           exes=$(grep -E '^executable phil-llvm-phase0' phil-core.cabal | awk '{print "exe:" $2}' | tr '\n' ' ')
-          { cabal update && cabal build $exes; } 2>&1 | tail -60 | tee "$GITHUB_WORKSPACE/giveaway/emit.log"
-      - name: Emit
+          { cabal update && cabal build $exes; } 2>&1 | tail -30
+          for name in $(grep -E '^executable phil-llvm-phase0' phil-core.cabal | awk '{print $2}'); do "$(cabal list-bin "exe:$name")" > "$GITHUB_WORKSPACE/giveaway/phil-llvm/$name.ll"; done
+          jq -n --arg commit "$PHIL" --arg day "$(date -u +%F)" --arg ghc "$(ghc --numeric-version)" '{commit: $commit, day: $day, ghc: $ghc}' > "$GITHUB_WORKSPACE/giveaway/emitted.json"
+
+      - name: Install the Solana tools
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)" 2>&1 | tail -3
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Restore the devnet wallet
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.phil-devnet
+          key: phil-devnet-wallet-v1
+      - name: Restore the giveaway program's key
+        id: programkey
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.phil-draw
+          key: phil-draw-program-v1
+      - name: Find the keys
+        run: |
+          mkdir -p ~/.phil-draw giveaway/out && chmod 700 ~/.phil-draw
+          : > giveaway/out/build.log
+          known=$(jq -r '.programId // empty' giveaway/program.json 2>/dev/null || true)
+          if [ -s ~/.phil-devnet/payer.json ]; then
+            echo "HAVE_KEY=1" >> "$GITHUB_ENV"
+            echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
+            if [ ! -s ~/.phil-draw/program.json ]; then
+              if [ -n "$known" ]; then echo "The program's key is recorded but not readable here; not making a second one." | tee -a giveaway/out/build.log; echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+              else solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-draw/program.json; echo "NEW_PROGRAM_KEY=1" >> "$GITHUB_ENV"; fi
+            fi
+          else
+            echo "The devnet wallet is not readable from this run (ref $GITHUB_REF)." | tee -a giveaway/out/build.log
+            echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+          fi
+          if [ -s ~/.phil-draw/program.json ]; then echo "PROGRAM=$(solana-keygen pubkey ~/.phil-draw/program.json)" >> "$GITHUB_ENV"; else echo "PROGRAM=$known" >> "$GITHUB_ENV"; fi
+      - name: Keep the new program key
+        if: env.NEW_PROGRAM_KEY == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.phil-draw
+          key: phil-draw-program-v1
+
+      - name: Build the program
+        run: |
+          set -o pipefail
+          npx esbuild giveaway/run.ts --bundle --platform=node --packages=external --outfile=out/giveaway-run.js --log-level=error
+          giveaway/build.sh giveaway/out/phil_draw.so 2>&1 | tee -a giveaway/out/build.log
+      - name: Prove it on a local test validator
+        run: |
+          set -o pipefail
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/program.json"
+          LOCAL_PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
+          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")" --bpf-program "$LOCAL_PROGRAM" giveaway/out/phil_draw.so > "$RUNNER_TEMP/validator.log" 2>&1 &
+          for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
+          node out/giveaway-run.js selftest http://127.0.0.1:8899 "$LOCAL_PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a giveaway/out/build.log >&2) > giveaway/out/selftest.local.json || { echo "--- local self-test failed; validator log:" >> giveaway/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> giveaway/out/build.log; pkill -f solana-test-validator || true; exit 1; }
+          pkill -f solana-test-validator || true
+          jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.local.json | tee -a giveaway/out/build.log
+
+      - name: Deploy to devnet if the program changed
+        id: deploy
+        if: env.HAVE_KEY == '1'
+        run: |
+          set -o pipefail
+          URL=https://api.devnet.solana.com
+          bal=$(solana balance "$WALLET" --url "$URL" 2>/dev/null | awk '{print $1}')
+          echo "devnet wallet $WALLET holds ${bal:-0} SOL" | tee -a giveaway/out/build.log
+          built=$(sha256sum giveaway/out/phil_draw.so | cut -d' ' -f1)
+          last=$(jq -r '.deployedSha256 // empty' giveaway/program.json 2>/dev/null || true)
+          why=""
+          solana account "$PROGRAM" --url "$URL" --output json 2>/dev/null | jq -e '.account.executable == true' >/dev/null || why="the program is not on devnet"
+          [ -n "$why" ] || [ "$built" = "$last" ] || why="the program changed"
+          if [ -z "$why" ]; then echo "program $PROGRAM is deployed and unchanged" | tee -a giveaway/out/build.log; else
+            echo "deploying because $why" | tee -a giveaway/out/build.log
+            solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer.json"
+            solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-draw/program.json --buffer "$RUNNER_TEMP/buffer.json" giveaway/out/phil_draw.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a giveaway/out/build.log
+            echo "REDEPLOYED=true" >> "$GITHUB_ENV"
+            sleep 20
+            node out/giveaway-run.js selftest "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a giveaway/out/build.log >&2) > giveaway/out/selftest.devnet.json
+            jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.devnet.json | tee -a giveaway/out/build.log
+          fi
+          echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"
+      - name: Take a giveaway from the form
+        if: env.HAVE_KEY == '1' && inputs.title != ''
+        env:
+          GIVEAWAY_TITLE: ${{ inputs.title }}
+          GIVEAWAY_ENTRIES: ${{ inputs.entries }}
+          GIVEAWAY_WINNERS: ${{ inputs.winners }}
+          GIVEAWAY_DELAY: ${{ inputs.delay_minutes }}
+        run: node giveaway/request.mjs giveaway/requests
+      - name: Run the giveaways that are waiting
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        run: |
+          for q in giveaway/requests/*.json; do
+            [ -e "$q" ] || continue
+            id=$(basename "$q" .json)
+            [ -e "giveaway/draws/$id.json" ] && continue
+            echo "--- giveaway $id" | tee -a giveaway/out/build.log
+            node out/giveaway-run.js run https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json "$q" "giveaway/draws/$id.json" devnet 2> >(tee -a giveaway/out/build.log >&2) || echo "giveaway $id failed" | tee -a giveaway/out/build.log
+          done
+      - name: Record
         if: always()
         run: |
-          mkdir -p giveaway/phil-llvm
-          cd ../phil
-          for name in $(grep -E '^executable phil-llvm-phase0' phil-core.cabal | awk '{print $2}'); do
-            bin=$(cabal list-bin "exe:$name" 2>/dev/null || true)
-            if [ -x "$bin" ]; then "$bin" > "$GITHUB_WORKSPACE/giveaway/phil-llvm/$name.ll" 2>> "$GITHUB_WORKSPACE/giveaway/emit.log" && echo "ok   $name $(wc -l < "$GITHUB_WORKSPACE/giveaway/phil-llvm/$name.ll") lines" || echo "FAIL $name"; else echo "none $name"; fi
-          done | tee -a "$GITHUB_WORKSPACE/giveaway/emit.log"
-          jq -n --arg commit "$PHIL" --arg day "$(date -u +%F)" --arg ghc "$(ghc --numeric-version)" '{commit: $commit, day: $day, ghc: $ghc}' > "$GITHUB_WORKSPACE/giveaway/emitted.json"
-      - name: Commit what was emitted
+          mkdir -p giveaway/out
+          grep -v -E "^([a-z]+ ){11}[a-z]+$" giveaway/out/build.log 2>/dev/null | tail -c 60000 > giveaway/build.tail.log || true
+          if [ -n "${DEPLOYED_SHA:-}" ]; then
+            was=$(cat giveaway/program.json 2>/dev/null || echo '{}')
+            echo "$was" | jq --arg id "$PROGRAM" --arg wallet "$WALLET" --arg sha "$DEPLOYED_SHA" --arg day "$(date -u +%F)" --arg phil "$(jq -r .commit giveaway/emitted.json)" \
+              --arg hoisted "$(cat giveaway/out/hoisted.txt 2>/dev/null || echo false)" --argjson bytes "$(stat -c %s giveaway/out/phil_draw.so)" --arg redeployed "${REDEPLOYED:-false}" \
+              --slurpfile local giveaway/out/selftest.local.json \
+              '. + {programId: $id, wallet: $wallet, deployedSha256: $sha, programBytes: $bytes, philCommit: $phil, stackSlotsMoved: ($hoisted == "true"), checkedOn: $day, selftest: ($local[0] | {ok, lockUnits, drawUnits, checkUnits})} + (if $redeployed == "true" or (.deployedOn | not) then {deployedOn: $day} else {} end)' > giveaway/program.json.new && mv giveaway/program.json.new giveaway/program.json
+            cp giveaway/out/phil_draw.so giveaway/phil_draw.so
+          fi
+      - name: Rebuild the site
+        if: always()
+        continue-on-error: true
+        run: npm run build
+      - name: Commit
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add giveaway
+          for f in giveaway/program.json giveaway/phil_draw.so giveaway/build.tail.log giveaway/draws giveaway/requests giveaway/phil-llvm giveaway/emitted.json docs; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
-          git commit -m "Giveaway: LLVM emitted by Phil $(echo "$PHIL" | cut -c1-10)"
-          for i in 1 2 3; do git push && exit 0; git pull --rebase; done; exit 1
+          git commit -m "Giveaway: $(date -u +%F)"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done; exit 1

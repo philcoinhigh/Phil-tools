@@ -19,7 +19,7 @@
     "build:playground": "node playground/build.js",
     "typecheck": "tsc --noEmit -p .",
     "gen": "python3 vscode/scripts/gen-grammar.py && esbuild vscode/scripts/gen-docs.ts --bundle --platform=node --outfile=out/gen-docs.js --log-level=error && node out/gen-docs.js",
-    "test": "npm run gen:otc && npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:learn && npm run test:playground && npm run test:site && npm run test:philc && npm run test:fuzz && npm run test:smoke",
+    "test": "npm run gen:otc && npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:learn && npm run test:playground && npm run test:site && npm run test:philc && npm run test:fuzz && npm run test:giveaway && npm run test:smoke",
     "test:sim": "esbuild test/sim.ts --bundle --platform=node --outfile=out/sim.js --log-level=error && node out/sim.js",
     "test:designer": "esbuild test/designer.ts --bundle --platform=node --outfile=out/designer.js --log-level=error && node out/designer.js",
     "test:playground": "node test/playground-dom.js",
@@ -35,7 +35,8 @@
     "test:philc": "(command -v go >/dev/null && cd test/standin && GOOS=wasip1 GOARCH=wasm go build -o ../../out/standin.wasm main.go || echo \"no Go: skipping the stand-in build\") && esbuild test/philc-runner.ts --bundle --platform=node --outfile=out/philc-runner.js --log-level=error && node out/philc-runner.js",
     "changelog": "esbuild changelog/run.ts --bundle --platform=node --outfile=out/changelog.js --log-level=error && node out/changelog.js",
     "fuzz": "esbuild fuzz/run.ts fuzz/worker.ts --bundle --platform=node --outdir=out/fuzz --entry-names=fuzz-[name] --log-level=error && node out/fuzz/fuzz-run.js",
-    "test:fuzz": "esbuild test/fuzz.ts --bundle --platform=node --outfile=out/fuzz-test.js --log-level=error && node out/fuzz-test.js"
+    "test:fuzz": "esbuild test/fuzz.ts --bundle --platform=node --outfile=out/fuzz-test.js --log-level=error && node out/fuzz-test.js",
+    "test:giveaway": "esbuild test/giveaway.ts --bundle --platform=node --outfile=out/giveaway-test.js --log-level=error && node out/giveaway-test.js"
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
