@@ -3,11 +3,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.QwFDplLDpL/phil.ll -o /tmp/tmp.QwFDplLDpL/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.mp3qj46ZvR/phil.ll -o /tmp/tmp.mp3qj46ZvR/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 24272 Nov 13 14:52 burn/out/phil_burn.so
+-rwxr-xr-x 1 runner runner 28984 Nov 13 16:18 burn/out/phil_burn.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -28,7 +28,36 @@ ok   the coin's supply fell by exactly the threshold
 ok   the sender was paid the pot, less the network fee 
 ok   the vault kept only its reserve and counted the burn 
 ok   the pot cannot be taken twice 
-{"ok":true,"openUnits":4292,"burnUnits":8199}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.70963552 SOL
-program HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq is deployed and unchanged
-demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 2
+{"ok":true,"openUnits":4483,"burnUnits":8392}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.70962552 SOL
+deploying because the program changed
+Program Id: HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq
+
+Signature: 3T5GuVwDRwchm4h5vaUPQXWTM5DhErCz31zXBn8A9g2rHf6Febmnc56LkJUFQ4DeMq2zs5BAYv8hF4jr9C8mfH9Z
+
+ok   a rule altered after its digest was declared is rejected by Phil on chain 
+ok   Phil accepts the rule and the vault opens 
+ok   an open vault's rule cannot be replaced 
+ok   an empty vault pays nothing and burns nothing 
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+ok   fees sent to the vault are its pot 
+ok   burning a different coin does not take the pot 
+ok   a stand-in for the token program is refused 
+ok   an offer asking for more than the pot is not carried out 
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+ok   Phil accepts the offer and the real token program burns the coins 
+ok   the coin's supply fell by exactly the threshold 
+ok   the sender was paid the pot, less the network fee 
+ok   the vault kept only its reserve and counted the burn 
+ok   the pot cannot be taken twice 
+{"ok":true,"openUnits":4483,"burnUnits":8392}
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+ws error: Unexpected server response: 429
+demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 3
