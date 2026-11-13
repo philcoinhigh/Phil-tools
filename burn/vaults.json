@@ -1,0 +1,14 @@
+[
+ {
+  "vault": "FS3n89HtUJDFM5ZZMKnLqSDnhHLpaQmuavrYh6fopczL",
+  "mint": "GCkYrBHDEprKbvLHMsjXZx9BeqSURMCQQWW4uHE3Koj3",
+  "label": "Demo coin",
+  "decimals": 6,
+  "threshold": "1000000000000",
+  "program": "HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq",
+  "network": "devnet",
+  "opened": "4yEzao9o2Fj84Lx7t7ephnfJFWcwdknr4M7WCeqiHAprk4PoSx8vC5KznhSsLpaxUcUbNfyncxEbccALSHV6fXRS",
+  "day": "2026-11-13",
+  "demo": true
+ }
+]
