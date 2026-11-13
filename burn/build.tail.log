@@ -1,0 +1,34 @@
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.QwFDplLDpL/phil.ll -o /tmp/tmp.QwFDplLDpL/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 24272 Nov 13 14:52 burn/out/phil_burn.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
+    34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_invoke_signed_c
+    35: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+ok   a rule altered after its digest was declared is rejected by Phil on chain 
+ok   Phil accepts the rule and the vault opens 
+ok   an open vault's rule cannot be replaced 
+ok   an empty vault pays nothing and burns nothing 
+ok   fees sent to the vault are its pot 
+ok   burning a different coin does not take the pot 
+ok   a stand-in for the token program is refused 
+ok   an offer asking for more than the pot is not carried out 
+ok   Phil accepts the offer and the real token program burns the coins 
+ok   the coin's supply fell by exactly the threshold 
+ok   the sender was paid the pot, less the network fee 
+ok   the vault kept only its reserve and counted the burn 
+ok   the pot cannot be taken twice 
+{"ok":true,"openUnits":4292,"burnUnits":8199}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.70963552 SOL
+program HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq is deployed and unchanged
+demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 2

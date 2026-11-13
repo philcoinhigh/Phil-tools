@@ -11,7 +11,7 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link 
 // Every page, in the order a newcomer would want them. The same list feeds the menu on small screens.
 const PAGES = [
   ["learn", "learn/", "Learn"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Hacks"],
-  ["library", "library/", "Utilities"], ["onchain", "onchain/", "On chain"], ["giveaway", "giveaway/", "Giveaways"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
+  ["library", "library/", "Utilities"], ["onchain", "onchain/", "On chain"], ["giveaway", "giveaway/", "Giveaways"], ["burnvault", "burn/", "Burn vault"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
   ["fuzz", "fuzz/", "Fuzzer"], ["conformance", "conformance/", "Report"],
 ];
 function header(root, active) {
@@ -50,3 +50,4 @@ page("changelog", "docs/changelog/index.html", "../", "changelog");
 page("fuzz", "docs/fuzz/index.html", "../", "fuzz");
 page("onchain", "docs/onchain/index.html", "../", "onchain");
 page("giveaway", "docs/giveaway/index.html", "../", "giveaway");
+page("burnvault", "docs/burn/index.html", "../", "burnvault");

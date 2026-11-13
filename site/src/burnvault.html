@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Burn vault: fees in, supply out</title>
+<meta name="description" content="Point any coin's fees at a vault on Solana. Whoever burns a set amount of the coin takes the fees. Nobody can withdraw, and Phil's upload server gates every step.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.card { border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.card .head { padding: 16px 18px; border-bottom: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; justify-content: space-between; }
+.card .head h2 { margin: 0; font: 600 21px/1.15 var(--font-mark); letter-spacing: -.02em; } .card .head span { font: 12px var(--font-code); color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats div { padding: 14px 18px; border-bottom: 1px solid var(--rule); } .stats div + div { border-left: 1px solid var(--rule); }
+.stats b { display: block; font: 600 24px/1.1 var(--font-code); letter-spacing: -.03em; overflow-wrap: anywhere; } .stats b.good { color: var(--good); }
+.stats span { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.rule { padding: 14px 18px; border-bottom: 1px solid var(--rule); font-size: 16px; } .rule b { font-family: var(--font-code); }
+.act { padding: 14px 18px 16px; } .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.facts { margin: 0; padding: 0; list-style: none; }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 18px; border-top: 1px solid var(--rule); align-items: baseline; font-size: 14.5px; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.log { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); background: var(--sheet); max-height: 320px; overflow-y: auto; }
+.log li { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14px; align-items: baseline; }
+.log li:first-child { border-top: 0; } .log time { font: 13px var(--font-code); } .log a { font: 13px var(--font-code); }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.how > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.how > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.how h3 { margin: 0 0 4px; font-size: 17px; } .how p { margin: 0; max-width: 70ch; color: var(--muted); }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.empty { border: 1px dashed var(--ink); padding: 22px 18px; margin-top: 18px; color: var(--muted); }
+.others { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); background: var(--sheet); }
+.others li { padding: 10px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .others li:first-child { border-top: 0; } .others code, .others a { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stats div:nth-child(3) { border-left: 0; } .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } .log li { grid-template-columns: 92px minmax(0, 1fr); } .log li a { grid-column: 2; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net">Solana devnet</span>
+    <h1>Fees in, supply out</h1>
+    <p>Point a coin's fees at a vault. The vault has one rule: whoever burns a set amount of the coin takes the fees. So as soon as the fees are worth more than that many coins, it pays someone to buy them and burn them.</p>
+    <p class="muted" style="font-size:15px">Any coin can have one. Nobody can withdraw from it, including whoever opened it. Every step is gated by Phil's upload server, running on Solana.</p>
+  </div>
+
+  <div id="none" class="empty" hidden>No vault has been opened yet. The demonstration vault will appear here after the next run.</div>
+  <article class="card" id="card" hidden>
+    <div class="head"><h2 id="v-title"></h2><span id="v-sub"></span></div>
+    <div class="stats">
+      <div><b class="good" id="s-burned">–</b><span>coins burned so far</span></div>
+      <div><b id="s-paid">–</b><span>SOL of fees paid for them</span></div>
+      <div><b id="s-burns">–</b><span>burns</span></div>
+      <div><b id="s-pot">–</b><span>SOL in the vault now</span></div>
+    </div>
+    <div class="rule" id="v-rule"></div>
+    <div class="act"><div class="row"><button class="btn" id="refresh" type="button">Read it from Solana</button><span class="muted" id="refresh-note" role="status">The numbers above are from the last recorded run.</span></div></div>
+    <ul class="facts" id="v-facts"></ul>
+  </article>
+
+  <div id="history-wrap" hidden>
+    <h2 class="sec">Every burn</h2>
+    <p class="lead" id="history-lead"></p>
+    <ol class="log" id="history"></ol>
+  </div>
+
+  <h2 class="sec">How it works</h2>
+  <ol class="how">
+    <li><div><h3>A vault is opened for a coin</h3><p>Opening uploads the vault's rule (which coin, how many must be burned) through Phil's upload protocol. If Phil's server accepts it, the rule is written once. There is no instruction that changes it and none that withdraws.</p></div></li>
+    <li><div><h3>The coin's fees are pointed at the vault</h3><p>The vault's address is an ordinary Solana address. Whatever SOL arrives there is the pot.</p></div></li>
+    <li><div><h3>Someone burns the coins and takes the pot</h3><p>Say the rule is a million coins, and a million coins cost 1 SOL on the market. Once the vault holds a little more than 1 SOL, anyone can buy a million, burn them, and receive the pot at a small profit. The burn is done by Solana's own token program, and the SOL moves only after it succeeds, in the same transaction.</p></div></li>
+    <li><div><h3>Repeat</h3><p>Fees keep arriving, and each time they pass the price of the threshold, the same thing happens. The fees have bought coins off the market and destroyed them, without the vault ever trading.</p></div></li>
+  </ol>
+
+  <h2 class="sec">Why it pays a burner instead of buying</h2>
+  <ul class="limits">
+    <li><b>It works with every exchange.</b> The vault never calls an exchange, so it does not matter where the coin trades, or whether that changes.</li>
+    <li><b>No bot holds the money.</b> A vault that buys needs a keeper with a key, or code tied to one exchange. Here the only party that touches the fees is the program.</li>
+    <li><b>The price sets itself.</b> Nobody burns at a loss, and when two people compete for the pot, the one who waits loses it. The fees end up paying close to the market price.</li>
+  </ul>
+
+  <h2 class="sec">What it guarantees, and what it does not</h2>
+  <ul class="limits">
+    <li><b>Guarantees:</b> fees leave only to someone who burned the full threshold of the right coin in the same transaction. The rule cannot be changed. There is no owner.</li>
+    <li><b>It needs someone to act.</b> If nobody burns, the fees simply wait. If only one person ever does, they can wait until the pot is much larger than the coins cost and keep the difference. A project that wants its fees burned at a fair price should take the pot itself whenever it is worth it; anyone else is free to do the same.</li>
+    <li><b>SOL only.</b> Fees paid in another token are not handled.</li>
+    <li><b>Choose the threshold with care.</b> It is fixed in coins. If it is worth far more than the fees a coin earns, burns will be rare.</li>
+    <li><b>This is on devnet and has not been audited.</b> It has tests, including against Solana's real token program, but nobody independent has reviewed it. It is not deployed on mainnet, and it should not hold real money until it has been reviewed.</li>
+    <li>Burning does not make a coin worth more. It reduces supply; what that means for price is not something this page can promise.</li>
+  </ul>
+
+  <div id="others-wrap" hidden>
+    <h2 class="sec">Other vaults</h2>
+    <ul class="others" id="others"></ul>
+  </div>
+
+  <h2 class="sec">Open one</h2>
+  <p class="lead">On devnet, the maintainers can open a vault for any coin: on GitHub, <a href="__REPO__/actions/workflows/burn-start.yml">Actions, Open a burn vault</a>, Run workflow, with the coin's mint address and the threshold. The vault's address appears on this page; that is the address to point fees at. To run your own, fork the repository: the program and its tests are in <a href="__REPO__/tree/main/burn">burn/</a>.</p>
+
+  <h2 class="sec">Where Phil is in this</h2>
+  <p class="lead">Both instructions, opening a vault and burning, are uploads through <code>UploadServer</code>, the function Phil's compiler backend emits for its upload protocol. Phil's code checks the handshake, the policy and that the bytes match their declared SHA-256, and only if it accepts does the vault act. The vault's own logic (calling the token program, moving the SOL) is ours and is not Phil.</p>
+  <ul class="facts card" id="p-facts" style="margin-top:14px"></ul>
+  <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

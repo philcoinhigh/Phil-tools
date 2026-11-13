@@ -2,9 +2,10 @@
 # Builds the giveaway program for Solana from three parts:
 #   Phil's emitted LLVM for its upload client and server (unmodified apart from the two lines
 #   that name a desktop target), runtime.c, and shim.ll.
-# Usage: giveaway/build.sh <out.so>   (run from the repository root)
+# Usage: giveaway/build.sh <out.so> [runtime.c]   (run from the repository root; the burn vault passes burn/runtime.c)
 set -euo pipefail
 OUT="$1"
+RUNTIME="${2:-giveaway/runtime.c}"
 PHIL_LL=giveaway/phil-llvm/phil-llvm-phase0-control-codec.ll
 find_clang() { find -L "$HOME/.cache/solana" "$HOME/.local/share/solana" -path '*llvm/bin/clang' -print -quit 2>/dev/null || true; }
 CLANG="$(find_clang)"
@@ -23,7 +24,7 @@ if ! "$CLANG" -O2 -target sbf -fPIC -Wno-override-module -c "$W/phil.ll" -o "$W/
 fi
 echo "stack slots moved to function tops: $HOISTED"
 echo "$HOISTED" > "$(dirname "$OUT")/hoisted.txt"
-"$CLANG" -Werror -O2 -fno-builtin -ffreestanding -std=c17 -target sbf -fPIC -c giveaway/runtime.c -o "$W/runtime.o"
+"$CLANG" -Werror -O2 -fno-builtin -ffreestanding -std=c17 -target sbf -fPIC -c "$RUNTIME" -o "$W/runtime.o"
 "$CLANG" -O2 -target sbf -fPIC -Wno-override-module -c giveaway/shim.ll -o "$W/shim.o"
 "$LLVM/ld.lld" -z notext -shared --Bdynamic onchain/sbf.ld --entry entrypoint -o "$OUT" "$W/runtime.o" "$W/phil.o" "$W/shim.o"
 ls -l "$OUT"

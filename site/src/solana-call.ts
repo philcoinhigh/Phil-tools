@@ -88,7 +88,7 @@ export async function simulate(rpc: string, transaction: Uint8Array, fetcher: Fe
 }
 
 /** An account's bytes, or null when it does not exist. Throws when the node cannot be reached. */
-export async function accountData(rpc: string, key: string, fetcher: Fetch = (u, i) => fetch(u, i)): Promise<{ data: Uint8Array; owner: string; slot: number } | null> {
+export async function accountData(rpc: string, key: string, fetcher: Fetch = (u, i) => fetch(u, i)): Promise<{ data: Uint8Array; owner: string; slot: number; lamports: number } | null> {
   const res = await fetcher(rpc, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getAccountInfo", params: [key, { encoding: "base64", commitment: "confirmed" }] }) });
   if (!res.ok) throw new Error(res.status === 429 ? "The Solana node is rate-limiting requests. Wait a few seconds and try again." : `The Solana node answered ${res.status}.`);
   const j = await res.json();
@@ -96,7 +96,7 @@ export async function accountData(rpc: string, key: string, fetcher: Fetch = (u,
   const v = j.result?.value;
   if (!v) return null;
   const bin = atob(v.data[0]);
-  return { data: Uint8Array.from(bin, (c) => c.charCodeAt(0)), owner: v.owner, slot: j.result.context.slot };
+  return { data: Uint8Array.from(bin, (c) => c.charCodeAt(0)), owner: v.owner, slot: j.result.context.slot, lamports: v.lamports ?? 0 };
 }
 
 export async function callProgram(rpc: string, payer: string, program: string, fetcher: Fetch = (u, i) => fetch(u, i)): Promise<CallResult> {
@@ -119,4 +119,13 @@ export async function callProgram(rpc: string, payer: string, program: string, f
   } catch (e) {
     return fail("Could not reach Solana devnet from this browser. Check the connection and try again.");
   }
+}
+
+/** A coin's current total supply, in its smallest units. */
+export async function tokenSupply(rpc: string, mint: string, fetcher: Fetch = (u, i) => fetch(u, i)): Promise<{ amount: bigint; decimals: number }> {
+  const res = await fetcher(rpc, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getTokenSupply", params: [mint, { commitment: "confirmed" }] }) });
+  if (!res.ok) throw new Error(`The Solana node answered ${res.status}.`);
+  const j = await res.json();
+  if (j.error) throw new Error(String(j.error.message));
+  return { amount: BigInt(j.result.value.amount), decimals: j.result.value.decimals };
 }
