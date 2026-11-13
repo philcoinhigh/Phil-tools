@@ -3,11 +3,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.Fy9faxziRM/phil.ll -o /tmp/tmp.Fy9faxziRM/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.dV0GBf2bb9/phil.ll -o /tmp/tmp.dV0GBf2bb9/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 26184 Nov 13 13:09 giveaway/out/phil_draw.so
+-rwxr-xr-x 1 runner runner 26184 Nov 13 13:13 giveaway/out/phil_draw.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -17,7 +17,7 @@ undefined symbols (these must all be Solana's own calls):
 ok   a tampered upload is rejected by Phil on chain 
 ok   and leaves the account empty 
 ok   an unsupported protocol version is refused 
-draw account HST1fbR7cYxfkQg74a2TF57bJXxA5J8scmqvrwmnTTBQ; uploading 78 bytes (the list itself)
+draw account 8bTCZ8BrjQznuKz9MwZxynxE6fEr88ZXHnpQmT7azvZg; uploading 78 bytes (the list itself)
 locked at slot 12; target slot 32
 ok   Phil accepts the giveaway and it is drawn 
 ok   a finished giveaway can be read back from the chain alone 
@@ -26,9 +26,6 @@ ok   or drawn again
 ok   the website can read the draw account 
 ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
 ok   wallet-free: Phil rejects an edited list 
-{"ok":true,"lockUnits":5023,"drawUnits":1795,"checkUnits":2109,"winners":["@carol","@dave"]}
+{"ok":true,"lockUnits":5023,"drawUnits":1795,"checkUnits":2109,"winners":["@grace","@frank"]}
 devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.8464564 SOL
 program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH is deployed and unchanged
---- giveaway 2026-11-13-test-draw
-resuming 95hz32NnW6EtFruDv4ZYwdscpShrY3NGgEqfvMX7ghH
-winners: @jelena, @kofi
