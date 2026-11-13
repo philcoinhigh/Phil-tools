@@ -11,7 +11,7 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link 
 // Every page, in the order a newcomer would want them. The same list feeds the menu on small screens.
 const PAGES = [
   ["learn", "learn/", "Learn"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Hacks"],
-  ["library", "library/", "Utilities"], ["onchain", "onchain/", "On chain"], ["giveaway", "giveaway/", "Giveaways"], ["burnvault", "burn/", "Burn vault"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
+  ["library", "library/", "Utilities"], ["onchain", "onchain/", "On chain"], ["session", "session/", "Both ends"], ["giveaway", "giveaway/", "Giveaways"], ["burnvault", "burn/", "Burn vault"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
   ["fuzz", "fuzz/", "Fuzzer"], ["mutation", "mutation/", "Mutation"], ["conformance", "conformance/", "Report"],
 ];
 function header(root, active) {
@@ -50,5 +50,6 @@ page("changelog", "docs/changelog/index.html", "../", "changelog");
 page("fuzz", "docs/fuzz/index.html", "../", "fuzz");
 page("mutation", "docs/mutation/index.html", "../", "mutation");
 page("onchain", "docs/onchain/index.html", "../", "onchain");
+page("session", "docs/session/index.html", "../", "session");
 page("giveaway", "docs/giveaway/index.html", "../", "giveaway");
 page("burnvault", "docs/burn/index.html", "../", "burnvault");

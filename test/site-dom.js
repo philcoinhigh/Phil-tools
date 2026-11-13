@@ -26,10 +26,10 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "giveaway/", "burn/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "session/", "giveaway/", "burn/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 13 && p.d.querySelectorAll(".site nav.full a").length === 13);
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 14 && p.d.querySelectorAll(".site nav.full a").length === 14);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -222,6 +222,34 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     check("onchain: the nightly record lists each night with its transaction", p.d.querySelectorAll("#nights li").length === JSON.parse(fs.readFileSync("onchain/history.json", "utf8")).length && /nights? passed/.test(p.d.getElementById("night-lead").textContent));
   }
   check("onchain: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // Phil at both ends
+  p = load("docs/session/index.html", "https://example.test/session/");
+  {
+    const web3 = require("@solana/web3.js");
+    const program = JSON.parse(fs.readFileSync("giveaway/program.json", "utf8"));
+    const sent = [];
+    const node = (logs, err = null) => async (url, init) => { const q = JSON.parse(init.body); sent.push(web3.Transaction.from(Buffer.from(q.params[0], "base64")).instructions[0]); return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 77 }, value: { err, unitsConsumed: 4321, logs: logs.map((l) => "Program log: " + l) } } }) }; };
+    const OK = ["Phil: UploadServer started", "Phil: Hello recognized", "Phil: version agreed", "Phil: Begin recognized", "Phil: policy passed, proceed", "Phil: payload received, exactly the declared length", "Phil: SHA-256 matches the declared digest", "Phil note: received and validated. Its length:", "Phil: ACCEPTED"];
+    const run = async (mode, logs, err) => { p.w.fetch = node(logs, err); if (mode) p.d.querySelector(`#modes button[data-mode="${mode}"]`).click(); p.d.getElementById("go").click(); for (let i = 0; i < 40 && (p.d.getElementById("go").classList.contains("busy") || p.d.getElementById("out").hidden); i++) await wait(25); await wait(25); };
+    p.d.getElementById("msg").value = "hello from the test";
+    await run(null, OK);
+    const data = sent[0].data, text = Buffer.from("hello from the test");
+    const digest = require("crypto").createHash("sha256").update(text).digest();
+    const expected = Buffer.concat([Buffer.from([4]), Buffer.from("5048494c0101000400010001", "hex"), Buffer.from("5048494c01020035", "hex"), Buffer.from("0000000000000013", "hex"), Buffer.from([11]), Buffer.from("phil-note/1"), Buffer.from([1]), digest, Buffer.from([1]), text]);
+    check("session: Phil's client, running in the page, produces a correct upload and it is sent to the giveaway program", sent[0].programId.toBase58() === program.programId && sent[0].keys.length === 0 && data.equals(expected), data.toString("hex"));
+    check("session: both sides' steps are shown as one conversation, ending in accepted", /Session complete/.test(p.d.getElementById("verdict").textContent) && p.d.querySelectorAll("#talk li.client").length >= 8 && p.d.querySelectorAll("#talk li.server").length === OK.length && p.d.querySelectorAll("#talk li.wire").length === 1 && /4321 compute units/.test(p.d.getElementById("go-note").textContent) && [...p.d.querySelectorAll("#talk li")].map((li) => li.className.split(" ")[0])[0] === "client", p.d.getElementById("verdict").textContent);
+    await run("tamper", OK.slice(0, 6).concat("Phil: REJECTED, the bytes do not match the declared digest"), { InstructionError: [0, { Custom: 1201 }] });
+    check("session: a byte changed on the way is really changed, and both sides end in rejected", sent[1].data.length === data.length && sent[1].data[data.length - 1] === (data[data.length - 1] ^ 1) && sent[1].data.subarray(0, -1).equals(data.subarray(0, -1)) && /rejected the upload/.test(p.d.getElementById("verdict").textContent) && [...p.d.querySelectorAll("#talk li.client")].some((li) => /is told: rejected/.test(li.textContent)));
+    await run("version", ["Phil: UploadServer started", "Phil: Hello recognized", "Phil: no protocol version in common"], { InstructionError: [0, { Custom: 1300 }] });
+    check("session: a client that only speaks version 7 offers 7, and ends at no common version", sent[2].data.subarray(1, 13).toString("hex") === "5048494c0101000400010007" && /no protocol version in common/.test(p.d.getElementById("verdict").textContent) && ![...p.d.querySelectorAll("#talk li.client")].some((li) => /sends Begin/.test(li.textContent)));
+    await run("cancel", OK.slice(0, 5).concat("Phil: the client cancelled"), { InstructionError: [0, { Custom: 1500 }] });
+    check("session: a client that cancels sends the cancel byte and no payload", sent[3].data[sent[3].data.length - 1] === 0 && sent[3].data.length === data.length - text.length && /cancelled/.test(p.d.getElementById("verdict").textContent));
+    p.w.fetch = async () => { throw new Error("offline"); };
+    p.d.getElementById("go").click(); await wait(120);
+    check("session: being offline is explained", /Could not reach Solana devnet/.test(p.d.getElementById("verdict").textContent));
+    check("session: no script errors", p.errors.length === 0, p.errors.join("|"));
+  }
 
   // Giveaways
   p = load("docs/giveaway/index.html", "https://example.test/giveaway/");
