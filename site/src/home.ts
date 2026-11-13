@@ -11,6 +11,7 @@ import fuzzHistory from "../../fuzz/history.json";
 import philc from "../../philc/build.json";
 import onchain from "../../onchain/deployment.json";
 import { DRAWS } from "./giveaway-data";
+import { DEMO } from "./burn-data";
 
 // Links shared before the site had a home page pointed at the root with a hash.
 if (location.hash.length > 1) location.replace("playground/" + location.hash);
@@ -93,5 +94,9 @@ if (latest) {
   set("gv-k", `Latest draw · ${latest.title}`);
   set("gv-val", latest.winners.map((w: { entry: string }) => w.entry).join(", "));
   set("gv-l", `picked from ${latest.entries.length} entries by the block at slot ${latest.draw.hashSlot.toLocaleString("en-GB")}`);
+}
+if (DEMO?.totals?.burns) {
+  set("bv-val", (Number(BigInt(DEMO.totals.burned) / 10n ** BigInt(DEMO.decimals))).toLocaleString("en-GB"));
+  set("bv-l", `coins burned in ${DEMO.totals.burns} ${DEMO.totals.burns === 1 ? "burn" : "burns"}, paid for with ${(Number(DEMO.totals.paid) / 1e9).toLocaleString("en-GB", { maximumFractionDigits: 4 })} SOL of fees`);
 }
 wireFooter();

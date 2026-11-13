@@ -26,10 +26,10 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "giveaway/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "giveaway/", "burn/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 11 && p.d.querySelectorAll(".site nav.full a").length === 11);
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 12 && p.d.querySelectorAll(".site nav.full a").length === 12);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -279,6 +279,37 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
       type(p.w, p.d.getElementById("find"), g.entries[1].slice(1, 4));
       check("giveaway: the entries can be searched", [...p.d.querySelectorAll("#entries li")].filter((li) => !li.hidden).length >= 1 && [...p.d.querySelectorAll("#entries li")].filter((li) => !li.hidden).length < g.entries.length);
       check("giveaway: no script errors", p.errors.length === 0, p.errors.join("|"));
+    }
+  }
+
+  // Burn vault
+  p = load("docs/burn/index.html", "https://example.test/burn/");
+  check("burn: the page loads, states the rule's limits and says where Phil is", /UploadServer/.test(p.d.body.textContent) && /has not been audited/.test(p.d.body.textContent) && /no third/.test(p.d.getElementById("p-facts").textContent) && p.errors.length === 0, p.errors.join("|"));
+  {
+    const demo = fs.existsSync("burn/demo.json") ? JSON.parse(fs.readFileSync("burn/demo.json", "utf8")) : null;
+    if (!demo) check("burn: with no vault the page says so", !p.d.getElementById("none").hidden && p.d.getElementById("card").hidden);
+    else {
+      const whole = (u) => Number(BigInt(u) / 10n ** BigInt(demo.decimals)).toLocaleString("en-GB");
+      check("burn: shows the demonstration vault's rule, totals and every burn", /take everything in the vault/.test(p.d.getElementById("v-rule").textContent) && p.d.getElementById("s-burned").textContent === whole(demo.totals.burned) && p.d.getElementById("s-burns").textContent === String(demo.totals.burns) && p.d.querySelectorAll("#history li").length === demo.history.length && [...p.d.querySelectorAll("#history a")].every((a) => a.href.endsWith("?cluster=devnet")));
+      // Stand in for the node: the vault as the chain holds it, three burns in, with a pot waiting.
+      const acct = Buffer.alloc(256);
+      acct.write("PHILBURN", 0); acct[8] = 1; acct[9] = 4; acct.writeBigUInt64LE(BigInt(demo.threshold), 16); acct.writeBigUInt64LE(2672640n, 24);
+      acct.writeBigUInt64LE(3n, 80); acct.writeBigUInt64LE(3n * BigInt(demo.threshold), 88); acct.writeBigUInt64LE(30000000n, 96); acct.write("Demo", 160);
+      const node = (owner) => async (url, init) => {
+        const q = JSON.parse(init.body);
+        if (q.method === "getTokenSupply") return { ok: true, status: 200, json: async () => ({ result: { value: { amount: "999997000000000", decimals: 6 } } }) };
+        return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 4242 }, value: { data: [acct.toString("base64"), "base64"], owner, lamports: 2672640 + 12345678 } } }) };
+      };
+      p.w.fetch = node(demo.program);
+      p.d.getElementById("refresh").click(); await wait(60);
+      check("burn: reading from Solana shows the chain's own totals and the pot waiting in the vault", p.d.getElementById("s-burns").textContent === "3" && p.d.getElementById("s-burned").textContent === whole(3n * BigInt(demo.threshold)) && p.d.getElementById("s-paid").textContent === "0.03" && p.d.getElementById("s-pot").textContent === "0.012346" && /slot 4,242/.test(p.d.getElementById("refresh-note").textContent) && p.d.getElementById("v-supply").textContent === "999,997,000", p.d.getElementById("s-pot").textContent + " " + p.d.getElementById("refresh-note").textContent);
+      p.w.fetch = node("11111111111111111111111111111111");
+      p.d.getElementById("refresh").click(); await wait(60);
+      check("burn: an account that is not the program's is called out", /Do not trust/.test(p.d.getElementById("refresh-note").textContent));
+      p.w.fetch = async () => { throw new Error("offline"); };
+      p.d.getElementById("refresh").click(); await wait(60);
+      check("burn: being offline is explained", /Could not reach Solana devnet/.test(p.d.getElementById("refresh-note").textContent));
+      check("burn: no script errors", p.errors.length === 0, p.errors.join("|"));
     }
   }
 
