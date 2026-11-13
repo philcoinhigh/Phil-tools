@@ -1,0 +1,76 @@
+{
+ "id": "2026-11-13-test-draw",
+ "title": "Test draw with made-up names",
+ "network": "devnet",
+ "program": "GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH",
+ "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+ "account": "95hz32NnW6EtFruDv4ZYwdscpShrY3NGgEqfvMX7ghH",
+ "state": "drawn",
+ "entries": [
+  "@ada",
+  "@brook",
+  "@cyrus",
+  "@dalia",
+  "@emre",
+  "@farah",
+  "@goran",
+  "@hana",
+  "@ivo",
+  "@jelena",
+  "@kofi",
+  "@lena"
+ ],
+ "repeatsRemoved": 0,
+ "winnerCount": 2,
+ "kind": 1,
+ "payloadDigest": "718f6f1fda8e546f89a78d32633f28df994ada0f2f7e8204b486fbca978ffbf2",
+ "payloadLength": 120,
+ "listDigest": "f11236acaea2a53857eb7923567d1633b067c4ac5a2b546fac45c8d69954de61",
+ "delaySlots": 150,
+ "lock": {
+  "signature": "61zJtBEPbhMXhmCSXU2ibUyADNJzVnCnGkPYePrN7DkaqMYnKMc4McaraXoiQTBMFsg7HjdZnuLereBGG37HhpQu",
+  "slot": 521833434,
+  "time": 1794575117,
+  "units": 5576,
+  "logs": [
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH invoke [1]",
+   "Program log: Phil: UploadServer started",
+   "Program log: Phil: Hello recognized",
+   "Program log: Phil: version agreed",
+   "Program log: Phil: Begin recognized",
+   "Program log: Phil: policy passed, proceed",
+   "Program log: Phil: payload received, exactly the declared length",
+   "Program log: Phil: SHA-256 matches the declared digest",
+   "Program log: Phil draw: giveaway locked. Target slot:",
+   "Program log: 0x0, 0x0, 0x0, 0x1f1a8bda, 0x1f1a8c70",
+   "Program log: Phil: ACCEPTED",
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH consumed 5576 of 200000 compute units",
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH success"
+  ]
+ },
+ "draw": {
+  "signature": "3a1RJ525TbeFrrVh122cWyZ3xzz5B49yyWZVRahQdxfnsrqBxgfo1oHxcQPhATbBzVzuMLaLKjXugZTKr41wkE4n",
+  "targetSlot": 521833584,
+  "hashSlot": 521833584,
+  "slotHash": "0cc0194cad2042d57396f546e4938998cfcbaadcf76738252b2de5e24b8b6d0c",
+  "randomness": "d3c0cdcecb6dfa1c68cac8f08c5edfeb16f364a6f7efc44987ad2ffcfebf997c",
+  "units": 2532,
+  "logs": [
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH invoke [1]",
+   "Program log: Phil draw: DRAWN. Block slot, then the winning entry's position (counting from 0):",
+   "Program log: 0x0, 0x0, 0x0, 0x1f1a8c70, 0x9",
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH consumed 2532 of 200000 compute units",
+   "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH success"
+  ]
+ },
+ "winners": [
+  {
+   "index": 9,
+   "entry": "@jelena"
+  },
+  {
+   "index": 10,
+   "entry": "@kofi"
+  }
+ ]
+}
