@@ -1,14 +1,72 @@
 {
  "phil": {
-  "commit": "7e31cfd867",
-  "date": "2026-11-12"
+  "commit": "e14d9e7106",
+  "date": "2026-11-13"
  },
- "since": "2026-10-22",
+ "since": "2026-10-23",
  "days": [
+  {
+   "date": "2026-11-13",
+   "commits": 5,
+   "merges": 0,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 5
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-choice-fully-closed-no-resurrection-fsem02-v1.md",
+     "title": "FSEM-02: no source choice or terminal End resurrection after complete closure"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-half-close-predecessor-replay-fsem02-v1.md",
+     "title": "FSEM-02: consumed source-choice predecessor cannot replay across a terminal half-Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-half-close-nominal-peer-retry-fsem02-v1.md",
+     "title": "FSEM-02: source choice nominal peer refusal after committed half-Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-half-close-peer-refusal-retry-fsem02-v1.md",
+     "title": "FSEM-02: source choice half-Close, refused peer End, and valid retry"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-half-close-nominal-peer-retry-fsem02-v1.md",
+     "title": "FSEM-02: nominal peer refusal after a committed Ping half-Close"
+    }
+   ],
+   "proofsAdded": 5,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "e14d9e7106",
+     "subject": "FSEM-02: forbid source choice and terminal End resurrection after complete Close"
+    },
+    {
+     "sha": "14671c5a21",
+     "subject": "FSEM-02: reject consumed source-choice predecessor across committed half-Close"
+    },
+    {
+     "sha": "958a7fee16",
+     "subject": "FSEM-02: retain source-choice committed half-Close across nominal peer refusal and retry"
+    },
+    {
+     "sha": "d23d3d9382",
+     "subject": "FSEM-02: preserve source-choice half-Close across refused peer End and valid retry"
+    }
+   ]
+  },
   {
    "date": "2026-11-12",
    "commits": 11,
-   "merges": 4,
+   "merges": 5,
    "streams": [
     {
      "name": "FSEM-02",
@@ -19,6 +77,10 @@
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/surface-parser-generic-requirements-recursive-grouping-v1.md",
+     "title": "Generic-requirements list and optional recursive grouping correspondence v1"
+    },
     {
      "path": "docs/phase-1/formal-semantics-source-ping-half-close-stale-peer-fsem02-v1.md",
      "title": "FSEM-02: Ping half-closed peer refusal, stale replay and eventual Close"
@@ -68,8 +130,8 @@
      "title": "FSEM-02: source offer successor freshness and spectator frame"
     }
    ],
-   "proofsAdded": 14,
-   "proofsChanged": 19,
+   "proofsAdded": 17,
+   "proofsChanged": 23,
    "modules": [],
    "grammar": [],
    "headlines": [
@@ -78,16 +140,16 @@
      "subject": "FSEM-02: replay rejected Ping terminal Closes with exact peer-state preservation"
     },
     {
+     "sha": "73c4511dfa",
+     "subject": "Merged: rocq refinement / requirements list recursive grouping"
+    },
+    {
      "sha": "7e31cfd867",
      "subject": "test(fsem02): verify half-closed Ping peer refusal and stale replay"
     },
     {
      "sha": "4a5de0e224",
      "subject": "feat(fsem02): verify two ordered Ping Close refusals and deterministic retry"
-    },
-    {
-     "sha": "8c8a71320e",
-     "subject": "FSEM-02: source Ping joint terminal Close diamond and exact stale refusal"
     }
    ]
   },
@@ -897,6 +959,18 @@
   {
    "date": "2026-11-12",
    "commit": "7e31cfd867",
+   "files": 338,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-13",
+   "commit": "e14d9e7106",
    "files": 338,
    "grammar": "64/64",
    "ranClean": 45,
