@@ -19,7 +19,7 @@
     "build:playground": "node playground/build.js",
     "typecheck": "tsc --noEmit -p .",
     "gen": "python3 vscode/scripts/gen-grammar.py && esbuild vscode/scripts/gen-docs.ts --bundle --platform=node --outfile=out/gen-docs.js --log-level=error && node out/gen-docs.js",
-    "test": "npm run gen:otc && npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:learn && npm run test:playground && npm run test:site && npm run test:philc && npm run test:fuzz && npm run test:giveaway && npm run test:burn && npm run test:smoke",
+    "test": "npm run gen:otc && npm run typecheck && npm run build && npm run test:sim && npm run test:designer && npm run test:learn && npm run test:playground && npm run test:site && npm run test:philc && npm run test:fuzz && npm run test:giveaway && npm run test:burn && npm run test:session && npm run test:smoke",
     "test:sim": "esbuild test/sim.ts --bundle --platform=node --outfile=out/sim.js --log-level=error && node out/sim.js",
     "test:designer": "esbuild test/designer.ts --bundle --platform=node --outfile=out/designer.js --log-level=error && node out/designer.js",
     "test:playground": "node test/playground-dom.js",
@@ -38,7 +38,8 @@
     "test:fuzz": "esbuild test/fuzz.ts --bundle --platform=node --outfile=out/fuzz-test.js --log-level=error && node out/fuzz-test.js",
     "test:giveaway": "esbuild test/giveaway.ts --bundle --platform=node --outfile=out/giveaway-test.js --log-level=error && node out/giveaway-test.js",
     "test:burn": "esbuild test/burn.ts --bundle --platform=node --outfile=out/burn-test.js --log-level=error && node out/burn-test.js",
-    "mutation": "esbuild mutation/mutate.ts --bundle --platform=node --outfile=out/mutate.js --log-level=error && node out/mutate.js"
+    "mutation": "esbuild mutation/mutate.ts --bundle --platform=node --outfile=out/mutate.js --log-level=error && node out/mutate.js",
+    "test:session": "esbuild test/session.ts --bundle --platform=node --outfile=out/session-test.js --log-level=error && node out/session-test.js"
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",

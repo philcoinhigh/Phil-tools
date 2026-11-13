@@ -12,6 +12,7 @@ import philc from "../../philc/build.json";
 import onchain from "../../onchain/deployment.json";
 import { DRAWS } from "./giveaway-data";
 import { DEMO } from "./burn-data";
+import { CLIENT_WASM } from "./session-data";
 
 // Links shared before the site had a home page pointed at the root with a hash.
 if (location.hash.length > 1) location.replace("playground/" + location.hash);
@@ -99,4 +100,5 @@ if (DEMO?.totals?.burns) {
   set("bv-val", (Number(BigInt(DEMO.totals.burned) / 10n ** BigInt(DEMO.decimals))).toLocaleString("en-GB"));
   set("bv-l", `coins burned in ${DEMO.totals.burns} ${DEMO.totals.burns === 1 ? "burn" : "burns"}, paid for with ${(Number(DEMO.totals.paid) / 1e9).toLocaleString("en-GB", { maximumFractionDigits: 4 })} SOL of fees`);
 }
+if (CLIENT_WASM) set("ss-val", Math.floor((CLIENT_WASM.length * 3) / 4 - (CLIENT_WASM.endsWith("==") ? 2 : CLIENT_WASM.endsWith("=") ? 1 : 0)).toLocaleString("en-GB"));
 wireFooter();

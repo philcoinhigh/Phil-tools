@@ -149,4 +149,9 @@ jobs:
           for f in burn/program.json burn/phil_burn.so burn/build.tail.log burn/demo.json burn/vaults.json docs; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Burn vault: $(date -u +%F)"
-          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done; exit 1
+          # Another run may have pushed first. Its generated pages are rebuilt by whoever lands last, so on a clash keep ours.
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git fetch origin "$(git rev-parse --abbrev-ref HEAD)"
+            git rebase -X theirs FETCH_HEAD || { git checkout --theirs -- docs 2>/dev/null; git add -A docs; GIT_EDITOR=true git rebase --continue || { git rebase --abort; sleep 5; }; }
+          done; exit 1
