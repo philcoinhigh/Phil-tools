@@ -33,18 +33,6 @@ program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e
 wallet-free call, local: {"ok":true,"returned":42,"units":217,"error":null}
 devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.98727524 SOL
 deploying because the program is not on devnet
-==========================================================================
-Recover the intermediate account's ephemeral keypair file with
-`solana-keygen recover` and the following 12-word seed phrase:
-==========================================================================
-bacon young convince eight fade silk salute plastic identify fan run comic
-==========================================================================
-To resume a deploy, pass the recovered keypair as the
-[BUFFER_SIGNER] to `solana program deploy` or `solana program write-buffer'.
-Or to recover the account's lamports, use:
-==========================================================================
-solana program close D5RjSiMQ7NyLbF5Gh8VGHyU7uzGiB2tMTZEtYip5bMPv
-==========================================================================
 Program Id: 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB
 
 Signature: 2piPERd8QzePY8f2X4z4zjPtNpbqtfQLMrfXoXWByGqQ4s63dV3UufqQcsKa8t7amngsoZZKiYrcEgZcAcZN2ate

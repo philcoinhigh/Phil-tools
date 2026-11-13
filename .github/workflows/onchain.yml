@@ -103,11 +103,14 @@ jobs:
           last=$(jq -r '.devnet.deployedSha256 // empty' onchain/deployment.json 2>/dev/null || true)
           [ -n "$last" ] || last=$(sha256sum onchain/phil_first.so 2>/dev/null | cut -d' ' -f1)
           why=""
-          solana program show "$PROGRAM" --url "$URL" >/dev/null 2>&1 || why="the program is not on devnet"
+          # Ask for the account itself: present and executable means deployed.
+          solana account "$PROGRAM" --url "$URL" --output json 2>/dev/null | jq -e '.account.executable == true' >/dev/null || why="the program is not on devnet"
           [ -n "$why" ] || [ "$built" = "$last" ] || why="the program changed"
           if [ -z "$why" ]; then echo "program $PROGRAM is deployed and unchanged" | tee -a onchain/out/build.log; else
             echo "deploying because $why" | tee -a onchain/out/build.log
-            solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-devnet/program.json onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
+            # A buffer key of our own, so the tool has no recovery phrase to print. The filter is a second guard.
+            solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer.json"
+            solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-devnet/program.json --buffer "$RUNNER_TEMP/buffer.json" onchain/out/phil_first.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a onchain/out/build.log
             echo "REDEPLOYED=true" >> "$GITHUB_ENV"
           fi
           node onchain/invoke.mjs "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a onchain/out/build.log >&2) | jq '. + {network: "devnet"}' | tee onchain/out/devnet.json
@@ -122,7 +125,7 @@ jobs:
         run: |
           mkdir -p onchain/out && touch onchain/out/build.log
           node onchain/record.mjs
-          tail -c 60000 onchain/out/build.log > onchain/build.tail.log
+          grep -v -E "^([a-z]+ ){11}[a-z]+$" onchain/out/build.log | tail -c 60000 > onchain/build.tail.log
           cp onchain/out/first.philc.ll onchain/first.philc.ll 2>/dev/null || true
           # Keep the committed program equal to the one that is deployed.
           if [ "$(jq -r '.devnet.deployedSha256 // empty' onchain/deployment.json)" = "$(sha256sum onchain/out/phil_first.so 2>/dev/null | cut -d' ' -f1)" ]; then cp onchain/out/phil_first.so onchain/phil_first.so; fi

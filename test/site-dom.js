@@ -201,7 +201,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.run || oc.local.run).returned));
   check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.run || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
   check("onchain: shows the log, the Phil source and philc's LLVM", /Phil main returned/.test(p.d.getElementById("log").textContent) && /component main provides U32/.test(p.d.getElementById("src-phil").textContent) && /define i32 @main\(\)/.test(p.d.getElementById("src-ll").textContent) && /phil_main/.test(p.d.getElementById("src-c").textContent));
-  check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+/.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
+  check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+|seed phrase|^([a-z]+ ){11}[a-z]+$/m.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
   {
     // The button builds a transaction by hand and asks a node to simulate it. Stand in for the node.
     let asked = null;
