@@ -27,6 +27,7 @@
     "fuzz",
     "test",
     "giveaway",
-    "burn"
+    "burn",
+    "mutation"
   ]
 }

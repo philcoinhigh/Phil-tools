@@ -29,7 +29,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "giveaway/", "burn/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 12 && p.d.querySelectorAll(".site nav.full a").length === 12);
+  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 13 && p.d.querySelectorAll(".site nav.full a").length === 13);
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -311,6 +311,15 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
       check("burn: being offline is explained", /Could not reach Solana devnet/.test(p.d.getElementById("refresh-note").textContent));
       check("burn: no script errors", p.errors.length === 0, p.errors.join("|"));
     }
+  }
+
+  // Mutation analysis
+  p = load("docs/mutation/index.html", "https://example.test/mutation/");
+  {
+    const m = JSON.parse(fs.readFileSync("mutation/data.json", "utf8"));
+    check("mutation: shows the totals, every kind of change and every server block", p.d.querySelectorAll("#facts b").length === 3 && p.d.querySelector("#facts b").textContent === String(m.total.mutants) && p.d.querySelectorAll("#ops tbody tr").length === m.byOperator.length && p.d.querySelectorAll("#blocks tbody tr").length === m.serverByBlock.length && p.errors.length === 0, p.errors.join("|"));
+    check("mutation: the page gives aggregates for Phil's own test, not its step-by-step results", !/philKills/.test(fs.readFileSync("site/src/mutation-data.ts", "utf8").split("serverByBlock")[1]) && !/server_hello_policy_failure<\/code><\/td><td class="n">\d+<\/td><td class="n">0/.test(p.d.getElementById("blocks").innerHTML));
+    check("mutation: our suites catch nearly every broken server", m.server.oursKills >= m.server.mutants - 4 && m.server.mutants > 200);
   }
 
   // Old shared links to the root still reach the playground

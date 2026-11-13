@@ -14,8 +14,8 @@ execSync(`giveaway/native/build.sh ${BIN}`, { stdio: "inherit" });
 const PROGRAM = "11".repeat(32), DRAWKEY = "22".repeat(32), OTHER = "33".repeat(32);
 const SLOT_HASHES = hex(Uint8Array.from([0x06,0xa7,0xd5,0x17,0x19,0x2f,0x0a,0xaf,0xc6,0xf2,0x65,0xe3,0xfb,0x77,0xcc,0x7a,0xda,0x82,0xc5,0x29,0xd0,0xbe,0x3b,0x13,0x6e,0x2d,0x00,0x55,0x20,0x00,0x00,0x00]));
 interface Acct { key: string; owner: string; writable: boolean; data: Uint8Array }
-function run(o: { slot: number; accounts: Acct[]; ix: Uint8Array; time?: number }) {
-  const input = [`slot ${o.slot}`, `time ${o.time ?? 1763000000}`, `program ${PROGRAM}`,
+function run(o: { slot: number; accounts: Acct[]; ix: Uint8Array; time?: number; fault?: number }) {
+  const input = [`slot ${o.slot}`, `fault ${o.fault ?? 0}`, `time ${o.time ?? 1763000000}`, `program ${PROGRAM}`,
     ...o.accounts.map((a) => `account ${a.key} ${a.owner} ${a.writable ? 1 : 0} ${a.data.length ? hex(a.data) : "-"}`), `ix ${hex(o.ix)}`, ""].join("\n");
   const out = execFileSync(BIN, { input }).toString().split("\n");
   return { logs: out.filter((l) => l.startsWith("LOG ")), ret: Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")) ?? "")?.[1] ?? -1),
@@ -85,7 +85,29 @@ check("LOCK: a record whose count is not the number of lines is valid to Phil bu
 const bad = (mutate: (p: Uint8Array) => void) => { const p = buildRecord(g).payload.slice(); mutate(p); return run({ slot: 5000, accounts: [emptyDraw()], ix: uploadData(OP_LOCK, p) }).ret; };
 check("LOCK: zero winners, more winners than entries, and a too-short delay are refused", bad((p) => { p[10] = 0; }) === 1802 && bad((p) => { p[10] = 8; }) === 1802 && bad((p) => { p[11] = 5; }) === 1802);
 r = run({ slot: 5000, accounts: [emptyDraw()], ix: Uint8Array.of(OP_LOCK, 1, 2, 3) });
-check("LOCK: garbage is not a recognizable Hello", r.ret === 1602 + 100 && untouched(r), String(r.ret));
+check("LOCK: garbage is not a recognizable Hello", r.ret === 1652 && untouched(r), String(r.ret));
+// Malformed Begin frames, built by hand: Phil's server must take its recognition-failure path.
+const beginWith = (change: (b: Uint8Array) => Uint8Array) => { const good = beginFrame(rec.payload.length, "phil-draw/1", sha256(rec.payload)); return concat(Uint8Array.of(OP_LOCK), helloFrame([1]), change(good), Uint8Array.of(1), rec.payload); };
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: beginWith((b) => { const c = b.slice(); c[8 + 9 + 11] = 2; return c; }) });
+check("LOCK: a Begin naming a digest other than SHA-256 is not recognized", r.ret === 1603 && /Begin frame was not recognized/.test(r.logs.join()) && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: beginWith((b) => concat(b.slice(0, 6), Uint8Array.of(0, 42), b.slice(8, 16), Uint8Array.of(0, 1), b.slice(-32))) });
+check("LOCK: a Begin with an empty kind is not recognized", r.ret === 1602 && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: beginWith((b) => { const c = b.slice(); c[7] += 1; return c; }) });
+check("LOCK: a Begin whose length field disagrees with its contents is not recognized", r.ret === 1601 && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: concat(Uint8Array.of(OP_LOCK), helloFrame([1]), beginFrame(rec.payload.length, "phil-draw/1", sha256(rec.payload)).slice(0, 30)) });
+check("LOCK: a Begin cut short is not recognized", r.ret === 1656 && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: concat(Uint8Array.of(OP_LOCK), helloFrame([1]), helloFrame([1])) });
+check("LOCK: a second Hello where Begin belongs is not recognized", r.ret === 1655 && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: uploadData(OP_LOCK, rec.payload, { versions: Array.from({ length: 17 }, (_, i) => i + 1) }) });
+check("LOCK: a Hello offering too many versions is refused by the Hello policy", r.ret === 1701 && /Hello was refused by policy/.test(r.logs.join()) && untouched(r), String(r.ret));
+r = run({ slot: 5000, accounts: [emptyDraw()], ix: concat(Uint8Array.of(OP_LOCK), helloFrame([1]), beginFrame(rec.payload.length, "phil-draw/1", sha256(rec.payload))) });
+check("LOCK: an upload that stops after Begin counts as cancelled", r.ret === 1500 && untouched(r), String(r.ret));
+// Fault injection: a conforming runtime answers 0 or 1. If one call answers 2, Phil's server must treat it as failure.
+const faulty = [1, 2, 3, 4].map((fault) => run({ slot: 5000, fault, accounts: [emptyDraw()], ix: uploadData(OP_LOCK, rec.payload) }));
+check("a reserved status from Hello recognition fails closed", faulty[0].ret === 1600 && untouched(faulty[0]), String(faulty[0].ret));
+check("a reserved status from Begin recognition fails closed", faulty[1].ret === 1600 && untouched(faulty[1]), String(faulty[1].ret));
+check("a reserved status from the exact receive fails closed, and the payload is still released", faulty[2].ret === 1900 && untouched(faulty[2]), String(faulty[2].ret));
+check("a reserved status from storage fails closed", faulty[3].ret === 1800 && untouched(faulty[3]) && !/ACCEPTED/.test(faulty[3].logs.join()), String(faulty[3].ret));
 r = run({ slot: 5000, accounts: [emptyDraw()], ix: uploadData(OP_LOCK, bigRec.payload) });
 check("LOCK: a fingerprint-only giveaway locks too", r.ret === 0 && decodeDraw(r.accounts[0])!.kind === 2 && hex(decodeDraw(r.accounts[0])!.listDigest) === hex(bigRec.listDigest) && decodeDraw(r.accounts[0])!.count === 400);
 

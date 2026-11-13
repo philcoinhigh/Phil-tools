@@ -12,7 +12,7 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link 
 const PAGES = [
   ["learn", "learn/", "Learn"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Hacks"],
   ["library", "library/", "Utilities"], ["onchain", "onchain/", "On chain"], ["giveaway", "giveaway/", "Giveaways"], ["burnvault", "burn/", "Burn vault"], ["otc", "otc/", "OTC desk"], ["changelog", "changelog/", "Changes"],
-  ["fuzz", "fuzz/", "Fuzzer"], ["conformance", "conformance/", "Report"],
+  ["fuzz", "fuzz/", "Fuzzer"], ["mutation", "mutation/", "Mutation"], ["conformance", "conformance/", "Report"],
 ];
 function header(root, active) {
   const link = ([id, href, label]) => `<a href="${root + href}"${active === id ? ' aria-current="page"' : ""}>${label}</a>`;
@@ -48,6 +48,7 @@ page("library", "docs/library/index.html", "../", "library");
 page("hacks", "docs/hacks/index.html", "../", "hacks");
 page("changelog", "docs/changelog/index.html", "../", "changelog");
 page("fuzz", "docs/fuzz/index.html", "../", "fuzz");
+page("mutation", "docs/mutation/index.html", "../", "mutation");
 page("onchain", "docs/onchain/index.html", "../", "onchain");
 page("giveaway", "docs/giveaway/index.html", "../", "giveaway");
 page("burnvault", "docs/burn/index.html", "../", "burnvault");

@@ -27,7 +27,7 @@
     "test:corpus": "esbuild test/test.ts --bundle --platform=node --outfile=out/test.js --log-level=error && cp node_modules/vscode-oniguruma/release/onig.wasm out/ && node out/test.js",
     "test:conformance": "esbuild test/explore.ts --bundle --platform=node --outfile=out/explore.js --log-level=error && node out/explore.js",
     "package:vscode": "npm run build:vscode && cd vscode && vsce package --no-dependencies",
-    "gen:otc": "node scripts/gen-otc.js && node scripts/gen-onchain.js && node scripts/gen-giveaway.js && node scripts/gen-burn.js",
+    "gen:otc": "node scripts/gen-otc.js && node scripts/gen-onchain.js && node scripts/gen-giveaway.js && node scripts/gen-burn.js && node scripts/gen-mutation.js",
     "build:site": "node site/build.js",
     "test:learn": "esbuild test/learn.ts --bundle --platform=node --outfile=out/learn.js --log-level=error && node out/learn.js",
     "test:site": "node test/site-dom.js",
@@ -37,7 +37,8 @@
     "fuzz": "esbuild fuzz/run.ts fuzz/worker.ts --bundle --platform=node --outdir=out/fuzz --entry-names=fuzz-[name] --log-level=error && node out/fuzz/fuzz-run.js",
     "test:fuzz": "esbuild test/fuzz.ts --bundle --platform=node --outfile=out/fuzz-test.js --log-level=error && node out/fuzz-test.js",
     "test:giveaway": "esbuild test/giveaway.ts --bundle --platform=node --outfile=out/giveaway-test.js --log-level=error && node out/giveaway-test.js",
-    "test:burn": "esbuild test/burn.ts --bundle --platform=node --outfile=out/burn-test.js --log-level=error && node out/burn-test.js"
+    "test:burn": "esbuild test/burn.ts --bundle --platform=node --outfile=out/burn-test.js --log-level=error && node out/burn-test.js",
+    "mutation": "esbuild mutation/mutate.ts --bundle --platform=node --outfile=out/mutate.js --log-level=error && node out/mutate.js"
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",

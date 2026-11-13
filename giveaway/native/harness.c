@@ -3,7 +3,7 @@
 // program makes into Solana (log, log numbers, SHA-256, clock), and prints what happened.
 //
 // Input on stdin, one item per line:
-//   slot N | time N | program HEX | account KEYHEX OWNERHEX FLAG DATAHEX|- [LAMPORTS] | ix HEX
+//   slot N | time N | fault N | program HEX | account KEYHEX OWNERHEX FLAG DATAHEX|- [LAMPORTS] | ix HEX
 //   FLAG is 0 (read-only), 1 (writable) or 2 (writable and a signer of the transaction).
 // Output: LOG lines, then RET <code>, then ACCOUNT <index> <hex> and LAMPORTS <index> <n> for each account.
 //
@@ -18,6 +18,7 @@
 
 extern uint64_t entrypoint(const uint8_t *input);
 static uint64_t now_slot = 1000, now_time = 1700000000;
+uint8_t phil_fault;   /* "fault N": have the runtime answer one call with the reserved status 2 */
 
 void sol_log_(const char *m, uint64_t n) { printf("LOG %.*s\n", (int)n, m); }
 void sol_log_64_(uint64_t a, uint64_t b, uint64_t c, uint64_t d, uint64_t e) { printf("LOG 0x%llx, 0x%llx, 0x%llx, 0x%llx, 0x%llx\n", (unsigned long long)a, (unsigned long long)b, (unsigned long long)c, (unsigned long long)d, (unsigned long long)e); }
@@ -104,6 +105,7 @@ int main(void) {
     if (!sp) continue;
     *sp++ = 0;
     if (!strcmp(line, "slot")) now_slot = strtoull(sp, NULL, 10);
+    else if (!strcmp(line, "fault")) phil_fault = (uint8_t)strtoull(sp, NULL, 10);
     else if (!strcmp(line, "time")) now_time = strtoull(sp, NULL, 10);
     else if (!strcmp(line, "program")) unhex(sp, program);
     else if (!strcmp(line, "ix")) ix_len = unhex(sp, ix);

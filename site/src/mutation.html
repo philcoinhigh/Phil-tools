@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Breaking Phil's upload server on purpose</title>
+<meta name="description" content="Mutation analysis of the LLVM Phil's backend emits for its upload protocol, and a runtime that checks Phil's erased ownership rules as the code runs.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 68ch; font-size: 17px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 72ch; font-size: 15px; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.facts div { padding: 14px 16px; } .facts div + div { border-left: 1px solid var(--rule); }
+.facts b { display: block; font: 600 28px/1 var(--font-code); letter-spacing: -.03em; } .facts b.good { color: var(--good); }
+.facts span { display: block; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; margin-top: 14px; background: var(--sheet); border: 1px solid var(--ink); font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-top: 1px solid var(--rule); } th { font: 600 12px var(--font-mark); border-top: 0; } td.n, th.n { text-align: right; font-family: var(--font-code); }
+td code { font: 13px var(--font-code); background: none; padding: 0; }
+.bar { display: inline-block; height: 8px; background: var(--good); vertical-align: middle; margin-right: 8px; }
+.scroll { overflow-x: auto; }
+pre.code { margin-top: 14px; }
+.rules { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .rules li { margin: 6px 0; }
+@media (max-width: 720px) { .facts { grid-template-columns: minmax(0, 1fr); } .facts div + div { border-left: 0; border-top: 1px solid var(--rule); } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>Breaking Phil's upload server on purpose</h1>
+    <p>Phil's compiler backend emits LLVM for an upload client and server. We run that server on Solana. To find out how much our tests would notice if that code were wrong, we made it wrong, one small change at a time, hundreds of times, and counted how many of the broken versions get caught.</p>
+    <p class="muted" style="font-size:15px">This is called mutation analysis. A broken version that passes every test marks something no test checks.</p>
+  </div>
+  <div class="facts" id="facts"></div>
+  <p class="lead" id="when"></p>
+
+  <h2 class="sec">What gets broken</h2>
+  <p class="lead">Each mutant is Phil's module with exactly one change. Changes that leave the module malformed are discarded.</p>
+  <div class="scroll"><table id="ops"><thead><tr><th>Kind of change</th><th class="n">Mutants</th><th class="n">Caught by either suite</th></tr></thead><tbody></tbody></table></div>
+
+  <h2 class="sec">A runtime that checks what the types promised</h2>
+  <p class="lead">Phil's types say that every owner is used exactly once and in order. Those facts are erased before LLVM; the emitted module marks the places with the comment <code>!phil proof/typestate fact erased before LLVM</code>. Our Solana runtime puts them back as checks that run on every call the server makes:</p>
+  <ul class="rules">
+    <li>a received frame is committed or destroyed, exactly once, and never left pending;</li>
+    <li>a record is read only after its frame was committed;</li>
+    <li>the payload is received once, for exactly the length Begin declared;</li>
+    <li>nothing is stored before its digest was validated, and nothing is stored twice;</li>
+    <li>a payload is stored or released, never both and never neither;</li>
+    <li>"accepted" is sent only after a successful store, and "rejected" only after a failed digest check and a release;</li>
+    <li>every call is about the object the protocol says it is about, and the server returns 0.</li>
+  </ul>
+  <p class="lead">One broken rule fails the Solana transaction. Phil's real server passes all of them on every path our tests reach. Most mutants do not, which is how they are caught.</p>
+
+  <h2 class="sec">The server, step by step</h2>
+  <p class="lead">Mutants in each block of <code>UploadServer</code>, and how many our suites catch. The two that survive remove an initialisation whose value is never read by a conforming runtime.</p>
+  <div class="scroll"><table id="blocks"><thead><tr><th>Block</th><th class="n">Mutants</th><th class="n">Caught by ours</th></tr></thead><tbody></tbody></table></div>
+
+  <h2 class="sec">Two suites</h2>
+  <p class="lead" id="two"></p>
+  <p class="lead">Phil's integrated test and ours are built for different jobs. Phil's runs the client and the server together on Phil's reference runtime, through three scenarios, and it is one piece of an assurance case that also rests on machine-checked proofs and on tests of earlier slices. Ours runs only the server, on a different runtime, with many malformed inputs. The step-by-step comparison has gone to Phil's author rather than onto this page.</p>
+
+  <h2 class="sec">Reproduce it</h2>
+  <pre class="code">git clone https://github.com/abiggerhammer/phil ../phil
+npm ci
+npm run mutation -- ../phil     # needs clang, llvm-as and OpenSSL headers; about seven minutes</pre>
+  <p class="lead">The tool is <a href="__REPO__/blob/main/mutation/mutate.ts">mutation/mutate.ts</a>. The module it mutates is in <a href="__REPO__/tree/main/giveaway/phil-llvm">giveaway/phil-llvm</a>, as emitted by Phil. This is a community project and is not affiliated with Phil.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

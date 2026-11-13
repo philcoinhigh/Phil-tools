@@ -4,3 +4,4 @@ vscode/out/
 *.vsix
 giveaway/out/
 burn/out/
+mutation/detail.private.json
