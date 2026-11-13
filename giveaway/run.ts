@@ -11,6 +11,8 @@ import * as nodePath from "path";
 import { Connection, Keypair, PublicKey, SystemProgram, SYSVAR_SLOT_HASHES_PUBKEY, Transaction, TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { buildRecord, cleanEntries, decodeDraw, uploadData, pickWinners, randomnessOf, readVerdict, sha256, hex, Draw, Giveaway, OP_LOCK, OP_DRAW, OP_CHECK, DRAW_SIZE } from "../site/src/draw";
 import { buildCall, simulate, accountData } from "../site/src/solana-call";
+import { runClient, hopeful, answersFrom, OP_NOTE } from "../site/src/phil-client";
+import { utf8, concat } from "../site/src/draw";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const [command, url, programText, payerFile, ...rest] = process.argv.slice(2);
@@ -100,6 +102,18 @@ async function runGiveaway(g: Giveaway, account: PublicKey) {
   return { record, account, lock, drew, d, winners };
 }
 
+/** A whole upload session: Phil's emitted client produces the bytes, Phil's emitted server on chain answers. */
+async function philSession(text: string, inTransit: (w: Uint8Array) => Uint8Array = (w) => w) {
+  const module = await WebAssembly.compile(fs.readFileSync("giveaway/phil_client.wasm"));
+  const s = { payload: utf8(text) };
+  const first = await runClient(module, s, hopeful(s));
+  const data = concat(Uint8Array.of(OP_NOTE), inTransit(first.wire));
+  const sent = await send([call(data, [])], [payer]);
+  const code = Number(/custom program error: 0x([0-9a-f]+)/.exec(sent.error ?? "")?.[1] ? parseInt(/custom program error: 0x([0-9a-f]+)/.exec(sent.error ?? "")![1], 16) : NaN);
+  const second = await runClient(module, s, answersFrom(sent.logs, Number.isNaN(code) ? undefined : code));
+  return { first, sent, second, data };
+}
+
 async function selftest() {
   const problems: string[] = [];
   const expect = (name: string, ok: boolean, info = "") => { note(ok ? "ok  " : "FAIL", name, ok ? "" : info); if (!ok) problems.push(name); };
@@ -124,6 +138,12 @@ async function selftest() {
   expect("a drawn giveaway cannot be locked again", !r.ok && /REJECTED by policy/.test(r.logs.join("\n")), r.error);
   r = await send([drawIx(done.account)], [payer]);
   expect("or drawn again", !r.ok && /already drawn/.test(r.logs.join("\n")), r.error);
+
+  // Phil at both ends: the client's bytes come from Phil's emitted client, not from our encoder.
+  const both = await philSession("Self-test: Phil client to Phil server.");
+  expect("Phil's client and Phil's server complete a session in a real transaction", both.sent.ok && both.second.ending === "accepted" && /note: received and validated/.test(both.sent.logs.join("\n")), both.sent.error + " " + both.sent.logs.join(" | "));
+  const bent = await philSession("Self-test: Phil client to Phil server.", (w) => { const c = w.slice(); c[c.length - 1] ^= 1; return c; });
+  expect("a byte changed in transit is rejected on chain, and the client ends in rejected", !bent.sent.ok && bent.second.ending === "rejected", bent.sent.error + " " + bent.second.ending);
 
   // What the website does, with no key: read the account, and ask Phil about a list.
   const key = done.account.toBase58(), me = payer.publicKey.toBase58();
@@ -164,4 +184,14 @@ async function run() {
   note(result.winners.length ? `winner${result.winners.length > 1 ? "s" : ""}: ${result.winners.map((w) => w.entry).join(", ")}` : "expired without a winner");
 }
 
-(command === "selftest" ? selftest() : command === "run" ? run() : Promise.reject(new Error("usage: selftest | run"))).catch((e) => { note(String(e?.stack ?? e)); process.exit(1); });
+async function session() {
+  const [resultFile, network = "devnet"] = rest;
+  const text = "Phil client to Phil server, over Solana.";
+  const done = await philSession(text);
+  if (!done.sent.ok || done.second.ending !== "accepted") throw new Error("the session did not complete: " + done.sent.error + "\n" + done.sent.logs.join("\n"));
+  fs.writeFileSync(resultFile, JSON.stringify({ day: new Date().toISOString().slice(0, 10), network, program: program.toBase58(), wallet: payer.publicKey.toBase58(), message: text, bytes: done.data.length,
+    signature: done.sent.signature, slot: done.sent.slot, units: done.sent.units, logs: done.sent.logs, client: done.second.steps, ending: done.second.ending }, null, 1) + "\n");
+  note(`session recorded: ${done.sent.signature}`);
+}
+
+(command === "selftest" ? selftest() : command === "session" ? session() : command === "run" ? run() : Promise.reject(new Error("usage: selftest | run"))).catch((e) => { note(String(e?.stack ?? e)); process.exit(1); });

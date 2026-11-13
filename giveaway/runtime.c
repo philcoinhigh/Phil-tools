@@ -52,7 +52,7 @@ static void put32(u8 *p, u32 v) { for (int i = 0; i < 4; i++) { p[i] = (u8)v; v 
 static void put64(u8 *p, u64 v) { for (int i = 0; i < 8; i++) { p[i] = (u8)v; v >>= 8; } }
 
 // ---- instructions, outcomes, limits ----
-enum { OP_LOCK = 1, OP_DRAW = 2, OP_CHECK = 3 };
+enum { OP_LOCK = 1, OP_DRAW = 2, OP_CHECK = 3, OP_NOTE = 4 };   /* NOTE: a plain upload of anything, kept nowhere but the transaction itself */
 enum { NONE = 0, ACCEPTED = 1, REJECTED = 2, UNSUPPORTED = 3, POLICY_REJECTED = 4, CANCELLED = 5,
        RECOGNITION_FAILED = 6, HELLO_POLICY_FAILED = 7, STORAGE_FAILED = 8, EARLY_EOF = 9 };
 enum { POLICY_TOO_LONG = 1, POLICY_WRONG_KIND = 2, POLICY_ALREADY_LOCKED = 3, POLICY_BAD_ACCOUNT = 4 };
@@ -62,6 +62,7 @@ enum { STORE_BAD_RECORD = 1, STORE_BAD_COUNT = 2, STORE_NOT_THE_LOCKED_LIST = 3 
 #define MAX_DELAY 432000u      /* slots: about two days */
 static const char KIND[] = "phil-draw/1";
 #define KIND_LEN (sizeof(KIND) - 1)
+static const char KIND_NOTE[] = "phil-note/1";
 
 // ---- the draw account: 256 bytes, written once by LOCK and once by DRAW ----
 enum { EMPTY = 0, LOCKED = 1, DRAWN = 2, EXPIRED = 3 };
@@ -96,6 +97,7 @@ struct state {
   struct account accounts[4];
   u64 account_count;
   const u8 *program_id;
+  const u8 *upload_id;
   struct transport transport;
   struct frame hello_frame, begin_frame;
   u8 hello_pending, begin_pending;            /* what "pending" points at: a different object from the frame */
@@ -234,6 +236,7 @@ bool phil_runtime_validate_begin_policy(void *policy_context, void *begin_record
   (void)policy_context;
   MUST(begin_record == &S->begin && S->begin_frame.stage == 2, 14);
   if (b->length > MAX_PAYLOAD) why = POLICY_TOO_LONG;
+  else if (S->op == OP_NOTE) { if (b->kind_len != sizeof(KIND_NOTE) - 1 || !same(b->kind, (const u8 *)KIND_NOTE, sizeof(KIND_NOTE) - 1)) why = POLICY_WRONG_KIND; }
   else if (b->kind_len != KIND_LEN || !same(b->kind, (const u8 *)KIND, KIND_LEN)) why = POLICY_WRONG_KIND;
   else if (S->account_count < 1 || draw->data_len < DRAW_SIZE || !same(draw->owner, S->program_id, 32)) why = POLICY_BAD_ACCOUNT;
   else if (S->op == OP_LOCK && !draw->writable) why = POLICY_BAD_ACCOUNT;
@@ -308,6 +311,14 @@ u8 phil_runtime_store_with_error(void *payload, void **upload_id_out, void **sto
   if (S->violation) return 0;
   p->held = 0;                                                                     /* storing consumes the payload, whatever the result */
   if (FAULT(4)) return 2;
+  if (S->op == OP_NOTE) {
+    // Nothing to keep: the bytes are already in the transaction, which Solana keeps.
+    LOG("Phil note: received and validated. Its length:");
+    sol_log_64_(0, 0, 0, 0, p->length);
+    S->stored = 1; S->upload_id = S->program_id;
+    *upload_id_out = (void *)S->upload_id;
+    return 1;
+  }
   if (p->length < 16 || !same(r, (const u8 *)"DRAW1", 5)) why = STORE_BAD_RECORD;
   else {
     kind = r[5]; count = le32(r + 6); winners = r[10]; delay = le32(r + 11); title_len = r[15]; head = 16u + title_len;
@@ -342,12 +353,12 @@ u8 phil_runtime_store_with_error(void *payload, void **upload_id_out, void **sto
     LOG("Phil draw: giveaway locked. Target slot:");
     sol_log_64_(0, 0, 0, clock.slot, clock.slot + delay);
   }
-  S->stored = 1;
+  S->stored = 1; S->upload_id = draw->key;
   *upload_id_out = (void *)draw->key;
   return 1;
 }
 void phil_runtime_fail_storage(void *transport, void *storage_error) { MUST(TRANSPORT_IS_OURS(transport) && storage_error == &S->storage_reason && !S->stored, 21); if (S->violation) return; S->outcome = STORAGE_FAILED; S->reason = S->storage_reason; LOG("Phil: the upload was valid but could not be stored"); }
-void phil_runtime_select_accepted(void *transport, void *upload_id) { MUST(TRANSPORT_IS_OURS(transport) && S->stored && upload_id == (void *)S->accounts[0].key, 22); if (S->violation) return; S->outcome = ACCEPTED; LOG("Phil: ACCEPTED"); }
+void phil_runtime_select_accepted(void *transport, void *upload_id) { MUST(TRANSPORT_IS_OURS(transport) && S->stored && upload_id == (void *)S->upload_id, 22); if (S->violation) return; S->outcome = ACCEPTED; LOG("Phil: ACCEPTED"); }
 void phil_runtime_select_rejected(void *transport, u8 reason) { MUST(TRANSPORT_IS_OURS(transport) && reason == 1 && !S->digest_ok && S->payload_taken && !S->payload.held, 23); if (S->violation) return; S->outcome = REJECTED; S->reason = reason; LOG("Phil: REJECTED, the bytes do not match the declared digest"); }
 
 // ---- the client half of Phil's interface. The client runs in the sender's browser, not here;
@@ -439,7 +450,7 @@ u64 entrypoint(const u8 *input) {
   if (ix_len < 1) return 102;
   S->op = ix[0];
   if (S->op == OP_DRAW) return draw();
-  if (S->op != OP_LOCK && S->op != OP_CHECK) return 103;
+  if (S->op != OP_LOCK && S->op != OP_CHECK && S->op != OP_NOTE) return 103;
 
   S->transport.bytes = ix + 1; S->transport.available = ix_len - 1; S->transport.cursor = 0;
   S->supported[0] = 1; S->supported[1] = 1;     /* one version: 1 */

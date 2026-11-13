@@ -148,6 +148,12 @@ jobs:
             jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.devnet.json | tee -a giveaway/out/build.log
           fi
           echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"
+      - name: Record a session between Phil's client and Phil's server
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        run: |
+          if [ ! -e giveaway/session.json ] || [ "${REDEPLOYED:-false}" = "true" ]; then
+            node out/giveaway-run.js session https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json giveaway/session.json devnet 2> >(tee -a giveaway/out/build.log >&2) || echo "the session was not recorded" | tee -a giveaway/out/build.log
+          fi
       - name: Take a giveaway from the form
         if: env.HAVE_KEY == '1' && inputs.title != ''
         env:
@@ -188,7 +194,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in giveaway/program.json giveaway/phil_draw.so giveaway/build.tail.log giveaway/draws giveaway/requests giveaway/phil-llvm giveaway/emitted.json docs; do [ -e "$f" ] && git add "$f"; done
+          for f in giveaway/program.json giveaway/session.json giveaway/phil_draw.so giveaway/build.tail.log giveaway/draws giveaway/requests giveaway/phil-llvm giveaway/emitted.json docs; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Giveaway: $(date -u +%F)"
-          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done; exit 1
+          # Another run may have pushed first. Its generated pages are rebuilt by whoever lands last, so on a clash keep ours.
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git fetch origin "$(git rev-parse --abbrev-ref HEAD)"
+            git rebase -X theirs FETCH_HEAD || { git checkout --theirs -- docs 2>/dev/null; git add -A docs; GIT_EDITOR=true git rebase --continue || { git rebase --abort; sleep 5; }; }
+          done; exit 1
