@@ -1,0 +1,30 @@
+name: Open a burn vault
+# The form to use. It hands the request to the "Burn vault" workflow on the `onchain` branch,
+# which is the only place the devnet wallet can be read from. See burn.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      mint:
+        description: "The coin's mint address (devnet)"
+        type: string
+        required: true
+      threshold:
+        description: "Whole coins someone must burn to take the fees"
+        type: string
+        default: "1000000"
+      label:
+        description: "A short name for the vault"
+        type: string
+permissions:
+  actions: write
+  contents: read
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          MINT: ${{ inputs.mint }}
+          THRESHOLD: ${{ inputs.threshold }}
+          LABEL: ${{ inputs.label }}
+        run: gh workflow run burn.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f "mint=$MINT" -f "threshold=$THRESHOLD" -f "label=$LABEL"

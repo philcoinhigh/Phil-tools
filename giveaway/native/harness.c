@@ -3,8 +3,13 @@
 // program makes into Solana (log, log numbers, SHA-256, clock), and prints what happened.
 //
 // Input on stdin, one item per line:
-//   slot N | time N | program HEX | account KEYHEX OWNERHEX WRITABLE(0/1) DATAHEX|- | ix HEX
-// Output: LOG lines, then RET <code>, then ACCOUNT <index> <hex> for each account.
+//   slot N | time N | program HEX | account KEYHEX OWNERHEX FLAG DATAHEX|- [LAMPORTS] | ix HEX
+//   FLAG is 0 (read-only), 1 (writable) or 2 (writable and a signer of the transaction).
+// Output: LOG lines, then RET <code>, then ACCOUNT <index> <hex> and LAMPORTS <index> <n> for each account.
+//
+// It also stands in for Solana's token program, for the one instruction the burn vault uses
+// (Burn), following the rules the real program enforces. The workflow repeats those tests
+// against the real token program on a local Solana validator.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,12 +63,39 @@ uint64_t sol_sha256(const struct sol_bytes *parts, uint64_t count, uint8_t *out)
   return 0;
 }
 
+// ---- calling another program: only the token programs' Burn is modelled ----
+struct sol_meta { const uint8_t *pubkey; _Bool is_writable; _Bool is_signer; };
+struct sol_instruction { const uint8_t *program_id; struct sol_meta *accounts; uint64_t account_len; uint8_t *data; uint64_t data_len; };
+struct sol_account_info { const uint8_t *key; uint64_t *lamports; uint64_t data_len; uint8_t *data; const uint8_t *owner; uint64_t rent_epoch; _Bool is_signer; _Bool is_writable; _Bool executable; };
+static const uint8_t TOKEN[32] = { 0x06, 0xdd, 0xf6, 0xe1, 0xd7, 0x65, 0xa1, 0x93, 0xd9, 0xcb, 0xe1, 0x46, 0xce, 0xeb, 0x79, 0xac, 0x1c, 0xb4, 0x85, 0xed, 0x5f, 0x5b, 0x37, 0x91, 0x3a, 0x8c, 0xf5, 0x85, 0x7e, 0xff, 0x00, 0xa9 };
+static const uint8_t TOKEN_2022[32] = { 0x06, 0xdd, 0xf6, 0xe1, 0xee, 0x75, 0x8f, 0xde, 0x18, 0x42, 0x5d, 0xbc, 0xe4, 0x6c, 0xcd, 0xda, 0xb6, 0x1a, 0xfc, 0x4d, 0x83, 0xb9, 0x0d, 0x27, 0xfe, 0xbd, 0xf9, 0x28, 0xd8, 0xa1, 0x8b, 0xfc };
+uint64_t sol_invoke_signed_c(const struct sol_instruction *ix, const struct sol_account_info *infos, int n, const void *seeds, int seed_count) {
+  const struct sol_account_info *found[3] = { 0, 0, 0 };
+  uint64_t amount, held, supply;
+  (void)seeds; (void)seed_count;
+  if (memcmp(ix->program_id, TOKEN, 32) && memcmp(ix->program_id, TOKEN_2022, 32)) { printf("LOG (harness) call to a program that is not modelled\n"); return 1; }
+  if (ix->data_len != 9 || ix->data[0] != 8 || ix->account_len != 3) { printf("LOG (harness) only Burn is modelled\n"); return 1; }
+  for (int m = 0; m < 3; m++) for (int i = 0; i < n; i++) if (!memcmp(infos[i].key, ix->accounts[m].pubkey, 32)) { found[m] = &infos[i]; break; }
+  if (!found[0] || !found[1] || !found[2]) return 2;
+  // A token account: mint 0..32, owner 32..64, amount 64..72. A mint: supply at 36..44.
+  if (found[0]->data_len < 72 || found[1]->data_len < 44) return 3;
+  if (memcmp(found[0]->owner, ix->program_id, 32) || memcmp(found[1]->owner, ix->program_id, 32)) return 4;     /* both belong to this token program */
+  if (memcmp(found[0]->data, found[1]->key, 32)) return 5;                                                       /* the account holds this coin */
+  if (memcmp(found[0]->data + 32, found[2]->key, 32) || !found[2]->is_signer || !ix->accounts[2].is_signer) return 6;   /* its owner signed */
+  if (!found[0]->is_writable || !found[1]->is_writable) return 7;
+  memcpy(&amount, ix->data + 1, 8); memcpy(&held, found[0]->data + 64, 8); memcpy(&supply, found[1]->data + 36, 8);
+  if (held < amount) { printf("LOG (token program) insufficient funds\n"); return 8; }
+  held -= amount; supply -= amount;
+  memcpy(found[0]->data + 64, &held, 8); memcpy(found[1]->data + 36, &supply, 8);
+  return 0;
+}
+
 static size_t unhex(const char *s, uint8_t *out) { size_t n = 0; if (s[0] == '-') return 0; for (; s[0] && s[1] && s[0] != '\n'; s += 2) { unsigned v; sscanf(s, "%2x", &v); out[n++] = (uint8_t)v; } return n; }
 
 int main(void) {
   static char line[200000];
   static uint8_t input[400000], ix[4096], program[32], tmp[100000];
-  uint8_t *accounts[8]; size_t lens[8]; int n = 0;
+  uint8_t *accounts[8]; uint8_t *lamports[8]; size_t lens[8]; int n = 0;
   uint8_t *p = input + 8;
   size_t ix_len = 0;
   if (mmap((void *)0x300000000UL, 32768, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) { perror("mmap"); return 2; }
@@ -76,11 +108,12 @@ int main(void) {
     else if (!strcmp(line, "program")) unhex(sp, program);
     else if (!strcmp(line, "ix")) ix_len = unhex(sp, ix);
     else if (!strcmp(line, "account")) {
-      char *key = strtok(sp, " \n"), *owner = strtok(NULL, " \n"), *w = strtok(NULL, " \n"), *data = strtok(NULL, " \n");
+      char *key = strtok(sp, " \n"), *owner = strtok(NULL, " \n"), *w = strtok(NULL, " \n"), *data = strtok(NULL, " \n"), *lam = strtok(NULL, " \n");
       size_t len = unhex(data, tmp);
-      p[0] = 0xff; p[1] = 0; p[2] = (uint8_t)(w[0] == '1'); p[3] = 0; p += 8;
+      uint64_t balance = lam ? strtoull(lam, NULL, 10) : 1;
+      p[0] = 0xff; p[1] = (uint8_t)(w[0] == '2'); p[2] = (uint8_t)(w[0] == '1' || w[0] == '2'); p[3] = 0; p += 8;
       unhex(key, p); p += 32; unhex(owner, p); p += 32;
-      memset(p, 0, 8); p[0] = 1; p += 8;
+      memcpy(p, &balance, 8); lamports[n] = p; p += 8;
       uint64_t l = len; memcpy(p, &l, 8); p += 8;
       accounts[n] = p; lens[n] = len; n++;
       memcpy(p, tmp, len); p += len + 10240;
@@ -93,5 +126,6 @@ int main(void) {
   uint64_t ret = entrypoint(input);
   printf("RET %llu\n", (unsigned long long)ret);
   for (int i = 0; i < n; i++) { printf("ACCOUNT %d ", i); for (size_t j = 0; j < lens[i]; j++) printf("%02x", accounts[i][j]); printf("\n"); }
+  for (int i = 0; i < n; i++) { uint64_t v; memcpy(&v, lamports[i], 8); printf("LAMPORTS %d %llu\n", i, (unsigned long long)v); }
   return 0;
 }

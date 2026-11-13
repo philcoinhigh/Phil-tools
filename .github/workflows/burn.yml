@@ -1,0 +1,152 @@
+name: Burn vault
+# Builds the burn vault program (Phil's emitted upload server + burn/runtime.c), proves it on a
+# local Solana validator against the real token program, deploys it to devnet when it changed,
+# runs one cycle of the demonstration coin, and opens a vault for any coin when asked.
+#
+# Like onchain.yml, this must run on the `onchain` branch to read the devnet wallet;
+# burn-start.yml and onchain-nightly.yml on main start it there. A run started that way builds
+# from main and commits its results to main.
+on:
+  push:
+    branches: [onchain]
+    paths: ["burn/**", ".github/workflows/burn.yml"]
+  workflow_dispatch:
+    inputs:
+      mint:
+        description: "Open a vault for this coin (devnet mint address). Leave empty for the nightly run"
+        type: string
+      threshold:
+        description: "Whole coins someone must burn to take the fees"
+        type: string
+        default: "1000000"
+      label:
+        description: "A short name for the vault"
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: phil-burn
+jobs:
+  burn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install the Solana tools
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)" 2>&1 | tail -3
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Restore the devnet wallet
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.phil-devnet
+          key: phil-devnet-wallet-v1
+      - name: Restore the vault program's key
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.phil-burn
+          key: phil-burn-program-v1
+      - name: Find the keys
+        run: |
+          mkdir -p ~/.phil-burn burn/out && chmod 700 ~/.phil-burn
+          : > burn/out/build.log
+          known=$(jq -r '.programId // empty' burn/program.json 2>/dev/null || true)
+          if [ -s ~/.phil-devnet/payer.json ]; then
+            echo "HAVE_KEY=1" >> "$GITHUB_ENV"
+            echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
+            if [ ! -s ~/.phil-burn/program.json ]; then
+              if [ -n "$known" ]; then echo "The program's key is recorded but not readable here; not making a second one." | tee -a burn/out/build.log; echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+              else solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-burn/program.json; echo "NEW_PROGRAM_KEY=1" >> "$GITHUB_ENV"; fi
+            fi
+          else
+            echo "The devnet wallet is not readable from this run (ref $GITHUB_REF)." | tee -a burn/out/build.log
+            echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+          fi
+          if [ -s ~/.phil-burn/program.json ]; then echo "PROGRAM=$(solana-keygen pubkey ~/.phil-burn/program.json)" >> "$GITHUB_ENV"; else echo "PROGRAM=$known" >> "$GITHUB_ENV"; fi
+      - name: Keep the new program key
+        if: env.NEW_PROGRAM_KEY == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.phil-burn
+          key: phil-burn-program-v1
+      - name: Build the program
+        run: |
+          set -o pipefail
+          npx esbuild burn/run.ts --bundle --platform=node --packages=external --outfile=out/burn-run.js --log-level=error
+          giveaway/build.sh burn/out/phil_burn.so burn/runtime.c 2>&1 | tee -a burn/out/build.log
+      - name: Prove it on a local test validator, against the real token program
+        run: |
+          set -o pipefail
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/program.json"
+          LOCAL_PROGRAM=$(solana-keygen pubkey "$RUNNER_TEMP/program.json")
+          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")" --bpf-program "$LOCAL_PROGRAM" burn/out/phil_burn.so > "$RUNNER_TEMP/validator.log" 2>&1 &
+          for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
+          node out/burn-run.js selftest http://127.0.0.1:8899 "$LOCAL_PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a burn/out/build.log >&2) > burn/out/selftest.local.json || { echo "--- local self-test failed; validator log:" >> burn/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> burn/out/build.log; pkill -f solana-test-validator || true; exit 1; }
+          pkill -f solana-test-validator || true
+          jq -c '{ok, openUnits, burnUnits}' burn/out/selftest.local.json | tee -a burn/out/build.log
+      - name: Deploy to devnet if the program changed
+        id: deploy
+        if: env.HAVE_KEY == '1'
+        run: |
+          set -o pipefail
+          URL=https://api.devnet.solana.com
+          bal=$(solana balance "$WALLET" --url "$URL" 2>/dev/null | awk '{print $1}')
+          echo "devnet wallet $WALLET holds ${bal:-0} SOL" | tee -a burn/out/build.log
+          built=$(sha256sum burn/out/phil_burn.so | cut -d' ' -f1)
+          last=$(jq -r '.deployedSha256 // empty' burn/program.json 2>/dev/null || true)
+          why=""
+          solana account "$PROGRAM" --url "$URL" --output json 2>/dev/null | jq -e '.account.executable == true' >/dev/null || why="the program is not on devnet"
+          [ -n "$why" ] || [ "$built" = "$last" ] || why="the program changed"
+          if [ -z "$why" ]; then echo "program $PROGRAM is deployed and unchanged" | tee -a burn/out/build.log; else
+            echo "deploying because $why" | tee -a burn/out/build.log
+            solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer.json"
+            solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-burn/program.json --buffer "$RUNNER_TEMP/buffer.json" burn/out/phil_burn.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a burn/out/build.log
+            echo "REDEPLOYED=true" >> "$GITHUB_ENV"
+            sleep 20
+            node out/burn-run.js selftest "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a burn/out/build.log >&2) > burn/out/selftest.devnet.json
+            jq -c '{ok, openUnits, burnUnits}' burn/out/selftest.devnet.json | tee -a burn/out/build.log
+          fi
+          echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"
+      - name: Open a vault for the coin that was asked for
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success' && inputs.mint != ''
+        env:
+          MINT: ${{ inputs.mint }}
+          THRESHOLD: ${{ inputs.threshold }}
+          LABEL: ${{ inputs.label }}
+        run: node out/burn-run.js open https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json "$MINT" "$THRESHOLD" "$LABEL" burn/vaults.json 2> >(tee -a burn/out/build.log >&2) || echo "the vault for $MINT was not opened" | tee -a burn/out/build.log
+      - name: One cycle of the demonstration coin
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        run: node out/burn-run.js demo https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json burn/demo.json burn/vaults.json 2> >(tee -a burn/out/build.log >&2) || echo "the demo cycle failed" | tee -a burn/out/build.log
+      - name: Record
+        if: always()
+        run: |
+          mkdir -p burn/out
+          grep -v -E "^([a-z]+ ){11}[a-z]+$" burn/out/build.log 2>/dev/null | tail -c 60000 > burn/build.tail.log || true
+          if [ -n "${DEPLOYED_SHA:-}" ]; then
+            was=$(cat burn/program.json 2>/dev/null || echo '{}')
+            echo "$was" | jq --arg id "$PROGRAM" --arg wallet "$WALLET" --arg sha "$DEPLOYED_SHA" --arg day "$(date -u +%F)" --arg phil "$(jq -r .commit giveaway/emitted.json)" \
+              --argjson bytes "$(stat -c %s burn/out/phil_burn.so)" --arg redeployed "${REDEPLOYED:-false}" --slurpfile local burn/out/selftest.local.json \
+              '. + {programId: $id, wallet: $wallet, deployedSha256: $sha, programBytes: $bytes, philCommit: $phil, checkedOn: $day, selftest: ($local[0] | {ok, openUnits, burnUnits})} + (if $redeployed == "true" or (.deployedOn | not) then {deployedOn: $day} else {} end)' > burn/program.json.new && mv burn/program.json.new burn/program.json
+            cp burn/out/phil_burn.so burn/phil_burn.so
+          fi
+      - name: Rebuild the site
+        if: always()
+        continue-on-error: true
+        run: npm run build
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in burn/program.json burn/phil_burn.so burn/build.tail.log burn/demo.json burn/vaults.json docs; do [ -e "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Burn vault: $(date -u +%F)"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done; exit 1
