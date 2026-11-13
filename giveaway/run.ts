@@ -7,6 +7,7 @@
 //       one real giveaway: create the account, lock through Phil's upload server, wait for the
 //       target slot, draw, read the account back and check the winner off chain.
 import * as fs from "fs";
+import * as nodePath from "path";
 import { Connection, Keypair, PublicKey, SystemProgram, SYSVAR_SLOT_HASHES_PUBKEY, Transaction, TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { buildRecord, cleanEntries, decodeDraw, uploadData, pickWinners, randomnessOf, readVerdict, sha256, hex, Draw, Giveaway, OP_LOCK, OP_DRAW, OP_CHECK, DRAW_SIZE } from "../site/src/draw";
 import { buildCall, simulate, accountData } from "../site/src/solana-call";
@@ -55,22 +56,47 @@ async function waitAndDraw(account: PublicKey, target: number): Promise<Sent> {
   return last;
 }
 
-async function runGiveaway(g: Giveaway) {
+/** The lock and draw transactions of an account, found from the chain itself. */
+async function history(account: PublicKey): Promise<{ lock: Sent | null; drew: Sent | null }> {
+  const sigs = await conn.getSignaturesForAddress(account, { limit: 50 }, "confirmed");
+  let lock: Sent | null = null, drew: Sent | null = null;
+  for (const s of sigs) {
+    if (s.err) continue;
+    const tx = await conn.getTransaction(s.signature, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
+    const logs = tx?.meta?.logMessages ?? [];
+    const sent: Sent = { ok: true, signature: s.signature, logs, units: tx?.meta?.computeUnitsConsumed ?? null, slot: tx?.slot ?? null };
+    if (logs.some((l) => l.includes("Phil: ACCEPTED"))) lock = sent;
+    if (logs.some((l) => l.includes("Phil draw: DRAWN") || l.includes("Phil draw: EXPIRED"))) drew = sent;
+  }
+  return { lock, drew };
+}
+
+/** Takes a giveaway from wherever its account stands (empty, locked or drawn) to the end. */
+async function runGiveaway(g: Giveaway, account: PublicKey) {
   const record = buildRecord(g);
-  const account = await createDrawAccount();
-  note(`draw account ${account.publicKey.toBase58()}; uploading ${record.payload.length} bytes (${record.kind === 1 ? "the list itself" : "the list's SHA-256"})`);
-  const lock = await send([lockIx(account.publicKey, uploadData(OP_LOCK, record.payload))], [payer]);
-  if (!lock.ok || !readVerdict(lock.logs).accepted) throw new Error("Phil did not accept the giveaway: " + (lock.error ?? readVerdict(lock.logs).why) + "\n" + lock.logs.join("\n"));
-  const locked = await readDraw(account.publicKey);
-  note(`locked at slot ${locked.lockSlot}; target slot ${locked.targetSlot}`);
-  const drew = await waitAndDraw(account.publicKey, locked.targetSlot);
-  if (!drew.ok) throw new Error("the draw failed: " + drew.error + "\n" + drew.logs.join("\n"));
-  const d = await readDraw(account.publicKey);
-  if (d.state !== "drawn") throw new Error("the giveaway is " + d.state);
+  const info = await conn.getAccountInfo(account, "confirmed");
+  if (!info) throw new Error("the draw account does not exist");
+  if (!decodeDraw(Uint8Array.from(info.data))) {
+    note(`draw account ${account.toBase58()}; uploading ${record.payload.length} bytes (${record.kind === 1 ? "the list itself" : "the list's SHA-256"})`);
+    const lock = await send([lockIx(account, uploadData(OP_LOCK, record.payload))], [payer]);
+    if (!lock.ok || !readVerdict(lock.logs).accepted) throw new Error("Phil did not accept the giveaway: " + (lock.error ?? readVerdict(lock.logs).why) + "\n" + lock.logs.join("\n"));
+  }
+  let d = await readDraw(account);
+  if (hex(d.payloadDigest) !== hex(sha256(record.payload))) throw new Error("the account holds a different giveaway from the one requested");
+  if (d.state === "locked") {
+    note(`locked at slot ${d.lockSlot}; target slot ${d.targetSlot}`);
+    const drew = await waitAndDraw(account, d.targetSlot);
+    if (!drew.ok) throw new Error("the draw failed: " + drew.error + "\n" + drew.logs.join("\n"));
+    d = await readDraw(account);
+  }
+  const { lock, drew } = await history(account);
+  if (!lock) throw new Error("could not find the lock transaction");
+  if (d.state === "expired") return { record, account, lock, drew, d, winners: [] as number[] };
+  if (d.state !== "drawn" || !drew) throw new Error("the giveaway is " + d.state);
   // Recompute everything off chain; refuse to report a winner the chain does not agree with.
-  const randomness = randomnessOf(d.payloadDigest, d.slotHash, account.publicKey.toBytes());
+  const randomness = randomnessOf(d.payloadDigest, d.slotHash, account.toBytes());
   const winners = pickWinners(randomness, d.count, d.winners);
-  if (hex(randomness) !== hex(d.randomness) || winners[0] !== d.winner || hex(d.payloadDigest) !== hex(sha256(record.payload)) || hex(d.listDigest) !== hex(record.listDigest)) throw new Error("the account does not match what was computed off chain");
+  if (hex(randomness) !== hex(d.randomness) || winners[0] !== d.winner || hex(d.listDigest) !== hex(record.listDigest)) throw new Error("the account does not match what was computed off chain");
   return { record, account, lock, drew, d, winners };
 }
 
@@ -90,15 +116,17 @@ async function selftest() {
   expect("an unsupported protocol version is refused", !r.ok && /no protocol version in common/.test(r.logs.join("\n")), r.error);
 
   // The real thing.
-  const done = await runGiveaway(g);
+  const done = await runGiveaway(g, (await createDrawAccount()).publicKey);
   expect("Phil accepts the giveaway and it is drawn", done.d.state === "drawn" && done.winners.length === 2);
-  r = await send([lockIx(done.account.publicKey, uploadData(OP_LOCK, buildRecord({ ...g, title: "Swapped" }).payload))], [payer]);
+  const again = await runGiveaway(g, done.account);
+  expect("a finished giveaway can be read back from the chain alone", again.lock.signature === done.lock.signature && again.winners.join() === done.winners.join());
+  r = await send([lockIx(done.account, uploadData(OP_LOCK, buildRecord({ ...g, title: "Swapped" }).payload))], [payer]);
   expect("a drawn giveaway cannot be locked again", !r.ok && /REJECTED by policy/.test(r.logs.join("\n")), r.error);
-  r = await send([drawIx(done.account.publicKey)], [payer]);
+  r = await send([drawIx(done.account)], [payer]);
   expect("or drawn again", !r.ok && /already drawn/.test(r.logs.join("\n")), r.error);
 
   // What the website does, with no key: read the account, and ask Phil about a list.
-  const key = done.account.publicKey.toBase58(), me = payer.publicKey.toBase58();
+  const key = done.account.toBase58(), me = payer.publicKey.toBase58();
   const seen = await accountData(url, key);
   expect("the website can read the draw account", !!seen && decodeDraw(seen.data)?.winner === done.d.winner && seen.owner === program.toBase58());
   let s = await simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, record.payload)));
@@ -106,7 +134,7 @@ async function selftest() {
   const edited = buildRecord({ ...g, entries: [...g.entries.slice(0, 6), "@mallory"] }, 1);
   s = await simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, edited.payload, { declaredDigest: done.d.payloadDigest, declaredLength: done.d.payloadLength })));
   expect("wallet-free: Phil rejects an edited list", !s.ok && !readVerdict(s.logs).accepted && /declared/.test(readVerdict(s.logs).why), s.error + " " + s.logs.join(" | "));
-  console.log(JSON.stringify({ ok: problems.length === 0, problems, account: key, lockUnits: done.lock.units, drawUnits: done.drew.units, checkUnits: s.units, lockLogs: done.lock.logs, drawLogs: done.drew.logs, winners: done.winners.map((i) => g.entries[i]) }, null, 1));
+  console.log(JSON.stringify({ ok: problems.length === 0, problems, account: key, lockUnits: done.lock.units, drawUnits: done.drew!.units, checkUnits: s.units, lockLogs: done.lock.logs, drawLogs: done.drew!.logs, winners: done.winners.map((i) => g.entries[i]) }, null, 1));
   process.exit(problems.length ? 1 : 0);
 }
 
@@ -116,18 +144,24 @@ async function run() {
   const cleaned = cleanEntries(Array.isArray(q.entries) ? q.entries.join("\n") : String(q.entries ?? ""));
   const minutes = Math.min(300, Math.max(0.2, Number(q.delayMinutes ?? 1)));
   const g: Giveaway = { title: String(q.title ?? "").trim().slice(0, 60), winners: Math.max(1, Math.floor(Number(q.winners ?? 1))), delay: Math.round(minutes * 150), entries: cleaned.entries };
-  const done = await runGiveaway(g);
-  const when = (slot: number | null) => (slot === null ? null : slot);
+  // The account is written down before anything is sent, so a run that dies can be picked up.
+  const pendingFile = resultFile.replace(/\.json$/, ".pending.json");
+  fs.mkdirSync(nodePath.dirname(resultFile), { recursive: true });
+  let account: PublicKey;
+  if (fs.existsSync(pendingFile)) { account = new PublicKey(JSON.parse(fs.readFileSync(pendingFile, "utf8")).account); note(`resuming ${account.toBase58()}`); }
+  else { account = (await createDrawAccount()).publicKey; fs.writeFileSync(pendingFile, JSON.stringify({ id: q.id, account: account.toBase58() }) + "\n"); }
+  const done = await runGiveaway(g, account);
   const result = {
-    id: q.id, title: g.title, network, program: program.toBase58(), account: done.account.publicKey.toBase58(),
+    id: q.id, title: g.title, network, program: program.toBase58(), wallet: payer.publicKey.toBase58(), account: account.toBase58(), state: done.d.state,
     entries: g.entries, repeatsRemoved: cleaned.repeats, winnerCount: g.winners, kind: done.record.kind,
     payloadDigest: hex(done.d.payloadDigest), payloadLength: done.d.payloadLength, listDigest: hex(done.d.listDigest), delaySlots: g.delay,
-    lock: { signature: done.lock.signature, slot: when(done.d.lockSlot), time: done.d.lockTime, units: done.lock.units, logs: done.lock.logs },
-    draw: { signature: done.drew.signature, targetSlot: done.d.targetSlot, hashSlot: done.d.hashSlot, slotHash: hex(done.d.slotHash), randomness: hex(done.d.randomness), units: done.drew.units, logs: done.drew.logs },
+    lock: { signature: done.lock.signature, slot: done.d.lockSlot, time: done.d.lockTime, units: done.lock.units, logs: done.lock.logs },
+    draw: { signature: done.drew?.signature ?? null, targetSlot: done.d.targetSlot, hashSlot: done.d.hashSlot, slotHash: hex(done.d.slotHash), randomness: hex(done.d.randomness), units: done.drew?.units ?? null, logs: done.drew?.logs ?? [] },
     winners: done.winners.map((index) => ({ index, entry: g.entries[index] })),
   };
   fs.writeFileSync(resultFile, JSON.stringify(result, null, 1) + "\n");
-  note(`winner${result.winners.length > 1 ? "s" : ""}: ${result.winners.map((w) => w.entry).join(", ")}`);
+  fs.rmSync(pendingFile, { force: true });
+  note(result.winners.length ? `winner${result.winners.length > 1 ? "s" : ""}: ${result.winners.map((w) => w.entry).join(", ")}` : "expired without a winner");
 }
 
 (command === "selftest" ? selftest() : command === "run" ? run() : Promise.reject(new Error("usage: selftest | run"))).catch((e) => { note(String(e?.stack ?? e)); process.exit(1); });
