@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
+    "@solana/web3.js": "1.99.0",
     "@types/node": "^26.6.6",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^4.1.0",

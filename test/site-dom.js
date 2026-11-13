@@ -198,10 +198,29 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // On chain
   p = load("docs/onchain/index.html", "https://example.test/onchain/");
   const oc = JSON.parse(fs.readFileSync("onchain/deployment.json", "utf8"));
-  check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.ok ? oc.devnet.run : oc.local.run).returned));
-  check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.ok || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
+  check("onchain: shows what the program returned", p.d.querySelector("#facts b").textContent === String((oc.devnet.run || oc.local.run).returned));
+  check("onchain: links the program and the transaction on the explorer when deployed", !oc.devnet.run || ([...p.d.querySelectorAll("#addr a")].some((a) => a.href === `https://explorer.solana.com/address/${oc.devnet.programId}?cluster=devnet`) && [...p.d.querySelectorAll("#addr a")].some((a) => a.href.includes("/tx/" + oc.devnet.run.signature))));
   check("onchain: shows the log, the Phil source and philc's LLVM", /Phil main returned/.test(p.d.getElementById("log").textContent) && /component main provides U32/.test(p.d.getElementById("src-phil").textContent) && /define i32 @main\(\)/.test(p.d.getElementById("src-ll").textContent) && /phil_main/.test(p.d.getElementById("src-c").textContent));
   check("onchain: no key material is published", !/\[\s*\d+\s*,\s*\d+\s*,\s*\d+/.test(fs.readFileSync("onchain/deployment.json", "utf8") + fs.readFileSync("onchain/build.tail.log", "utf8")));
+  {
+    // The button builds a transaction by hand and asks a node to simulate it. Stand in for the node.
+    let asked = null;
+    p.w.fetch = async (url, init) => { asked = { url, body: JSON.parse(init.body) }; return { ok: true, status: 200, json: async () => ({ result: { context: { slot: 123456 }, value: { err: null, unitsConsumed: 217, logs: oc.devnet.run.logs } } }) }; };
+    p.d.getElementById("call").click(); await wait(30);
+    const tx = Buffer.from(asked.body.params[0], "base64");
+    const web3 = require("@solana/web3.js");
+    const want = new web3.Transaction({ feePayer: new web3.PublicKey(oc.devnet.wallet), recentBlockhash: "11111111111111111111111111111111" }).add(new web3.TransactionInstruction({ programId: new web3.PublicKey(oc.devnet.programId), keys: [], data: Buffer.alloc(0) })).serialize({ requireAllSignatures: false, verifySignatures: false });
+    check("onchain: the button asks devnet to simulate, unsigned", asked.url === "https://api.devnet.solana.com" && asked.body.method === "simulateTransaction" && asked.body.params[1].sigVerify === false && asked.body.params[1].replaceRecentBlockhash === true);
+    check("onchain: the hand-built transaction is byte-for-byte what Solana's own library builds", want.equals(tx), `${tx.length} vs ${want.length}`);
+    check("onchain: the answer is shown with the value, the units and the log", !p.d.getElementById("call-out").hidden && /returned 42 using 217 compute units, at slot 123,456/.test(p.d.getElementById("call-verdict").textContent) && /Phil main returned/.test(p.d.getElementById("call-log").textContent) && /call 1/.test(p.d.getElementById("call-note").textContent) && p.d.getElementById("call").textContent === "Call it again");
+    p.w.fetch = async () => ({ ok: true, status: 200, json: async () => ({ result: { context: { slot: 1 }, value: { err: "ProgramAccountNotFound", logs: [] } } }) });
+    p.d.getElementById("call").click(); await wait(30);
+    check("onchain: a missing program is explained, not shown as a result", /not on devnet right now/.test(p.d.getElementById("call-verdict").textContent) && p.d.getElementById("call-verdict").classList.contains("bad"));
+    p.w.fetch = async () => { throw new Error("offline"); };
+    p.d.getElementById("call").click(); await wait(30);
+    check("onchain: being offline is explained", /Could not reach Solana devnet/.test(p.d.getElementById("call-verdict").textContent));
+    check("onchain: the nightly record lists each night with its transaction", p.d.querySelectorAll("#nights li").length === JSON.parse(fs.readFileSync("onchain/history.json", "utf8")).length && /nights? passed/.test(p.d.getElementById("night-lead").textContent));
+  }
   check("onchain: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Old shared links to the root still reach the playground

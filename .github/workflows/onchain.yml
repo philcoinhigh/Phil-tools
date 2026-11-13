@@ -1,9 +1,13 @@
 name: Phil on Solana
-# Compiles onchain/first.phil with Phil's own compiler, builds a Solana program from the LLVM it
-# emits, proves it runs on a local test validator, then deploys it to devnet and calls it.
-# The devnet wallet is generated here on first run and kept in this repository's Actions cache so
-# that it can be funded once from the web faucet and reused. It is a devnet-only key: test SOL has
-# no value. The key is never committed, printed or written to the log; only its address is.
+# Compiles onchain/first.phil with the newest build of Phil's own compiler, builds a Solana program
+# from the LLVM it emits, proves it runs on a local test validator, deploys it to devnet when the
+# program changed or is missing, calls it, and records the night.
+#
+# The devnet wallet lives in this repository's Actions cache, in the scope of the `onchain` branch.
+# That is why the nightly run (onchain-nightly.yml, on main) starts this workflow *on the onchain
+# branch*: only a run on that branch can read the wallet. Such a run takes this file from `onchain`
+# and everything else from main, and commits its record to main. Do not delete the `onchain` branch.
+# The key is a devnet-only key. It is never committed, printed or written to the log.
 on:
   push:
     branches: [onchain]
@@ -11,12 +15,16 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: phil-on-solana
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'main' || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -26,23 +34,38 @@ jobs:
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)" 2>&1 | tail -5
           echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
-      - name: Restore the devnet wallet, if one was made before
+      - name: Restore the devnet wallet
         uses: actions/cache@v4
         with:
           path: ~/.phil-devnet
           key: phil-devnet-wallet-v1
-      - name: Make the devnet wallet on first run
+      - name: Find the wallet, or make one the very first time
         run: |
-          mkdir -p ~/.phil-devnet && chmod 700 ~/.phil-devnet
-          [ -s ~/.phil-devnet/payer.json ] || solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/payer.json
-          [ -s ~/.phil-devnet/program.json ] || solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/program.json
-          echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
-          echo "PROGRAM=$(solana-keygen pubkey ~/.phil-devnet/program.json)" >> "$GITHUB_ENV"
+          mkdir -p ~/.phil-devnet onchain/out && chmod 700 ~/.phil-devnet
+          known=$(jq -r '.devnet.wallet // empty' onchain/deployment.json 2>/dev/null || true)
+          if [ -s ~/.phil-devnet/payer.json ] && [ -s ~/.phil-devnet/program.json ]; then
+            echo "HAVE_KEY=1" >> "$GITHUB_ENV"
+            echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
+            echo "PROGRAM=$(solana-keygen pubkey ~/.phil-devnet/program.json)" >> "$GITHUB_ENV"
+          elif [ -n "$known" ]; then
+            # A wallet exists but this run cannot read it. Never make a second one: check only.
+            echo "The devnet wallet is not readable from this run (ref $GITHUB_REF); checking without it." | tee -a onchain/out/build.log
+            echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+            echo "WALLET=$known" >> "$GITHUB_ENV"
+            echo "PROGRAM=$(jq -r .devnet.programId onchain/deployment.json)" >> "$GITHUB_ENV"
+          else
+            solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/payer.json
+            solana-keygen new --no-bip39-passphrase --silent -o ~/.phil-devnet/program.json
+            echo "HAVE_KEY=1" >> "$GITHUB_ENV"
+            echo "WALLET=$(solana-keygen pubkey ~/.phil-devnet/payer.json)" >> "$GITHUB_ENV"
+            echo "PROGRAM=$(solana-keygen pubkey ~/.phil-devnet/program.json)" >> "$GITHUB_ENV"
+          fi
+          echo "SOLANA_VERSION=$(solana --version)" >> "$GITHUB_ENV"
       - name: Compile the Phil program with philc
         run: |
-          mkdir -p onchain/out
           npx esbuild onchain/emit.ts --bundle --platform=node --outfile=out/onchain-emit.js --log-level=error
-          node out/onchain-emit.js onchain/first.phil onchain/out/first.ll 2>&1 | tee onchain/out/build.log
+          npx esbuild onchain/simulate.ts --bundle --platform=node --outfile=out/onchain-simulate.js --log-level=error
+          node out/onchain-emit.js onchain/first.phil onchain/out/first.ll 2>&1 | tee -a onchain/out/build.log
       - name: Build the Solana program
         env:
           GH_TOKEN: ${{ github.token }}
@@ -53,50 +76,66 @@ jobs:
       - name: Run it on a local test validator
         run: |
           set -o pipefail
-          npm install --no-save @solana/web3.js@1.99.0 >/dev/null 2>&1
-          cp ~/.phil-devnet/payer.json "$RUNNER_TEMP/payer.json"
-          # The payer is funded at genesis: a test validator started without a wallet has no faucet.
-          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
+          # A throwaway payer, funded at genesis: a test validator started without a wallet has no faucet.
+          solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
+          LOCAL_PAYER=$(solana-keygen pubkey "$RUNNER_TEMP/payer.json")
+          solana-test-validator --reset --quiet --ledger "$RUNNER_TEMP/ledger" --mint "$LOCAL_PAYER" --bpf-program "$PROGRAM" onchain/out/phil_first.so > "$RUNNER_TEMP/validator.log" 2>&1 &
           for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
           node onchain/invoke.mjs http://127.0.0.1:8899 "$PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a onchain/out/build.log >&2) | tee onchain/out/local.json || { echo "--- local run failed; validator log:" >> onchain/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> onchain/out/build.log; exit 1; }
+          # The same wallet-free call the website's button makes.
+          node out/onchain-simulate.js http://127.0.0.1:8899 "$LOCAL_PAYER" "$PROGRAM" > onchain/out/simulate.local.json || true
+          echo "wallet-free call, local: $(jq -c '{ok, returned, units, error}' onchain/out/simulate.local.json)" | tee -a onchain/out/build.log
           pkill -f solana-test-validator || true
-      - name: Deploy to devnet and call it
+      - name: Deploy to devnet if needed, and call it
         id: devnet
         continue-on-error: true
         run: |
           set -o pipefail
           URL=https://api.devnet.solana.com
+          if [ "$HAVE_KEY" != "1" ]; then echo "No wallet in this run: skipping the deployment and the paid call." | tee -a onchain/out/build.log; exit 1; fi
           bal=$(solana balance "$WALLET" --url "$URL" 2>/dev/null | awk '{print $1}')
           echo "devnet wallet $WALLET holds ${bal:-0} SOL" | tee -a onchain/out/build.log
           if [ "$(printf '%.0f' "$(echo "${bal:-0} * 1000" | bc)")" -lt 50 ]; then
-            echo "Not enough test SOL to deploy. Send 0.5 devnet SOL to $WALLET from https://faucet.solana.com and run this again." | tee -a onchain/out/build.log
+            echo "Not enough test SOL. Send devnet SOL to $WALLET from https://faucet.solana.com and run this again." | tee -a onchain/out/build.log
             exit 1
           fi
-          if solana program show "$PROGRAM" --url "$URL" >/dev/null 2>&1; then echo "program $PROGRAM is already deployed" | tee -a onchain/out/build.log; else
+          built=$(sha256sum onchain/out/phil_first.so | cut -d' ' -f1)
+          last=$(jq -r '.devnet.deployedSha256 // empty' onchain/deployment.json 2>/dev/null || true)
+          [ -n "$last" ] || last=$(sha256sum onchain/phil_first.so 2>/dev/null | cut -d' ' -f1)
+          why=""
+          solana program show "$PROGRAM" --url "$URL" >/dev/null 2>&1 || why="the program is not on devnet"
+          [ -n "$why" ] || [ "$built" = "$last" ] || why="the program changed"
+          if [ -z "$why" ]; then echo "program $PROGRAM is deployed and unchanged" | tee -a onchain/out/build.log; else
+            echo "deploying because $why" | tee -a onchain/out/build.log
             solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-devnet/program.json onchain/out/phil_first.so 2>&1 | tee -a onchain/out/build.log
+            echo "REDEPLOYED=true" >> "$GITHUB_ENV"
           fi
           node onchain/invoke.mjs "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a onchain/out/build.log >&2) | jq '. + {network: "devnet"}' | tee onchain/out/devnet.json
-      - name: Record the result
+      - name: Make the website's wallet-free call against devnet
+        if: always()
+        continue-on-error: true
+        run: |
+          node out/onchain-simulate.js https://api.devnet.solana.com "$WALLET" "$PROGRAM" > onchain/out/simulate.json || true
+          echo "wallet-free call, devnet: $(jq -c '{ok, returned, units, cors, error}' onchain/out/simulate.json)" | tee -a onchain/out/build.log
+      - name: Record the night
         if: always()
         run: |
-          mkdir -p onchain/out
-          touch onchain/out/build.log
-          ok() { [ -s "$1" ] && jq -e '.returned != null' "$1" >/dev/null 2>&1; }
-          if ok onchain/out/local.json; then cp onchain/out/local.json "$RUNNER_TEMP/l.json"; L=true; else echo null > "$RUNNER_TEMP/l.json"; L=false; fi
-          if ok onchain/out/devnet.json; then cp onchain/out/devnet.json "$RUNNER_TEMP/d.json"; D=true; else echo null > "$RUNNER_TEMP/d.json"; D=false; fi
-          bytes=$(stat -c %s onchain/out/phil_first.so 2>/dev/null || echo 0)
-          jq -n --arg phil "$(jq -r .commit philc/build.json 2>/dev/null || echo unknown)" --arg program "${PROGRAM:-}" --arg wallet "${WALLET:-}" \
-             --arg solana "$(solana --version 2>/dev/null || echo unknown)" --arg day "$(date -u +%F)" --argjson bytes "$bytes" \
-             --argjson localOk "$L" --argjson devnetOk "$D" --slurpfile local "$RUNNER_TEMP/l.json" --slurpfile devnet "$RUNNER_TEMP/d.json" \
-             '{day: $day, philCommit: $phil, solana: $solana, programBytes: $bytes, local: {ok: $localOk, run: $local[0]}, devnet: {ok: $devnetOk, programId: $program, wallet: $wallet, run: $devnet[0]}}' > onchain/deployment.json || echo '{"error":"could not record"}' > onchain/deployment.json
-          cat onchain/deployment.json
-      - name: Commit the result and the build log
+          mkdir -p onchain/out && touch onchain/out/build.log
+          node onchain/record.mjs
+          tail -c 60000 onchain/out/build.log > onchain/build.tail.log
+          cp onchain/out/first.philc.ll onchain/first.philc.ll 2>/dev/null || true
+          # Keep the committed program equal to the one that is deployed.
+          if [ "$(jq -r '.devnet.deployedSha256 // empty' onchain/deployment.json)" = "$(sha256sum onchain/out/phil_first.so 2>/dev/null | cut -d' ' -f1)" ]; then cp onchain/out/phil_first.so onchain/phil_first.so; fi
+      - name: Rebuild the site
+        if: always()
+        continue-on-error: true
+        run: npm run build
+      - name: Commit the record
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          tail -c 60000 onchain/out/build.log > onchain/build.tail.log 2>/dev/null || true
-          cp onchain/out/first.philc.ll onchain/first.philc.ll 2>/dev/null || true
-          cp onchain/out/phil_first.so onchain/phil_first.so 2>/dev/null || true
-          for f in onchain/deployment.json onchain/build.tail.log onchain/first.philc.ll onchain/phil_first.so; do [ -e "$f" ] && git add "$f"; done
-          if git diff --cached --quiet; then echo "Nothing to commit."; else git commit -m "Phil on Solana: build and deployment record"; git push; fi
+          for f in onchain/deployment.json onchain/history.json onchain/build.tail.log onchain/first.philc.ll onchain/phil_first.so docs site/src/onchain-source.ts; do [ -e "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Phil on Solana: $(date -u +%F)"
+          for i in 1 2 3; do git push && exit 0; git pull --rebase -X theirs; done; exit 1
