@@ -1,24 +1,110 @@
 {
  "phil": {
-  "commit": "e14d9e7106",
-  "date": "2026-11-13"
+  "commit": "4fd2c981a5",
+  "date": "2026-11-14"
  },
- "since": "2026-10-23",
+ "since": "2026-10-24",
  "days": [
   {
-   "date": "2026-11-13",
-   "commits": 5,
-   "merges": 0,
+   "date": "2026-11-14",
+   "commits": 3,
+   "merges": 3,
    "streams": [
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 5
+     "n": 3
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/p8-p9-autonomous-lane-coordination-2026-11-14.md",
+     "title": "P8/P9 autonomous proof-lane coordination — 2026-11-14"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-resource-agreement-gate-fsem02-v1.md",
+     "title": "FSEM-02 — terminal End resource-map agreement gate (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-crosswired-context-gate-fsem02-v1.md",
+     "title": "FSEM-02 — crosswired process-local terminal End contexts (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-missing-context-gate-fsem02-v1.md",
+     "title": "FSEM-02 — terminal End missing protocol-context gate (non-normative)"
+    }
+   ],
+   "proofsAdded": 3,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "3bf792afb1",
+     "subject": "FSEM-02: reject terminal End metadata/linear-resource disagreement"
+    },
+    {
+     "sha": "4fd2c981a5",
+     "subject": "Merged: proof audit / p8 p9 lane bootstrap"
+    },
+    {
+     "sha": "cda55dbcb0",
+     "subject": "Merged: impl audit / p11 v2 post1767 source evidence"
+    },
+    {
+     "sha": "9c7d48bc7c",
+     "subject": "Merged: impl audit / p11 unsigned darwin trust identity"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-13",
+   "commits": 13,
+   "merges": 2,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 13
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-choice-owner-cardinality-trichotomy-fsem02-v1.md",
+     "title": "FSEM-02 — finite End-owner cardinality trichotomy (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-complete-ambiguity-list-fsem02-v1.md",
+     "title": "FSEM-02: full multi-owner terminal ambiguity enumeration"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-multialias-cardinality-fsem02-v1.md",
+     "title": "FSEM-02: mixed owner cardinality and arbitrary near-miss keys"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-nearmiss-close-fsem02-v1.md",
+     "title": "FSEM-02: terminal End near-miss owners do not create false ambiguity"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-ambiguous-close-fsem02-v1.md",
+     "title": "FSEM-02: ambiguous terminal End ownership refuses before nominal authority"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-activation-close-fsem02-v1.md",
+     "title": "FSEM-02: population and activation gates before terminal End close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-local-end-name-refusal-fsem02-v1.md",
+     "title": "FSEM-02: exact local terminal End name is required under the right process"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-cross-process-close-fsem02-v1.md",
+     "title": "FSEM-02: cross-process terminal End adoption is rejected"
+    },
     {
      "path": "docs/phase-1/formal-semantics-choice-fully-closed-no-resurrection-fsem02-v1.md",
      "title": "FSEM-02: no source choice or terminal End resurrection after complete closure"
@@ -40,26 +126,26 @@
      "title": "FSEM-02: nominal peer refusal after a committed Ping half-Close"
     }
    ],
-   "proofsAdded": 5,
-   "proofsChanged": 0,
+   "proofsAdded": 13,
+   "proofsChanged": 2,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "e14d9e7106",
-     "subject": "FSEM-02: forbid source choice and terminal End resurrection after complete Close"
+     "sha": "d8d52ec2a6",
+     "subject": "FSEM-02: classify zero, unique, and multiple terminal End owners in native/Core traces"
     },
     {
-     "sha": "14671c5a21",
-     "subject": "FSEM-02: reject consumed source-choice predecessor across committed half-Close"
+     "sha": "edbfd23767",
+     "subject": "fsem-02: preserve complete exact End ambiguity population in finite model and native replay"
     },
     {
-     "sha": "958a7fee16",
-     "subject": "FSEM-02: retain source-choice committed half-Close across nominal peer refusal and retry"
+     "sha": "821e2e24c5",
+     "subject": "fsem-02: multi-alias exact owner cardinality source replay and finite Rocq proof"
     },
     {
-     "sha": "d23d3d9382",
-     "subject": "FSEM-02: preserve source-choice half-Close across refused peer End and valid retry"
+     "sha": "4a51fa53e8",
+     "subject": "FSEM-02: filter near-miss terminal End ownership without false ambiguity"
     }
    ]
   },
@@ -971,6 +1057,18 @@
   {
    "date": "2026-11-13",
    "commit": "e14d9e7106",
+   "files": 338,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-14",
+   "commit": "4fd2c981a5",
    "files": 338,
    "grammar": "64/64",
    "ranClean": 45,

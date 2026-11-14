@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "e14d9e7106",
-  "date": "2026-11-13",
-  "subject": "FSEM-02: forbid source choice and terminal End resurrection after complete Close (#1754)"
+  "commit": "4fd2c981a5",
+  "date": "2026-11-14",
+  "subject": "Merge pull request #1773 from abiggerhammer/hamster/proof-audit/p8-p9-lane-bootstrap"
  },
  "files": 338,
  "grammar": {
