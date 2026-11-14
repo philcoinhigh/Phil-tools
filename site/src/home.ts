@@ -120,26 +120,6 @@ document.getElementById("copy-hero")?.addEventListener("click", async (e) => {
   setTimeout(() => { b.textContent = "Copy address"; }, 1600);
 });
 
-// The dog. Tap it and it says something true about Phil.
-const SAYS = [
-  "Woof. A linear value gets used exactly once. Like a treat.",
-  "I only run correct programs. And after squirrels.",
-  "No overflow. 250 + 10 in a byte is an error, not 4.",
-  "Every conversation has a script. I checked both ends.",
-  "If the architecture does not list it, it does not exist.",
-  "Sit. Stay. Type-check.",
-  "Bad programs are rejected, not tolerated. Good dog.",
-];
-let said = -1, hush = 0;
-const dogEl = document.querySelector(".dog"), bubble = document.getElementById("bubble");
-dogEl?.addEventListener("click", () => {
-  said = (said + 1) % SAYS.length;
-  if (bubble) { bubble.textContent = SAYS[said]; bubble.classList.add("on"); }
-  dogEl.classList.add("happy");
-  clearTimeout(hush);
-  hush = window.setTimeout(() => { bubble?.classList.remove("on"); dogEl.classList.remove("happy"); }, 4200);
-});
-
 // Sections ease in as they come into view.
 const hidden = [...document.querySelectorAll(".rv")];
 if ("IntersectionObserver" in window) {

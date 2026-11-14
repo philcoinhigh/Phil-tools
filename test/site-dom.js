@@ -37,9 +37,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
     check("home: the coin's address is shown in the hero and the footer", p.d.getElementById("ca-hero").textContent === "Ea5dBrJZN58yV1nm1Q4DybJNYKeTvwpb2GEkXyW64bUH" && p.d.getElementById("ca").textContent === "Ea5dBrJZN58yV1nm1Q4DybJNYKeTvwpb2GEkXyW64bUH");
     check("home: figures for the tour and the mutation analysis are filled in", p.d.getElementById("n-tour").textContent === "20" && /^\d+\/\d+$/.test(p.d.getElementById("mu-val").textContent) && /^\d+$/.test(p.d.getElementById("mu-all").textContent));
-    const dog = p.d.querySelector("svg.dog");
-    dog.dispatchEvent(new p.w.Event("click", { bubbles: true }));
-    check("home: the dog is there, and says something when tapped", !!dog && /Woof/.test(p.d.getElementById("bubble").textContent) && p.d.getElementById("bubble").classList.contains("on") && dog.classList.contains("happy"));
+    check("home: the hero carries our own mark, and none of Phil's mascot art is used anywhere", !!p.d.querySelector(".emblem-coin svg") && !/mascots\//.test(fs.readFileSync("docs/index.html", "utf8")));
     check("home: nothing stays hidden where sections cannot ease in", [...p.d.querySelectorAll(".rv")].every((el) => el.classList.contains("in")) && p.d.querySelectorAll(".rv").length > 15);
     check("home: the page says what Philcoin is and is not", /community token/.test(p.d.getElementById("coin").textContent) && /not the Phil project/.test(p.d.getElementById("coin").textContent) && /financial advice/.test(p.d.getElementById("coin").textContent));
   }

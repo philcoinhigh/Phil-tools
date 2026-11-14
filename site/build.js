@@ -15,7 +15,6 @@ const GROUPS = [
   ["build", "Build", [["library", "library/", "Token utilities"], ["otc", "otc/", "OTC desk"]]],
   ["lab", "Lab", [["mutation", "mutation/", "Mutation analysis"], ["fuzz", "fuzz/", "Compiler fuzzer"], ["conformance", "conformance/", "Conformance report"], ["changelog", "changelog/", "What changed in Phil"]]],
 ];
-const dogHero = fs.readFileSync("site/src/dog.svg", "utf8").trim();
 function header(root, active) {
   const groups = GROUPS.map(([id, label, pages]) => `<a href="${root || "./"}#${id}"${pages.some(([p]) => p === active) ? ' aria-current="true"' : ""}>${label}</a>`).join("");
   const all = GROUPS.map(([, label, pages]) => `<div><h4>${label}</h4>${pages.map(([id, href, name]) => `<a href="${root + href}"${active === id ? ' aria-current="page"' : ""}>${name}</a>`).join("")}</div>`).join("");
@@ -40,7 +39,7 @@ function page(name, out, root, active) {
     .replace("/*__CSS__*/", () => css)
     .replace("__HEADER__", () => header(root, active))
     .replace("__FOOTER__", () => footer(root))
-    .replace("__DOG__", () => dogHero)
+    .replace("__MARK__", () => dog)
     .replace(/__REPO__/g, REPO)
     .replace("/*__BUNDLE__*/", () => js);
   fs.mkdirSync(path.dirname(out), { recursive: true });
