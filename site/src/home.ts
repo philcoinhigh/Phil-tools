@@ -137,7 +137,7 @@ dogEl?.addEventListener("click", () => {
   if (bubble) { bubble.textContent = SAYS[said]; bubble.classList.add("on"); }
   dogEl.classList.add("happy");
   clearTimeout(hush);
-  hush = window.setTimeout(() => { bubble?.classList.remove("on"); dogEl.classList.remove("happy"); }, 3200);
+  hush = window.setTimeout(() => { bubble?.classList.remove("on"); dogEl.classList.remove("happy"); }, 4200);
 });
 
 // Sections ease in as they come into view.

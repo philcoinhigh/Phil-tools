@@ -42,10 +42,8 @@ section { scroll-margin-top: 70px; }
 @keyframes swing { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
 @keyframes pant { from { transform: scaleY(.75); } to { transform: scaleY(1.12); } }
 @keyframes flip { 0%, 80%, 100% { transform: rotateY(0); } 90% { transform: rotateY(180deg); } }
-.bubble { position: absolute; left: 50%; top: -6px; transform: translate(-50%, -100%) scale(.9); opacity: 0; background: var(--ink); color: var(--paper); font: 600 13.5px/1.35 var(--font-body); padding: 9px 13px; border-radius: 14px; width: max-content; max-width: 250px; text-align: center; transition: opacity .2s, transform .2s; pointer-events: none; }
-.bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: var(--ink); transform: translateX(-50%) rotate(45deg); }
-.bubble.on { opacity: 1; transform: translate(-50%, -100%) scale(1); }
-.pet { text-align: center; font-size: 12.5px; color: var(--muted); margin: 2px 0 0; }
+.bubble { margin: 6px auto 0; min-height: 3.1em; display: grid; place-items: center; text-align: center; font: 600 14px/1.35 var(--font-body); color: var(--muted); max-width: 30ch; transition: color .2s; }
+.bubble.on { color: var(--ink); }
 
 /* the address */
 .coin { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; border: 1px solid var(--ink); background: var(--sheet); padding: 12px 16px; margin: 6px 0 0; border-radius: 14px; }
@@ -130,7 +128,7 @@ __HEADER__
       <p class="lede">Phil is a programming language that refuses to run a wrong program. We are the community around <b>$philcoin</b>, and we build open tools for it: ways to learn it, ways to test it, and Phil's own code running on Solana.</p>
       <div class="cta"><a class="btn" href="tour/">Take the tour</a><a class="btn ghost" href="#chain">See it on Solana</a></div>
     </div>
-    <div class="dogbox"><div class="bubble" id="bubble" role="status"></div>__DOG__<p class="pet">Tap the dog.</p></div>
+    <div class="dogbox">__DOG__<div class="bubble" id="bubble" role="status">Tap the dog.</div></div>
   </div>
   <div class="coin rv"><b>$philcoin</b><code id="ca-hero"></code><button type="button" id="copy-hero">Copy address</button></div>
 
