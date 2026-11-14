@@ -15,6 +15,9 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | **Learn Phil** | A course of fifteen short lessons with code you run and fix in the page | [`site/`](site) |
 | **Phil OTC desk** | An escrow desk and a two-listing order book, written in Phil. Simulation only: no real tokens move | [`otc/`](otc) |
 | **Hacks Phil would have stopped** | Four well-known losses, each reduced to the shape of the mistake and refused in the page, with sources | [`core/src/sim/hacks.ts`](core/src/sim/hacks.ts) |
+| **The tour, runnable** | Follows Phil's official Phase 1 tour section by section, with a complete program to run and change for each | [`site/src/tour-data.ts`](site/src/tour-data.ts) |
+| **Phil at both ends** | Phil's emitted client (WebAssembly, in the browser) completes Phil's upload protocol with Phil's emitted server (on Solana devnet) | [`site/src/phil-client.ts`](site/src/phil-client.ts), [`giveaway/`](giveaway) |
+| **Mutation analysis** | Hundreds of deliberately broken copies of Phil's emitted upload code, run against Phil's own test and ours | [`mutation/`](mutation) |
 | **Phil on Solana** | A Phil program compiled by Phil's own compiler, deployed on Solana devnet and called. Real, and tiny | [`onchain/`](onchain) |
 | **Giveaways** | Provably fair draws on Solana devnet. The entry list is locked through the upload server Phil's backend emits; a future block picks the winner; anyone can check without a wallet | [`giveaway/`](giveaway) |
 | **Burn vault** | Point any coin's fees at a vault on Solana devnet; whoever burns a set amount of the coin takes them. No withdraw, no owner; every step gated by the upload server Phil's backend emits | [`burn/`](burn) |
