@@ -65,3 +65,10 @@ component main provides U32 {
     return same
 }
 `;
+
+/** The example programs in Phil's release package (examples/run in Phil's repository, and the package's own refusal example). */
+export const RELEASE_EXAMPLES: Record<string, string> = {
+  unit: "component main provides Unit {\n    return unit\n}\n",
+  scalar: "component main provides U32 {\n    let answer = 42\n    return answer\n}\n",
+  rejected: "component not_main provides Unit {\n    return unit\n}\n",
+};

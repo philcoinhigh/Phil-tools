@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The Phil tour, runnable</title>
+<meta name="description" content="Phil's official tour has twenty sections. Here each one has a complete program you can run and change in your browser, on any device.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 68ch; font-size: 17px; }
+.jump { position: sticky; top: 52px; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--ink); margin: 18px calc(-1 * var(--pad, 0px)) 0; padding: 8px 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.jump::-webkit-scrollbar { display: none; }
+.jump a { flex: none; min-width: 34px; text-align: center; padding: 5px 8px; border: 1px solid var(--rule); font: 600 13px var(--font-code); text-decoration: none; color: var(--ink); background: var(--sheet); }
+.jump a.ran { border-color: var(--good); color: var(--good); } .jump a.here { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.stop { padding: 34px 0 8px; border-bottom: 1px solid var(--ink); scroll-margin-top: 110px; }
+.stop .num { font: 600 13px var(--font-code); color: var(--muted); }
+.stop h2 { font: 600 24px/1.15 var(--font-mark); letter-spacing: -.02em; margin: 6px 0 8px; text-wrap: balance; }
+.stop .idea { font-size: 17px; max-width: 66ch; margin: 0 0 8px; }
+.stop .orig { font-size: 14px; }
+.part { margin: 20px 0 22px; }
+.part h3 { font: 600 15px var(--font-mark); margin: 0 0 8px; }
+.inputs { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 0; }
+.inputs label { font: 13px var(--font-code); color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.inputs input { width: 90px; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 14px var(--font-code); padding: 5px 8px; border-radius: 0; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.out { margin-top: 10px; border: 1px solid var(--ink); background: var(--sheet); padding: 12px 14px; font-size: 14.5px; }
+.out .v { font-weight: 600; } .out .v.good { color: var(--good); } .out .v.bad { color: var(--bad); } .out .v.plain { color: var(--ink); }
+.out pre { margin: 8px 0 0; font: 13px/1.55 var(--font-code); white-space: pre-wrap; }
+.aside { margin: 10px 0 0; font-size: 14.5px; color: var(--muted); max-width: 70ch; } .aside b { color: var(--ink); }
+.see { margin: 14px 0 22px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.see a { display: inline-block; border: 1px solid var(--ink); padding: 7px 12px; font: 600 13.5px var(--font-mark); text-decoration: none; color: var(--ink); background: var(--sheet); }
+.note-top { border: 1px solid var(--ink); background: var(--sheet); padding: 14px 16px; margin-top: 16px; font-size: 15px; max-width: 72ch; }
+.flash { animation: flash 1s ease-out; }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>The Phil tour, runnable</h1>
+    <p>Phil's own tour explains the language in twenty sections. This page follows it section by section. Where the tour shows a piece of a program, this page has a whole one you can run and change, in your browser, on any device.</p>
+    <p class="muted" style="font-size:15px">Read the tour for the explanation; come here to try it. Each section links to the original.</p>
+  </div>
+  <div class="note-top" id="why"></div>
+  <nav class="jump" id="jump" aria-label="Sections"></nav>
+  <div id="stops"></div>
+  <p class="muted" style="margin:22px 0;font-size:14.5px;max-width:72ch">The section titles are from <a id="tour-link" rel="noopener">A Tour of Phil</a> in Phil's repository. The summaries and the programs are ours, and they run in our simulator, which is a model of Phil and not Phil's compiler. This is a community project and is not affiliated with Phil.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

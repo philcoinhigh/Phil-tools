@@ -5,6 +5,6 @@ export function wireFooter(): void {
   document.getElementById("copy-ca")?.addEventListener("click", async (e) => {
     const b = e.currentTarget as HTMLElement;
     try { await navigator.clipboard.writeText(CONTRACT); b.textContent = "Copied"; } catch { b.textContent = "Select the address to copy"; }
-    setTimeout(() => { b.textContent = "Copy CA"; }, 1600);
+    setTimeout(() => { b.textContent = "Copy address"; }, 1600);
   });
 }

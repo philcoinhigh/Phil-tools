@@ -11,7 +11,7 @@ import { RESERVED } from "../../core/src/lexer";
 import { protocolViews, architectureView, protocolPositions } from "../../core/src/sim/inspect";
 import { EXAMPLES, Example } from "../../core/src/sim/examples";
 import { CODES, CODE_MAP } from "../../core/src/codes";
-import { loadPhilc, runPhilc, readPhilcError, PHILC_TARGETS, PHILC_SAMPLE, PhilcBuild } from "./philc";
+import { loadPhilc, runPhilc, readPhilcError, PHILC_TARGETS, PHILC_SAMPLE, RELEASE_EXAMPLES, PhilcBuild } from "./philc";
 import kwcats from "./kwcats.json";
 import keywordDocs from "../../core/src/keywords.json";
 
@@ -874,6 +874,12 @@ function loadPhilcSample(): void {
 }
 $("philc-run").addEventListener("click", () => { void doPhilc(); });
 $("philc-try").addEventListener("click", loadPhilcSample);
+function loadRelease(which: string): void {
+  loadExample("scratch", true, RELEASE_EXAMPLES[which] ?? RELEASE_EXAMPLES.unit);
+  showTab("philc");
+  void doPhilc();
+}
+document.querySelectorAll<HTMLButtonElement>("[data-rel]").forEach((b) => b.addEventListener("click", () => loadRelease(b.dataset.rel!)));
 void initPhilc();
 
 // ------------------------------------------------------------------ protocol designer
@@ -1195,3 +1201,5 @@ if (initial.startsWith("code=")) {
     $("blurb").textContent = "Opened from a shared link. It lives in your scratch pad now.";
   });
 }
+// playground/#release opens Phil's compiler on one of the release package's own examples.
+if (initial === "release") loadRelease("scalar");
