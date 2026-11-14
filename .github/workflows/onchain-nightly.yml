@@ -17,5 +17,6 @@ jobs:
       - run: |
           gh workflow run onchain.yml --repo "$GITHUB_REPOSITORY" --ref onchain
           gh workflow run burn.yml --repo "$GITHUB_REPOSITORY" --ref onchain
+          gh workflow run giveaway.yml --repo "$GITHUB_REPOSITORY" --ref onchain
         env:
           GH_TOKEN: ${{ github.token }}

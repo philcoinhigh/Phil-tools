@@ -64,3 +64,5 @@ devnet wallet can be read from (see `onchain/README.md`). Or add a file to `requ
 `npm run test:giveaway` builds the program natively and runs lock, tamper, policy, check and
 draw scenarios against it. The workflow repeats the important ones on a local Solana validator
 and, after a deployment, on devnet.
+
+<!-- rebuilt on demand: 2026-11-14 -->
