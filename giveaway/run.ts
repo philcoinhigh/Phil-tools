@@ -157,10 +157,10 @@ async function selftest() {
   const key = done.account.toBase58(), me = payer.publicKey.toBase58();
   const seen = await patiently(async () => { const a = await accountData(url, key); return a as (typeof a & { error?: string }) | null; });
   expect("the website can read the draw account", !!seen && decodeDraw(seen.data)?.winner === done.d.winner && seen.owner === program.toBase58());
-  let s = await patiently(() => simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, record.payload)));
+  let s = await patiently(() => simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, record.payload))));
   expect("wallet-free: Phil accepts the real list and confirms it is the locked one", s.ok && /byte for byte the giveaway that is locked/.test(s.logs.join("\n")), s.error + " " + s.logs.join(" | "));
   const edited = buildRecord({ ...g, entries: [...g.entries.slice(0, 6), "@mallory"] }, 1);
-  s = await patiently(() => simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, edited.payload, { declaredDigest: done.d.payloadDigest, declaredLength: done.d.payloadLength })));
+  s = await patiently(() => simulate(url, buildCall(me, program.toBase58(), [{ key }], uploadData(OP_CHECK, edited.payload, { declaredDigest: done.d.payloadDigest, declaredLength: done.d.payloadLength }))));
   expect("wallet-free: Phil rejects an edited list", !s.ok && !readVerdict(s.logs).accepted && /declared/.test(readVerdict(s.logs).why), s.error + " " + s.logs.join(" | "));
   console.log(JSON.stringify({ ok: problems.length === 0, problems, account: key, lockUnits: done.lock.units, drawUnits: done.drew!.units, checkUnits: s.units, lockLogs: done.lock.logs, drawLogs: done.drew!.logs, winners: done.winners.map((i) => g.entries[i]) }, null, 1));
   process.exit(problems.length ? 1 : 0);
