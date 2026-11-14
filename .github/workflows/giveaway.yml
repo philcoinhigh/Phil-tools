@@ -146,6 +146,7 @@ jobs:
             solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer.json"
             solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-draw/program.json --buffer "$RUNNER_TEMP/buffer.json" giveaway/out/phil_draw.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a giveaway/out/build.log
             echo "REDEPLOYED=true" >> "$GITHUB_ENV"
+            echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"     # it is deployed from here on, whatever the checks below say
             sleep 20
             node out/giveaway-run.js selftest "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a giveaway/out/build.log >&2) > giveaway/out/selftest.devnet.json
             jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.devnet.json | tee -a giveaway/out/build.log
