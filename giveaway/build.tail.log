@@ -1,0 +1,65 @@
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.bfz0nHPp5S/phil.ll -o /tmp/tmp.bfz0nHPp5S/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 31328 Nov 14 08:32 giveaway/out/phil_draw.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+    34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
+ok   a tampered upload is rejected by Phil on chain 
+ok   and leaves the account empty 
+ok   an unsupported protocol version is refused 
+draw account Fz9MqqUtyhaH3nk4CbgpedFSGgv2wJyWhhAZGu7VaK2A; uploading 78 bytes (the list itself)
+locked at slot 12; target slot 32
+ok   Phil accepts the giveaway and it is drawn 
+ok   a finished giveaway can be read back from the chain alone 
+ok   a drawn giveaway cannot be locked again 
+ok   or drawn again 
+ok   Phil's client and Phil's server complete a session in a real transaction 
+ok   a byte changed in transit is rejected on chain, and the client ends in rejected 
+ok   the website can read the draw account 
+ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
+ok   wallet-free: Phil rejects an edited list 
+{"ok":true,"lockUnits":5127,"drawUnits":1797,"checkUnits":2288,"winners":["@dave","@erin"]}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.5859416 SOL
+deploying because the program changed
+Program Id: GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH
+
+Signature: 5J34m3fJFgPt9xJCyZ3HPYjqyQCbBpCLBqVKiS1zVth2nCRQrLThv8fZ3TLU1vFDgsdUdZW27735XrJC5sPMXir1
+
+ok   a tampered upload is rejected by Phil on chain 
+ok   and leaves the account empty 
+ok   an unsupported protocol version is refused 
+draw account 5MB1aza3RS8RqNDyEUCZ9DkutXoKH6S95ZxqTXzoQHzb; uploading 78 bytes (the list itself)
+locked at slot 522126248; target slot 522126268
+ok   Phil accepts the giveaway and it is drawn 
+ok   a finished giveaway can be read back from the chain alone 
+ok   a drawn giveaway cannot be locked again 
+ok   or drawn again 
+ok   Phil's client and Phil's server complete a session in a real transaction 
+ok   a byte changed in transit is rejected on chain, and the client ends in rejected 
+ok   the website can read the draw account 
+ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
+ok   wallet-free: Phil rejects an edited list 
+{"ok":true,"lockUnits":5127,"drawUnits":1932,"checkUnits":2288,"winners":["@carol","@erin"]}
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+ws error: Unexpected server response: 429
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+ws error: Unexpected server response: 429
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 4000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+session recorded: 3r2mXWEvMDPnqRzKSXTKjgZEehqYjKznvLrkkMeBcumnTEhhJ6Ta3AwkEBiy3Ch2SZbBTs2E2fSvuYAY4oSb22Xr

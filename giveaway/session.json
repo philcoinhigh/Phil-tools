@@ -1,0 +1,84 @@
+{
+ "day": "2026-11-14",
+ "network": "devnet",
+ "program": "GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH",
+ "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+ "message": "Phil client to Phil server, over Solana.",
+ "bytes": 115,
+ "signature": "3r2mXWEvMDPnqRzKSXTKjgZEehqYjKznvLrkkMeBcumnTEhhJ6Ta3AwkEBiy3Ch2SZbBTs2E2fSvuYAY4oSb22Xr",
+ "slot": 522126306,
+ "units": 2211,
+ "logs": [
+  "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH invoke [1]",
+  "Program log: Phil: UploadServer started",
+  "Program log: Phil: Hello recognized",
+  "Program log: Phil: version agreed",
+  "Program log: Phil: Begin recognized",
+  "Program log: Phil: policy passed, proceed",
+  "Program log: Phil: payload received, exactly the declared length",
+  "Program log: Phil: SHA-256 matches the declared digest",
+  "Program log: Phil note: received and validated. Its length:",
+  "Program log: 0x0, 0x0, 0x0, 0x0, 0x28",
+  "Program log: Phil: ACCEPTED",
+  "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH consumed 2211 of 200000 compute units",
+  "Program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH success"
+ ],
+ "client": [
+  {
+   "text": "sends Hello, offering version 1",
+   "phase": 0,
+   "sends": true
+  },
+  {
+   "text": "is told: version 1",
+   "phase": 1,
+   "sends": false
+  },
+  {
+   "text": "checks the chosen version is one it offered",
+   "phase": 1,
+   "sends": false
+  },
+  {
+   "text": "computes the SHA-256 of its 40 bytes: 79793f36a6ea19e3…",
+   "phase": 1,
+   "sends": false
+  },
+  {
+   "text": "sends Begin: 40 bytes of kind phil-note/1, with that digest",
+   "phase": 1,
+   "sends": true
+  },
+  {
+   "text": "is told: proceed",
+   "phase": 2,
+   "sends": false
+  },
+  {
+   "text": "decides to go ahead",
+   "phase": 2,
+   "sends": false
+  },
+  {
+   "text": "tells the server: payload follows",
+   "phase": 2,
+   "sends": true
+  },
+  {
+   "text": "sends exactly 40 bytes",
+   "phase": 2,
+   "sends": true
+  },
+  {
+   "text": "is told: accepted",
+   "phase": 3,
+   "sends": false
+  },
+  {
+   "text": "records the upload as accepted",
+   "phase": 3,
+   "sends": false
+  }
+ ],
+ "ending": "accepted"
+}

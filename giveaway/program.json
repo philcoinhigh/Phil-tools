@@ -1,16 +1,16 @@
 {
   "programId": "GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH",
   "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
-  "deployedSha256": "048bcdc45f9fea899961f3a3787d19574fa91859243315a35f8a95c9f163fbd9",
-  "programBytes": 26184,
+  "deployedSha256": "abfc35703330d07451713107a7585dead81266d0f882f8abffa80378dbb3e063",
+  "programBytes": 31328,
   "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
   "stackSlotsMoved": true,
-  "checkedOn": "2026-11-13",
+  "checkedOn": "2026-11-14",
   "selftest": {
     "ok": true,
-    "lockUnits": 5023,
-    "drawUnits": 1795,
-    "checkUnits": 2109
+    "lockUnits": 5127,
+    "drawUnits": 1797,
+    "checkUnits": 2288
   },
-  "deployedOn": "2026-11-13"
+  "deployedOn": "2026-11-14"
 }
