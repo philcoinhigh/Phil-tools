@@ -350,18 +350,21 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
   .mobilebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+.philc-rel { margin: 10px 0 12px; padding: 10px 12px; border: 1px dashed var(--ink); font-size: 13.5px; line-height: 1.5; }
+.philc-rel-go { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; }
 </style>
 </head>
 <body>
 <header class="bar">
-  <a class="mark" href="../" title="Phil tools home">
+  <a class="mark" href="../" title="Philcoin tools for Phil: home">
     __DOGMARK__
-    <span class="wordmark">phil <span>playground</span></span>
+    <span class="wordmark">philcoin <span>playground</span></span>
   </a>
   <button id="ex-open" class="exbtn" type="button" aria-haspopup="dialog"><span class="exlabel">Example</span><b id="ex-title"></b><span class="chev" aria-hidden="true">▾</span></button>
   <select id="example" aria-label="Example program" hidden></select>
   <div class="spacer"></div>
   <nav class="nav" aria-label="More">
+    <a class="tab navtab" href="../tour/">Tour</a>
     <a class="tab navtab" href="../learn/">Learn</a>
     <button class="tab navtab" data-tab="design" type="button">Design</button>
     <button class="tab navtab" data-tab="docs" type="button">Docs</button>
@@ -457,6 +460,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1
         <p class="lead">This runs <code>philc</code>, Phil's own compiler, on the program in the editor. It is the unmodified program from the Phil repository, compiled to WebAssembly so it can run here. Everything else on this page is our simulator; this is the real thing.</p>
         <p class="philc-build" id="philc-build"></p>
         <div class="philc-go"><button type="button" class="act" id="philc-run">Compile with philc</button><select id="philc-target" aria-label="Target"></select><button type="button" class="linklike" id="philc-try">Load a program it accepts</button></div>
+        <div class="philc-rel"><b>No Mac? No install.</b> Phil's release package is built for Apple Silicon Macs. The same compiler runs here on anything. These are the example programs that ship in the package:
+          <span class="philc-rel-go"><button type="button" class="linklike" data-rel="unit">return-unit.phil</button><button type="button" class="linklike" data-rel="scalar">scalar-binding-42.phil</button><button type="button" class="linklike" data-rel="rejected">rejected.phil (it should refuse this one)</button></span></div>
         <div id="philc-out"></div>
       </div>
       <div class="panel" id="panel-design" hidden>

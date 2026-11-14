@@ -26,10 +26,27 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["learn/", "hacks/", "playground/", "onchain/", "session/", "giveaway/", "burn/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "session/", "giveaway/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
-  check("home: the menu lists every page", p.d.querySelectorAll(".site .menu nav a").length === 14 && p.d.querySelectorAll(".site nav.full a").length === 14);
+  {
+    const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "session/", "giveaway/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
+    check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
+    check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
+    check("home: the coin's address is shown in the hero and the footer", p.d.getElementById("ca-hero").textContent === "Ea5dBrJZN58yV1nm1Q4DybJNYKeTvwpb2GEkXyW64bUH" && p.d.getElementById("ca").textContent === "Ea5dBrJZN58yV1nm1Q4DybJNYKeTvwpb2GEkXyW64bUH");
+    check("home: figures for the tour and the mutation analysis are filled in", p.d.getElementById("n-tour").textContent === "20" && /^\d+\/\d+$/.test(p.d.getElementById("mu-val").textContent) && /^\d+$/.test(p.d.getElementById("mu-all").textContent));
+    const dog = p.d.querySelector("svg.dog");
+    dog.dispatchEvent(new p.w.Event("click", { bubbles: true }));
+    check("home: the dog is there, and says something when tapped", !!dog && /Woof/.test(p.d.getElementById("bubble").textContent) && p.d.getElementById("bubble").classList.contains("on") && dog.classList.contains("happy"));
+    check("home: nothing stays hidden where sections cannot ease in", [...p.d.querySelectorAll(".rv")].every((el) => el.classList.contains("in")) && p.d.querySelectorAll(".rv").length > 15);
+    check("home: the page says what Philcoin is and is not", /community token/.test(p.d.getElementById("coin").textContent) && /not the Phil project/.test(p.d.getElementById("coin").textContent) && /financial advice/.test(p.d.getElementById("coin").textContent));
+  }
+  {
+    const sub = load("docs/giveaway/index.html", "https://example.test/giveaway/");
+    check("a page inside a group marks its group and itself in the header", sub.d.querySelector('.site nav.full a[aria-current]').textContent === "On chain" && sub.d.querySelector('.site .menu a[aria-current="page"]').getAttribute("href") === "../giveaway/" && sub.d.querySelector(".site nav.full a").getAttribute("href") === "../#start");
+  }
   check("home: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Learn
@@ -222,6 +239,29 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     check("onchain: the nightly record lists each night with its transaction", p.d.querySelectorAll("#nights li").length === JSON.parse(fs.readFileSync("onchain/history.json", "utf8")).length && /nights? passed/.test(p.d.getElementById("night-lead").textContent));
   }
   check("onchain: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+  // The tour
+  p = load("docs/tour/index.html", "https://example.test/tour/");
+  {
+    const parts = [...p.d.querySelectorAll(".part")];
+    check("tour: twenty sections, each linked to Phil's own tour, with a program wherever the tour has code", p.d.querySelectorAll(".stop").length === 20 && parts.length === 20 && p.d.querySelectorAll("#jump a").length === 20 && [...p.d.querySelectorAll(".stop a.orig")].every((a) => a.href.startsWith("https://github.com/abiggerhammer/phil/blob/main/docs/tutorials/tour-phase1.md#")) && p.d.querySelector(".stop a.orig").href.endsWith("#1-a-first-phil-component"));
+    const runPart = (key) => { const el = parts.find((x) => x.dataset.key === key); el.querySelector(".run").click(); return el; };
+    let el = runPart("1.0");
+    check("tour: a program runs in the page and shows what it printed", /Ran to completion/.test(el.querySelector(".out").textContent) && /a Phil component ran/.test(el.querySelector(".out").textContent) && /Ran just now \(1\)/.test(el.querySelector(".note").textContent));
+    el = runPart("5.0");
+    check("tour: declarations are checked and said to be valid", /Valid Phil/.test(el.querySelector(".out").textContent) && el.querySelector(".run").textContent === "Check it");
+    el = runPart("14.0");
+    check("tour: a program Phil refuses shows the refusal as the point", /Ownership error/.test(el.querySelector(".out").textContent) && /Phil refuses it/.test(el.querySelector(".out").textContent));
+    el = parts.find((x) => x.dataset.key === "13.0");
+    el.querySelector(".run").click();
+    const refused = /promise was broken/.test(el.querySelector(".out").textContent);
+    type(p.w, el.querySelector(".inputs input"), "5"); el.querySelector(".run").click();
+    check("tour: inputs can be changed, and a value that meets the type's condition is let in", refused && /Ran to completion/.test(el.querySelector(".out").textContent) && /hands back 5/.test(el.querySelector(".out").textContent));
+    check("tour: the one place we differ from the tour is said out loud", /difference from the tour/.test(parts.find((x) => x.dataset.key === "3.2").textContent) && /gt\(i, 1\)/.test(parts.find((x) => x.dataset.key === "3.2").textContent));
+    check("tour: finished sections are marked in the strip", p.d.querySelector('#jump a[data-n="1"]').classList.contains("ran") && !p.d.querySelector('#jump a[data-n="2"]').classList.contains("ran"));
+    check("tour: no script errors", p.errors.length === 0, p.errors.join("|"));
+  }
+  check("playground: offers the release package's examples and a link that opens them", /data-rel="scalar"/.test(fs.readFileSync("docs/playground/index.html", "utf8")) && /No Mac\? No install\./.test(fs.readFileSync("docs/playground/index.html", "utf8")));
 
   // Phil at both ends
   p = load("docs/session/index.html", "https://example.test/session/");

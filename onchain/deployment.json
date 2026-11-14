@@ -7,7 +7,7 @@
  "local": {
   "ok": true,
   "run": {
-   "signature": "3rfPioMe5Gj56FshJ9z1SGaLPRTmfzpnRtqGEc3m8zqqaeYjupNZUVxaxTzbsziCazxbMPUR3gmQ1hJZcUa5DLQc",
+   "signature": "4g2Ag8E1wt5zAzusKpMMGgQcENXCeAhRYE4iAdA8Tmug9nCD75dDKrSMg1MedSN4yxPPh4k4oxdb1AeXGrYNbzdM",
    "slot": 10,
    "returned": 42,
    "unitsConsumed": 217,
@@ -25,8 +25,8 @@
   "programId": "4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB",
   "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
   "run": {
-   "signature": "38mh8aYtznajNLzUqkiDajtmc4RpA8rbimDr6fnQHfmvaWaqnCkLYdvDjH6TCo5CTagqWdq4Q2659HQXuCu5jz9j",
-   "slot": 522110358,
+   "signature": "ZaAytMRqu2CMYuifLcYhKPbTY6e8D61BmSV626cpVSim2FE2DJEub4LePDrSkTLALG6jgXR5UoWYSsf4EyeSHkL",
+   "slot": 522119597,
    "returned": 42,
    "unitsConsumed": 217,
    "logs": [

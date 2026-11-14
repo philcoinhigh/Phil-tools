@@ -1,4 +1,4 @@
-// Home page: a live double-spend demo, plus forwarding of old playground links.
+// Home page: the landing page. A live double-spend demo, live figures, and forwarding of old playground links.
 import { highlightHtml, runPhil, KIND_TITLE, esc } from "./shared";
 import { wireFooter } from "./foot";
 import { CONTRACTS } from "../../core/src/sim/contracts";
@@ -13,9 +13,14 @@ import onchain from "../../onchain/deployment.json";
 import { DRAWS } from "./giveaway-data";
 import { DEMO } from "./burn-data";
 import { CLIENT_WASM } from "./session-data";
+import { MUTATION } from "./mutation-data";
+import { STOPS } from "./tour-data";
+import { CONTRACT } from "./shared";
 
 // Links shared before the site had a home page pointed at the root with a hash.
-if (location.hash.length > 1) location.replace("playground/" + location.hash);
+// The home page's own sections are not playground links.
+const SECTIONS = ["start", "chain", "build", "lab", "coin"];
+if (location.hash.length > 1 && !SECTIONS.includes(location.hash.slice(1))) location.replace("playground/" + location.hash);
 
 const BROKEN = `record Coin mode linear {
   amount : U64
@@ -83,8 +88,8 @@ const g = conformance.grammar;
 document.getElementById("s-grammar")!.innerHTML = `${g.accept.agree + g.reject.agree}<small> of ${g.accept.files + g.reject.files}</small>`;
 const tried = fuzzHistory.reduce((t, h) => t + h.total, 0);
 set("s-fuzz", num(tried));
+set("s-fuzz2", num(tried));
 set("s-fuzz-l", `programs thrown at Phil's compiler so far. Wrong answers in the latest run: ${fuzz.findings.disagreement}`);
-set("s-philc", "philc");
 set("s-philc-l", `Phil's real compiler, ${(philc.bytes / 1048576).toFixed(1)} MB, built from commit ${String(philc.commit).slice(0, 10)} of ${philc.date}`);
 const oc = onchain.devnet.run ?? onchain.local.run;
 set("oc-net", onchain.devnet.ok ? "Solana devnet · live" : onchain.devnet.run ? "Solana devnet" : "Proven locally · devnet pending");
@@ -101,4 +106,44 @@ if (DEMO?.totals?.burns) {
   set("bv-l", `coins burned in ${DEMO.totals.burns} ${DEMO.totals.burns === 1 ? "burn" : "burns"}, paid for with ${(Number(DEMO.totals.paid) / 1e9).toLocaleString("en-GB", { maximumFractionDigits: 4 })} SOL of fees`);
 }
 if (CLIENT_WASM) set("ss-val", Math.floor((CLIENT_WASM.length * 3) / 4 - (CLIENT_WASM.endsWith("==") ? 2 : CLIENT_WASM.endsWith("=") ? 1 : 0)).toLocaleString("en-GB"));
+set("n-tour", String(STOPS.reduce((n, x) => n + x.parts.length, 0)));
+if (MUTATION) {
+  set("mu-val", `${MUTATION.server.oursKills}/${MUTATION.server.mutants}`);
+  set("mu-all", String(MUTATION.total.mutants));
+}
+
+// The address, in the hero.
+set("ca-hero", CONTRACT);
+document.getElementById("copy-hero")?.addEventListener("click", async (e) => {
+  const b = e.currentTarget as HTMLElement;
+  try { await navigator.clipboard.writeText(CONTRACT); b.textContent = "Copied"; } catch { b.textContent = "Select the address to copy"; }
+  setTimeout(() => { b.textContent = "Copy address"; }, 1600);
+});
+
+// The dog. Tap it and it says something true about Phil.
+const SAYS = [
+  "Woof. A linear value gets used exactly once. Like a treat.",
+  "I only run correct programs. And after squirrels.",
+  "No overflow. 250 + 10 in a byte is an error, not 4.",
+  "Every conversation has a script. I checked both ends.",
+  "If the architecture does not list it, it does not exist.",
+  "Sit. Stay. Type-check.",
+  "Bad programs are rejected, not tolerated. Good dog.",
+];
+let said = -1, hush = 0;
+const dogEl = document.querySelector(".dog"), bubble = document.getElementById("bubble");
+dogEl?.addEventListener("click", () => {
+  said = (said + 1) % SAYS.length;
+  if (bubble) { bubble.textContent = SAYS[said]; bubble.classList.add("on"); }
+  dogEl.classList.add("happy");
+  clearTimeout(hush);
+  hush = window.setTimeout(() => { bubble?.classList.remove("on"); dogEl.classList.remove("happy"); }, 3200);
+});
+
+// Sections ease in as they come into view.
+const hidden = [...document.querySelectorAll(".rv")];
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+  hidden.forEach((el, i) => { (el as HTMLElement).style.transitionDelay = `${(i % 4) * 60}ms`; io.observe(el); });
+} else hidden.forEach((el) => el.classList.add("in"));
 wireFooter();

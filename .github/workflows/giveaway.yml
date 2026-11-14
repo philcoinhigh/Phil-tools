@@ -33,7 +33,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: phil-giveaway
+  group: phil-giveaway-v2
 jobs:
   giveaway:
     runs-on: ubuntu-latest
@@ -109,11 +109,13 @@ jobs:
           key: phil-draw-program-v1
 
       - name: Build the program
+        timeout-minutes: 10
         run: |
           set -o pipefail
           npx esbuild giveaway/run.ts --bundle --platform=node --packages=external --outfile=out/giveaway-run.js --log-level=error
           giveaway/build.sh giveaway/out/phil_draw.so 2>&1 | tee -a giveaway/out/build.log
       - name: Prove it on a local test validator
+        timeout-minutes: 10
         run: |
           set -o pipefail
           solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"
@@ -126,6 +128,7 @@ jobs:
           jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.local.json | tee -a giveaway/out/build.log
 
       - name: Deploy to devnet if the program changed
+        timeout-minutes: 20
         id: deploy
         if: env.HAVE_KEY == '1'
         run: |
@@ -143,12 +146,14 @@ jobs:
             solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer.json"
             solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id ~/.phil-draw/program.json --buffer "$RUNNER_TEMP/buffer.json" giveaway/out/phil_draw.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a giveaway/out/build.log
             echo "REDEPLOYED=true" >> "$GITHUB_ENV"
+            echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"     # it is deployed from here on, whatever the checks below say
             sleep 20
             node out/giveaway-run.js selftest "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a giveaway/out/build.log >&2) > giveaway/out/selftest.devnet.json
             jq -c '{ok, lockUnits, drawUnits, checkUnits, winners}' giveaway/out/selftest.devnet.json | tee -a giveaway/out/build.log
           fi
           echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"
       - name: Record a session between Phil's client and Phil's server
+        timeout-minutes: 6
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: |
           if [ ! -e giveaway/session.json ] || [ "${REDEPLOYED:-false}" = "true" ]; then
@@ -163,6 +168,7 @@ jobs:
           GIVEAWAY_DELAY: ${{ inputs.delay_minutes }}
         run: node giveaway/request.mjs giveaway/requests
       - name: Run the giveaways that are waiting
+        timeout-minutes: 320
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: |
           for q in giveaway/requests/*.json; do

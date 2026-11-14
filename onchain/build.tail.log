@@ -3,7 +3,7 @@ solana-cli 4.3.2 (src:0f131d36; feat:c9ad34d2, client:Agave)
 Fetching Solana's compiler toolchain
 LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
--rwxr-xr-x 1 runner runner 2160 Nov 14 07:29 onchain/out/phil_first.so
+-rwxr-xr-x 1 runner runner 2160 Nov 14 08:06 onchain/out/phil_first.so
 
 onchain/out/phil_first.so:	file format elf64-sbf
 
@@ -29,9 +29,9 @@ Disassembly of section .text:
 00000000000001a0 <phil_main>:
      1a0:      	mov64 r0, 0x2a
      1a8:      	exit
-program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer 8kmWgJE5KfGrHwxSMaY9q585DMcbK8MDPUWu5wsKPZAo has 500000000000000000 lamports
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer EZDV7ekzo4ERC68jzcrLj38pbomG69ryjSoCphxmzEeD has 500000000000000000 lamports
 wallet-free call, local: {"ok":true,"returned":42,"units":217,"error":null}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.59006804 SOL
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.42986296 SOL
 program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB is deployed and unchanged
-program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 19590068040 lamports
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 19429862960 lamports
 wallet-free call, devnet: {"ok":true,"returned":42,"units":217,"cors":"https://philcoinhigh.github.io","error":null}
