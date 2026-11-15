@@ -19,7 +19,6 @@ const PHIL = process.argv[2];
 const LIMIT = Number(process.argv[process.argv.indexOf("--limit") + 1]) || Infinity;
 const MODULE = "giveaway/phil-llvm/phil-llvm-phase0-control-codec.ll";
 const CLANG = execSync("command -v clang-18 || command -v clang").toString().trim();
-const AS = execSync("command -v llvm-as-18 || command -v llvm-as").toString().trim();
 const lines = fs.readFileSync(MODULE, "utf8").split("\n");
 
 interface Mutant { id: number; op: string; fn: string; block: string; line: number; before: string; after: string | null; text: string }
@@ -102,7 +101,7 @@ let invalid = 0;
 for (const m of mutants.slice(0, LIMIT)) {
   const ll = `${W}/mutant.ll`;
   fs.writeFileSync(ll, m.text);
-  if (spawnSync(AS, [ll, "-o", "/dev/null"]).status !== 0) { invalid++; continue; }      // not a well-formed module: not a mutant
+  if (spawnSync(CLANG, ["-O1", "-Wno-override-module", "-c", ll, "-o", "/dev/null"]).status !== 0) { invalid++; continue; }      // not a well-formed module: not a mutant
   const theirs = philsTest(ll);
   const ours = m.fn === "UploadServer" ? ourTests(ll) : { outcome: "survived" as Outcome, how: "not run: our suites do not run the client" };
   results.push({ id: m.id, op: m.op, fn: m.fn, block: m.block, line: m.line, before: m.before, after: m.after, phil: theirs, ours });

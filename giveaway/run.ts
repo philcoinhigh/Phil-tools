@@ -13,6 +13,7 @@ import { buildRecord, cleanEntries, decodeDraw, uploadData, pickWinners, randomn
 import { buildCall, simulate, accountData } from "../site/src/solana-call";
 import { runClient, hopeful, answersFrom, OP_NOTE } from "../site/src/phil-client";
 import { utf8, concat } from "../site/src/draw";
+import { lockInstruction, drawInstruction, lockGiveawayInstructions, SLOT_HASHES, MAX_ONE_TX_PAYLOAD } from "../site/src/draw-tx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Devnet's public node limits how often it may be asked. Ask again, more slowly, before giving up. */
@@ -50,8 +51,8 @@ async function createDrawAccount(): Promise<Keypair> {
   if (!made.ok) throw new Error("could not create the draw account: " + made.error);
   return account;
 }
-const lockIx = (account: PublicKey, data: Uint8Array) => call(data, [{ pubkey: account, isWritable: true }]);
-const drawIx = (account: PublicKey) => call(Uint8Array.of(OP_DRAW), [{ pubkey: account, isWritable: true }, { pubkey: SYSVAR_SLOT_HASHES_PUBKEY, isWritable: false }]);
+const lockIx = (account: PublicKey, data: Uint8Array) => lockInstruction(program, account, data);
+const drawIx = (account: PublicKey) => drawInstruction(program, account);
 async function readDraw(account: PublicKey): Promise<Draw> {
   const info = await conn.getAccountInfo(account, "confirmed");
   const d = info && decodeDraw(Uint8Array.from(info.data));
@@ -146,6 +147,15 @@ async function selftest() {
   expect("a drawn giveaway cannot be locked again", !r.ok && /REJECTED by policy/.test(r.logs.join("\n")), r.error);
   r = await send([drawIx(done.account)], [payer]);
   expect("or drawn again", !r.ok && /already drawn/.test(r.logs.join("\n")), r.error);
+
+  // What the website's own "run a giveaway" does: the account is made and locked in one transaction, signed by a wallet.
+  expect("the address the website uses for recent block hashes is Solana's", SLOT_HASHES.equals(SYSVAR_SLOT_HASHES_PUBKEY));
+  const big: Giveaway = { title: "One transaction", winners: 1, delay: 20, entries: Array.from({ length: 200 }, (_, i) => `@entrant_number_${i}`) };
+  const fits = buildRecord({ ...big, entries: big.entries.slice(0, 36) }, 1);
+  expect("a list near the website's limit is still under it", fits.payload.length <= MAX_ONE_TX_PAYLOAD && fits.payload.length > MAX_ONE_TX_PAYLOAD - 80, String(fits.payload.length));
+  const one = lockGiveawayInstructions({ program, payer: payer.publicKey, payload: fits.payload, rentLamports: await conn.getMinimumBalanceForRentExemption(DRAW_SIZE) });
+  r = await send(one.instructions, [payer, one.account]);
+  expect("an account made and locked in one transaction is accepted by Phil on chain", r.ok && readVerdict(r.logs).accepted && (await readDraw(one.account.publicKey)).state === "locked", r.error + " " + r.logs.join(" | "));
 
   // Phil at both ends: the client's bytes come from Phil's emitted client, not from our encoder.
   const both = await philSession("Self-test: Phil client to Phil server.");

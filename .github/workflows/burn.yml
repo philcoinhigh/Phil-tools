@@ -9,9 +9,13 @@ name: Burn vault
 on:
   push:
     branches: [onchain]
-    paths: ["burn/**", ".github/workflows/burn.yml"]
+    paths: ["burn/**", ".github/workflows/burn.yml", "giveaway/build.sh", "scripts/sbf-clang.sh", "site/src/burn-tx.ts"]
   workflow_dispatch:
     inputs:
+      nightly:
+        description: "Part of the nightly chain (started by the previous workflow)"
+        type: boolean
+        default: false
       mint:
         description: "Open a vault for this coin (devnet mint address). Leave empty for the nightly run"
         type: string
@@ -24,6 +28,7 @@ on:
         type: string
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: phil-burn
 jobs:
@@ -125,6 +130,16 @@ jobs:
       - name: One cycle of the demonstration coin
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: node out/burn-run.js demo https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json burn/demo.json burn/vaults.json 2> >(tee -a burn/out/build.log >&2) || echo "the demo cycle failed" | tee -a burn/out/build.log
+      - name: Start the next nightly workflow
+        # The on-chain workflows run one after another, so they never push at the same moment.
+        if: always() && (inputs.nightly || contains(github.event.head_commit.message, '[nightly]'))
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$(dirname burn/out/build.log)"
+          gh workflow run giveaway.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f nightly=true 2>&1 | tee -a burn/out/build.log || echo "could not start giveaway.yml" | tee -a burn/out/build.log
+          echo "nightly chain: asked for giveaway.yml" | tee -a burn/out/build.log
       - name: Record
         if: always()
         run: |

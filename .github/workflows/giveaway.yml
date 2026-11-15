@@ -9,9 +9,13 @@ name: Giveaway
 on:
   push:
     branches: [onchain]
-    paths: ["giveaway/**", ".github/workflows/giveaway.yml"]
+    paths: ["giveaway/**", ".github/workflows/giveaway.yml", "scripts/sbf-clang.sh", "site/src/draw-tx.ts"]
   workflow_dispatch:
     inputs:
+      nightly:
+        description: "Part of the nightly chain (started by the previous workflow)"
+        type: boolean
+        default: false
       title:
         description: "Giveaway title (leave empty to only rebuild)"
         type: string
@@ -32,6 +36,7 @@ on:
         default: false
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: phil-giveaway-v2
 jobs:
@@ -178,6 +183,16 @@ jobs:
             echo "--- giveaway $id" | tee -a giveaway/out/build.log
             node out/giveaway-run.js run https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json "$q" "giveaway/draws/$id.json" devnet 2> >(tee -a giveaway/out/build.log >&2) || echo "giveaway $id failed" | tee -a giveaway/out/build.log
           done
+      - name: Start the next nightly workflow
+        # The on-chain workflows run one after another, so they never push at the same moment.
+        if: always() && (inputs.nightly || contains(github.event.head_commit.message, '[nightly]'))
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$(dirname giveaway/out/build.log)"
+          gh workflow run locker.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f nightly=true 2>&1 | tee -a giveaway/out/build.log || echo "could not start locker.yml" | tee -a giveaway/out/build.log
+          echo "nightly chain: asked for locker.yml" | tee -a giveaway/out/build.log
       - name: Record
         if: always()
         run: |

@@ -12,6 +12,7 @@ import { Connection, Keypair, PublicKey, SystemProgram, Transaction, Transaction
 import { TOKEN_PROGRAM_ID, createMint, getOrCreateAssociatedTokenAccount, mintTo, getMint, getAccount } from "@solana/spl-token";
 import { readVerdict } from "../site/src/draw";
 import { openData, burnData, decodeVault, potOf, Vault, VAULT_SIZE } from "../site/src/burn";
+import { openInstruction, openInstructions, burnInstruction } from "../site/src/burn-tx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const [command, url, programText, payerFile, ...rest] = process.argv.slice(2);
@@ -32,16 +33,14 @@ async function send(ixs: TransactionInstruction[], signers: Keypair[]): Promise<
     return { ok: false, signature: null, logs: e?.logs ?? e?.transactionLogs ?? [], units: null, slot: null, error: String(e?.message ?? e).split("\n")[0] };
   }
 }
-const openIx = (vault: PublicKey, data: Uint8Array) => new TransactionInstruction({ programId: program, keys: [{ pubkey: vault, isSigner: false, isWritable: true }], data: Buffer.from(data) });
-const burnIx = (vault: PublicKey, mint: PublicKey, tokens: PublicKey, sender: PublicKey, tokenProgram: PublicKey, data: Uint8Array) => new TransactionInstruction({ programId: program, data: Buffer.from(data), keys: [
-  { pubkey: vault, isSigner: false, isWritable: true }, { pubkey: mint, isSigner: false, isWritable: true }, { pubkey: tokens, isSigner: false, isWritable: true },
-  { pubkey: sender, isSigner: true, isWritable: true }, { pubkey: tokenProgram, isSigner: false, isWritable: false }] });
+const openIx = (vault: PublicKey, data: Uint8Array) => openInstruction(program, vault, data);
+const burnIx = (vault: PublicKey, mint: PublicKey, tokens: PublicKey, sender: PublicKey, tokenProgram: PublicKey, data: Uint8Array) => burnInstruction({ program, vault, mint, tokens, sender, tokenProgram, leastLamports: 0n }, data);
 
 /** Creates the vault account and opens it in one transaction, so nothing can arrive in between. */
 async function openVault(mint: PublicKey, threshold: bigint, label: string, data = openData(mint.toBytes(), threshold, label)): Promise<{ vault: Keypair; sent: Sent }> {
-  const vault = Keypair.generate();
-  const lamports = await conn.getMinimumBalanceForRentExemption(VAULT_SIZE);
-  const sent = await send([SystemProgram.createAccount({ fromPubkey: payer.publicKey, newAccountPubkey: vault.publicKey, lamports, space: VAULT_SIZE, programId: program }), openIx(vault.publicKey, data)], [payer, vault]);
+  const rentLamports = await conn.getMinimumBalanceForRentExemption(VAULT_SIZE);
+  const { vault, instructions } = openInstructions({ program, payer: payer.publicKey, mint, threshold, label, rentLamports }, Keypair.generate(), data);
+  const sent = await send(instructions, [payer, vault]);
   return { vault, sent };
 }
 async function readVault(vault: PublicKey): Promise<{ v: Vault; lamports: bigint }> {

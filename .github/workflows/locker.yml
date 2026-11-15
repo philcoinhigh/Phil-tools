@@ -9,10 +9,16 @@ name: Token locker
 on:
   push:
     branches: [onchain]
-    paths: ["locker/**", ".github/workflows/locker.yml"]
+    paths: ["locker/**", ".github/workflows/locker.yml", "giveaway/build.sh", "scripts/sbf-clang.sh", "site/src/lock-tx.ts"]
   workflow_dispatch:
+    inputs:
+      nightly:
+        description: "Part of the nightly chain (started by the previous workflow)"
+        type: boolean
+        default: false
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: phil-locker
 jobs:

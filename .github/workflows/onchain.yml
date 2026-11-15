@@ -15,6 +15,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: phil-on-solana
 jobs:
@@ -120,6 +121,16 @@ jobs:
         run: |
           node out/onchain-simulate.js https://api.devnet.solana.com "$WALLET" "$PROGRAM" > onchain/out/simulate.json || true
           echo "wallet-free call, devnet: $(jq -c '{ok, returned, units, cors, error}' onchain/out/simulate.json)" | tee -a onchain/out/build.log
+      - name: Start the next nightly workflow
+        # The on-chain workflows run one after another, so they never push at the same moment.
+        if: always() && (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[nightly]'))
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$(dirname onchain/out/build.log)"
+          gh workflow run burn.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f nightly=true 2>&1 | tee -a onchain/out/build.log || echo "could not start burn.yml" | tee -a onchain/out/build.log
+          echo "nightly chain: asked for burn.yml" | tee -a onchain/out/build.log
       - name: Record the night
         if: always()
         run: |

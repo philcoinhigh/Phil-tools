@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>My coin: lock supply, burn with fees, run a giveaway</title>
+<meta name="description" content="One page for any Solana coin: lock supply until a date, open a burn vault for its fees, and run a giveaway nobody can rig. Every action is gated by Phil's upload server on Solana.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.panel { border: 1px solid var(--ink); background: var(--sheet); border-radius: 18px; padding: 18px 18px 20px; margin-top: 18px; }
+.panel h2 { margin: 0 0 6px; font: 600 21px var(--font-mark); letter-spacing: -.02em; } .panel > p { margin: 0 0 12px; max-width: 64ch; }
+label.f { display: block; font: 600 13px var(--font-body); margin: 12px 0 4px; }
+input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-code); padding: 10px 12px; border-radius: 10px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .quick button { border: 1px solid var(--rule); background: none; border-radius: 999px; padding: 4px 11px; font: 600 12.5px var(--font-body); color: var(--ink); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.say { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; font-size: 15px; background: var(--code-bg); } .say b { font-family: var(--font-code); }
+.say.bad { border-color: var(--bad); color: var(--bad); } .say.good { border-color: var(--good); }
+.agree { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14.5px; } .agree input { margin-top: 3px; width: 18px; height: 18px; }
+.locks { display: grid; gap: 12px; margin-top: 14px; }
+.lock { border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); overflow: hidden; }
+.lock .hd { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+.lock .hd b { font: 600 20px var(--font-code); letter-spacing: -.02em; } .lock .hd span { font-size: 13px; color: var(--muted); }
+.lock .st { display: inline-block; font: 600 11.5px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); }
+.lock .st.locked { background: var(--ink); color: var(--paper); } .lock .st.ready { background: var(--gold, #e8b23a); color: #15171a; } .lock .st.released { color: var(--muted); border-color: var(--rule); }
+.lock dl { margin: 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; padding: 12px 14px; font-size: 14px; } .lock dt { color: var(--muted); font-size: 13px; } .lock dd { margin: 0; overflow-wrap: anywhere; } .lock dd a, .lock dd code { font: 12.5px var(--font-code); background: none; padding: 0; }
+.lock .count { font: 600 15px var(--font-code); }
+.lock .act { padding: 0 14px 14px; }
+.bar { height: 8px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-top: 6px; } .bar i { display: block; height: 100%; background: var(--accent); }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.how > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.how > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.how h3 { margin: 0 0 4px; font-size: 17px; } .how p { margin: 0; max-width: 70ch; color: var(--muted); }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .facts li:first-child { border-top: 0; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } .lock dl { grid-template-columns: minmax(0, 1fr); gap: 1px; } .lock dt { margin-top: 8px; } .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.tile { border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); padding: 12px 14px; min-width: 0; }
+.tile .k { font: 600 11.5px var(--font-mark); text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+.tile b { display: block; font: 600 clamp(20px, 4.4vw, 28px)/1.15 var(--font-code); letter-spacing: -.03em; margin: 4px 0 2px; overflow-wrap: anywhere; }
+.tile span { font-size: 13px; color: var(--muted); }
+.kit-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; } .kit-nav a { border: 1px solid var(--ink); border-radius: 999px; padding: 5px 13px; font: 600 13px var(--font-body); color: var(--ink); text-decoration: none; }
+.rows { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); }
+.rows li { padding: 11px 14px; border-top: 1px solid var(--rule); font-size: 14.5px; } .rows li:first-child { border-top: 0; }
+.rows .l1 { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: space-between; } .rows .l1 b { font: 600 16px var(--font-code); }
+.rows .l2 { color: var(--muted); font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; } .rows code { font: 12.5px var(--font-code); background: none; padding: 0; }
+.rows .st { display: inline-block; font: 600 11.5px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); }
+.rows .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+details.do { margin-top: 14px; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } details.do > summary { cursor: pointer; padding: 12px 14px; font: 600 15px var(--font-body); } details.do > div { padding: 0 14px 16px; }
+textarea.t { width: 100%; box-sizing: border-box; min-height: 130px; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 14px/1.5 var(--font-code); padding: 10px 12px; border-radius: 10px; resize: vertical; }
+.winners { display: grid; gap: 8px; margin-top: 12px; } .winners div { border: 1px solid var(--good); border-radius: 12px; padding: 10px 14px; } .winners b { font: 600 20px var(--font-code); display: block; }
+.need { margin: 14px 0 0; padding: 12px 14px; border: 1px dashed var(--ink); border-radius: 12px; font-size: 15px; }
+@media (max-width: 640px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Solana devnet</span>
+    <h1>Your coin's launch kit.</h1>
+    <p>Paste any coin. Lock supply until a date, open a burn vault for its fees, and run a giveaway nobody can rig, all from this page with your own wallet.</p>
+    <p class="muted" style="font-size:15px">Anyone can read a coin's page without a wallet, so its link works as proof. Every action is gated by Phil's upload server, running on Solana.</p>
+  </div>
+
+  <section class="panel" aria-labelledby="open-h">
+    <h2 id="open-h">Open a coin</h2>
+    <label class="f" for="coin">Coin address (mint)</label>
+    <input class="t" id="coin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste a mint address">
+    <div class="quick" id="demos"></div>
+    <div class="row"><button class="btn" id="open" type="button">Open</button><button class="btn ghost small" id="share" type="button" hidden>Copy this coin's link</button><span class="muted" id="open-note" role="status"></span></div>
+    <div class="row"><button class="btn ghost" id="connect" type="button">Connect wallet</button><span class="muted" id="who" role="status">Reading needs no wallet. Locking, opening a vault and giveaways do.</span></div>
+    <p class="hint" id="no-wallet" hidden></p>
+  </section>
+
+  <div id="kit" hidden>
+    <div class="tiles" id="tiles" aria-live="polite">
+      <div class="tile"><span class="k">Supply locked</span><b id="t-locked">–</b><span id="t-locked-sub"></span></div>
+      <div class="tile"><span class="k">Fees waiting in vaults</span><b id="t-pot">–</b><span id="t-pot-sub"></span></div>
+      <div class="tile"><span class="k">Burned through vaults</span><b id="t-burned">–</b><span id="t-burned-sub"></span></div>
+    </div>
+    <nav class="kit-nav" aria-label="On this page"><a href="#locks-h">Locks</a><a href="#vault-h">Burn vault</a><a href="#give-h">Giveaway</a></nav>
+
+    <section class="panel" aria-labelledby="locks-h">
+      <h2 id="locks-h">Locks</h2>
+      <p>Locked coins cannot move before their date. Nobody can cancel a lock or unlock early, including whoever made it.</p>
+      <div class="say" id="locks-sum"></div>
+      <ul class="rows" id="locks" hidden></ul>
+      <p class="hint"><a id="locks-link" href="../locker/">Full proof page, and releasing a lock that is ready</a></p>
+      <details class="do" id="lock-do"><summary>Lock tokens</summary><div>
+        <p class="need" data-need>Connect a wallet above to lock tokens.</p>
+        <div data-form hidden>
+          <p class="hint" id="l-have"></p>
+          <div class="two">
+            <div><label class="f" for="l-amount">Amount to lock</label><input class="t" id="l-amount" inputmode="decimal" autocomplete="off" placeholder="1000000"></div>
+            <div><label class="f" for="l-until">Locked until</label><input class="t" id="l-until" type="datetime-local"></div>
+          </div>
+          <div class="quick" id="l-quick"><button type="button" data-d="7">1 week</button><button type="button" data-d="30">1 month</button><button type="button" data-d="182">6 months</button><button type="button" data-d="365">1 year</button></div>
+          <label class="f" for="l-to">Who receives it at the end</label>
+          <input class="t" id="l-to" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <p class="hint">Your own wallet unless you change it. This cannot be changed later.</p>
+          <label class="f" for="l-label">A short name for this lock (optional, public)</label>
+          <input class="t" id="l-label" maxlength="32" autocomplete="off" placeholder="Team tokens">
+          <div data-action="lock" data-go="Lock it" data-agree="I understand that this cannot be cancelled, changed or unlocked early by anyone."></div>
+        </div>
+      </div></details>
+    </section>
+
+    <section class="panel" aria-labelledby="vault-h">
+      <h2 id="vault-h">Burn vault</h2>
+      <p>A vault is an address that collects SOL. Whoever burns the set amount of this coin takes everything in it. It has no owner and no way to withdraw, so the only way the SOL leaves is by the coin being burned.</p>
+      <div class="say" id="vaults-sum"></div>
+      <ul class="rows" id="vaults" hidden></ul>
+      <div data-action="burn" data-go="Burn and take the pot" data-agree="I understand that the coins are destroyed for good." data-noreview></div>
+      <details class="do" id="vault-do"><summary>Open a vault for this coin</summary><div>
+        <p class="need" data-need>Connect a wallet above to open a vault.</p>
+        <div data-form hidden>
+          <label class="f" for="v-threshold">Coins that must be burned to take the pot</label>
+          <input class="t" id="v-threshold" inputmode="decimal" autocomplete="off" placeholder="1000000">
+          <p class="hint" id="v-pct">Set it high enough that burning it matters. It can never be changed.</p>
+          <label class="f" for="v-label">A short name (optional, public)</label>
+          <input class="t" id="v-label" maxlength="32" autocomplete="off" placeholder="Creator fees">
+          <div data-action="vault" data-go="Open the vault" data-agree="I understand that the rule can never be changed and SOL sent to the vault can never be withdrawn."></div>
+        </div>
+      </div></details>
+    </section>
+
+    <section class="panel" aria-labelledby="give-h">
+      <h2 id="give-h">Giveaway</h2>
+      <p>The entry list is locked on Solana first. Then a block that does not exist yet picks the winner, so nobody can choose it, including you. The giveaway gets its own page that anyone can check.</p>
+      <p class="need" data-need>Connect a wallet above to run a giveaway.</p>
+      <div data-form hidden>
+        <label class="f" for="g-title">Title (public)</label>
+        <input class="t" id="g-title" maxlength="60" autocomplete="off" placeholder="1,000,000 coin giveaway">
+        <label class="f" for="g-entries">Entries, one per line</label>
+        <textarea class="t" id="g-entries" spellcheck="false" placeholder="@name&#10;@another&#10;a wallet address"></textarea>
+        <div class="two">
+          <div><label class="f" for="g-winners">Winners</label><input class="t" id="g-winners" inputmode="numeric" value="1"></div>
+          <div><label class="f" for="g-delay">Draw</label><select class="t" id="g-delay"><option value="1">About 1 minute after locking</option><option value="10">About 10 minutes after locking</option><option value="60">About 1 hour after locking</option></select></div>
+        </div>
+        <p class="hint">A longer wait gives people time to see the locked list before the draw. You sign twice: once to lock, once to draw.</p>
+        <div data-action="give" data-go="Lock the list"></div>
+        <div id="g-run" hidden>
+          <div class="say" id="g-status"></div>
+          <div class="row"><button class="btn" id="g-draw" type="button" disabled>Draw now</button><button class="btn ghost small" id="g-copy" type="button">Copy the giveaway's link</button><span class="muted" id="g-note" role="status"></span></div>
+          <div class="winners" id="g-won"></div>
+        </div>
+      </div>
+      <div id="mine-wrap" hidden><label class="f">Giveaways run from this browser</label><ul class="rows" id="mine"></ul></div>
+    </section>
+  </div>
+
+  <h2 class="sec">Before you rely on it</h2>
+  <ul class="limits" id="limits">
+    <li><b>This is on devnet and has not been audited.</b> Everything here is tested against Solana's real token program and runs on devnet every night, but nobody independent has reviewed it. Do not treat it as safe for real value yet.</li>
+    <li><b>The programs can still be replaced.</b> On devnet our deploy key can upgrade them, which is how we fix things while building. "Nobody can unlock early" and "no way to withdraw" become fully true only once a program is made permanent. We will say so here when it is.</li>
+    <li><b>Anyone can open a vault for any coin.</b> A vault listed here was not necessarily opened by the coin's team. Read its rule before sending it fees: a vault with a tiny burn amount pays out for burning almost nothing.</li>
+    <li><b>A giveaway picks a winner. It does not hold or send a prize.</b> Whoever runs it decides who is on the list and pays the prize themselves. Share the giveaway's link before the draw.</li>
+    <li>Locks, burns and giveaways do not make a coin safe or valuable. They show exactly what they say and nothing more.</li>
+  </ul>
+
+  <h2 class="sec">Where Phil is in this</h2>
+  <p class="lead">Each action here is an upload through <code>UploadServer</code>, the function Phil's compiler backend emits, running inside three programs on Solana. Phil's code checks the handshake, the policy and that the bytes match their declared SHA-256, and only then does the program act. The parts that touch coins (the escrow, the burn, the draw) are ours and are not Phil.</p>
+  <ul class="facts" id="p-facts"></ul>
+  <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

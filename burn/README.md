@@ -49,3 +49,7 @@ Any failure fails the whole transaction.
   devnet against the real token program. Not reviewed by anyone independent, and not deployed
   on mainnet. It should not hold real money before a review.
 - The vault and its payout logic are ours. Phil's part is the gatekeeping: `UploadServer`.
+
+## Opening a vault yourself
+
+The [My coin](https://philcoinhigh.github.io/Phil-tools/coin/) page opens a vault for any coin from your own wallet, and lets a holder burn for the pot. It builds its transactions with [`site/src/burn-tx.ts`](../site/src/burn-tx.ts), the same code `burn/run.ts` uses in the nightly self-test.

@@ -7,10 +7,7 @@ set -euo pipefail
 OUT="$1"
 RUNTIME="${2:-giveaway/runtime.c}"
 PHIL_LL=giveaway/phil-llvm/phil-llvm-phase0-control-codec.ll
-find_clang() { find -L "$HOME/.cache/solana" "$HOME/.local/share/solana" -path '*llvm/bin/clang' -print -quit 2>/dev/null || true; }
-CLANG="$(find_clang)"
-if [ -z "$CLANG" ]; then cargo-build-sbf --install-only 2>&1 | tail -5 || true; CLANG="$(find_clang)"; fi
-[ -n "$CLANG" ] || { echo "No SBF clang found"; exit 1; }
+CLANG="$(scripts/sbf-clang.sh)"
 LLVM="$(dirname "$CLANG")"
 "$CLANG" --version | head -1
 W="$(mktemp -d)"
