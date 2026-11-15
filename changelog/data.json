@@ -1,14 +1,14 @@
 {
  "phil": {
-  "commit": "4fd2c981a5",
-  "date": "2026-11-14"
+  "commit": "62b21dbb1e",
+  "date": "2026-11-15"
  },
- "since": "2026-10-24",
+ "since": "2026-10-25",
  "days": [
   {
-   "date": "2026-11-14",
+   "date": "2026-11-15",
    "commits": 3,
-   "merges": 3,
+   "merges": 0,
    "streams": [
     {
      "name": "FSEM-02",
@@ -19,6 +19,108 @@
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-shared-server-terminal-close-fsem02-v1.md",
+     "title": "FSEM-02 shared-Server contention through terminal Close (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-shared-server-contention-fsem02-v1.md",
+     "title": "FSEM-02 shared-Server Ping contention (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-shared-client-contention-fsem02-v1.md",
+     "title": "FSEM-02 shared-Client Ping contention (non-normative)"
+    }
+   ],
+   "proofsAdded": 3,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "62b21dbb1e",
+     "subject": "FSEM-02: shared-Server Ping contention through terminal Close and loser frame"
+    },
+    {
+     "sha": "14f43f5bca",
+     "subject": "FSEM-02: shared Server Ping Receive predecessor contention and exact sender-first replay"
+    },
+    {
+     "sha": "dba7686950",
+     "subject": "FSEM-02: enforce shared-Client Ping contender stale refusal with conditional Rocq model"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-14",
+   "commits": 10,
+   "merges": 10,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 10
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-disjoint-pairs-fsem02-v1.md",
+     "title": "FSEM-02 disjoint Ping pair schedule commutation (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-third-process-frame-fsem02-v1.md",
+     "title": "FSEM-02 Ping joint uninvolved-process frame (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-gate-priority-fsem02-v1.md",
+     "title": "FSEM-02 Ping joint nominal/projection/resource gate priority (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/p9-e2-source-check-event-provenance-v1.md",
+     "title": "P9-E2: original checker events in actual P2/P6 source production"
+    },
+    {
+     "path": "docs/phase-1/p9-e1-ordinary-checker-event-observations-v1.md",
+     "title": "P9-E1: original ordinary source-checker evidence observations"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-context-resource-order-fsem02-v1.md",
+     "title": "FSEM-02 — source Ping joint context/resource diagnostic precedence (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/p8-c2-recursive-canonical-order-boundary-v1.md",
+     "title": "P8-C2 — recursive native ordering and concrete canonical octet keys (PARTIAL)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-joint-resource-gates-fsem02-v1.md",
+     "title": "FSEM-02 — source Ping joint predecessor resource gates (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/p8-c1-unicode-utf8-scalar-boundary-v1.md",
+     "title": "P8-C1 — strict Unicode scalar / UTF-8 byte grammar (PARTIAL)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-triple-fault-gate-fsem02-v1.md",
+     "title": "FSEM-02 — ordered terminal End triple-fault recovery (non-normative)"
+    },
+    {
+     "path": "docs/phase-1/p8-canonical-form-representation-boundary-v1.md",
+     "title": "P8-B native data-level candidate representation, 2026-11-14"
+    },
+    {
+     "path": "docs/phase-1/p9-event-assumption-consumer-census-v1.md",
+     "title": "P9-A: native final-use / erasure / imported-assumption predecessor census"
+    },
+    {
+     "path": "docs/phase-1/p8-accepted-domain-representation-census-v1.md",
+     "title": "P8-A — accepted-domain representation census and counterexample ledger"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-outcome-resource-gate-fsem02-v1.md",
+     "title": "FSEM-02 — terminal End outcome/resource precedence (non-normative)"
+    },
     {
      "path": "docs/phase-1/p8-p9-autonomous-lane-coordination-2026-11-14.md",
      "title": "P8/P9 autonomous proof-lane coordination — 2026-11-14"
@@ -36,26 +138,28 @@
      "title": "FSEM-02 — terminal End missing protocol-context gate (non-normative)"
     }
    ],
-   "proofsAdded": 3,
-   "proofsChanged": 0,
-   "modules": [],
+   "proofsAdded": 13,
+   "proofsChanged": 1,
+   "modules": [
+    "Phil.Verification.P8SemanticFormCodec"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "3bf792afb1",
-     "subject": "FSEM-02: reject terminal End metadata/linear-resource disagreement"
+     "sha": "e9af09dcaf",
+     "subject": "FSEM-02: check disjoint source Ping pair commutation and refusal with conditional Rocq frame"
     },
     {
-     "sha": "4fd2c981a5",
-     "subject": "Merged: proof audit / p8 p9 lane bootstrap"
+     "sha": "b2113fa090",
+     "subject": "FSEM-02: frame uninvolved active process through source Ping rendezvous"
     },
     {
-     "sha": "cda55dbcb0",
-     "subject": "Merged: impl audit / p11 v2 post1767 source evidence"
+     "sha": "a542082847",
+     "subject": "fsem02: check Ping joint nominal and projection gates before resource transition"
     },
     {
-     "sha": "9c7d48bc7c",
-     "subject": "Merged: impl audit / p11 unsigned darwin trust identity"
+     "sha": "9f9a79ff9e",
+     "subject": "Merged: p9 evidence / e2 sealed source check events"
     }
    ]
   },
@@ -1069,6 +1173,18 @@
   {
    "date": "2026-11-14",
    "commit": "4fd2c981a5",
+   "files": 338,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-15",
+   "commit": "62b21dbb1e",
    "files": 338,
    "grammar": "64/64",
    "ranClean": 45,
