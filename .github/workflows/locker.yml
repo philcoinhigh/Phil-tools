@@ -9,7 +9,7 @@ name: Token locker
 on:
   push:
     branches: [onchain]
-    paths: ["locker/**", ".github/workflows/locker.yml"]
+    paths: ["locker/**", ".github/workflows/locker.yml", "giveaway/build.sh", "scripts/sbf-clang.sh", "site/src/lock-tx.ts"]
   workflow_dispatch:
     inputs:
       nightly:

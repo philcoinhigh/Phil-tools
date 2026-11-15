@@ -9,7 +9,7 @@ name: Burn vault
 on:
   push:
     branches: [onchain]
-    paths: ["burn/**", ".github/workflows/burn.yml"]
+    paths: ["burn/**", ".github/workflows/burn.yml", "giveaway/build.sh", "scripts/sbf-clang.sh", "site/src/burn-tx.ts"]
   workflow_dispatch:
     inputs:
       nightly:

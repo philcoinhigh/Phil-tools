@@ -9,7 +9,7 @@ name: Giveaway
 on:
   push:
     branches: [onchain]
-    paths: ["giveaway/**", ".github/workflows/giveaway.yml"]
+    paths: ["giveaway/**", ".github/workflows/giveaway.yml", "scripts/sbf-clang.sh", "site/src/draw-tx.ts"]
   workflow_dispatch:
     inputs:
       nightly:
