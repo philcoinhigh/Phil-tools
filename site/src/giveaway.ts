@@ -2,9 +2,15 @@
 // visitor try an altered list against the on-chain program. All without a wallet.
 import { PROGRAM, EMITTED, DRAWS } from "./giveaway-data";
 import { esc, landed } from "./shared";
+const NET = chain("devnet", "https://api.devnet.solana.com");
 import { wireFooter } from "./foot";
 import { buildRecord, cleanEntries, decodeDraw, hex, unhex, sha256, listBytes, uploadData, pickWinners, randomnessOf, readVerdict, OP_CHECK } from "./draw";
 import { accountData, simulate, buildCall, base58Decode } from "./solana-call";
+import { PublicKey, Transaction } from "@solana/web3.js";
+import { giveawayFromChain, listMatches, ChainGiveaway } from "./draw-chain";
+import { drawInstruction, DRAW_WINDOW_SLOTS } from "./draw-tx";
+import { chain, connectWallet, signAndSend, noWalletHtml, explain, short as shortKey } from "./wallet";
+import { store } from "./shared";
 
 const RPC = "https://api.devnet.solana.com";
 const $ = (id: string) => document.getElementById(id)!;
@@ -18,22 +24,26 @@ function show(g: any) {
   current = g;
   document.querySelectorAll<HTMLButtonElement>("#pick button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === g.id)));
   $("g-title").textContent = g.title;
-  $("g-when").textContent = `${g.lock.time ? new Date(g.lock.time * 1000).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" }) : ""} · ${n(g.entries.length)} entries · ${g.winners.length} winner${g.winners.length === 1 ? "" : "s"}`;
-  const expired = g.winners.length === 0;
-  $("verify").parentElement!.parentElement!.hidden = expired; $("ask").parentElement!.parentElement!.hidden = expired;
-  $("g-winners").innerHTML = expired ? `<div><b style="color:var(--bad)">No winner</b><span>Nobody told the program to draw while Solana still kept the chosen block. This giveaway can never produce a winner.</span></div>` : g.winners.map((w: any, i: number) => `<div><b>${esc(w.entry)}</b><span>${g.winners.length > 1 ? `winner ${i + 1} · ` : ""}entry ${n(w.index + 1)} of ${n(g.entries.length)}</span></div>`).join("");
+  const count: number = g.count ?? g.entries.length, waiting = g.state === "locked", known = !!g.entries;
+  $("g-when").textContent = `${g.lock.time ? new Date(g.lock.time * 1000).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" }) : ""} · ${n(count)} entries · ${g.winnerCount ?? g.winners.length} winner${(g.winnerCount ?? g.winners.length) === 1 ? "" : "s"}`;
+  const expired = g.winners.length === 0 && !waiting;
+  $("verify").parentElement!.parentElement!.hidden = expired || waiting || !known; $("ask").parentElement!.parentElement!.hidden = expired || waiting || !known;
+  $("e-wrap").hidden = !known; $("need-list").hidden = known; $("draw-wrap").hidden = !waiting;
+  if (waiting) $("draw-lead").textContent = `The list is locked. The block at slot ${n(g.draw.targetSlot)} picks the winner. Once it has passed, anyone can send the draw; it must be sent within about three minutes of that block, or this giveaway ends with no winner.`;
+  $("g-winners").innerHTML = waiting ? `<div><b>Not drawn yet</b><span>The winning block has not been used yet. Share this page now: a giveaway announced before its draw is worth far more than one announced after.</span></div>` : expired ? `<div><b style="color:var(--bad)">No winner</b><span>Nobody told the program to draw while Solana still kept the chosen block. This giveaway can never produce a winner.</span></div>` : g.winners.map((w: any, i: number) => `<div><b>${esc(w.entry)}</b><span>${g.winners.length > 1 ? `winner ${i + 1} · ` : ""}entry ${n(w.index + 1)} of ${n(count)}</span></div>`).join("");
   const rows: [string, string][] = [
     ["Giveaway account", `<a href="${explorer("address", g.account)}" rel="noopener">${esc(g.account)}</a>`],
     ["Locked", `<a href="${explorer("tx", g.lock.signature)}" rel="noopener">slot ${n(g.lock.slot)}</a>, accepted by Phil's server`],
-    expired ? ["Drawn", "never: expired"] : ["Drawn", `<a href="${explorer("tx", g.draw.signature)}" rel="noopener">by the block at slot ${n(g.draw.hashSlot)}</a>, ${n(g.draw.hashSlot - g.lock.slot)} slots after the lock`],
+    waiting ? ["Drawn", `not yet: after slot ${n(g.draw.targetSlot)}`] : expired ? ["Drawn", "never: expired"] : ["Drawn", `${g.draw.signature ? `<a href="${explorer("tx", g.draw.signature)}" rel="noopener">by the block at slot ${n(g.draw.hashSlot)}</a>` : `by the block at slot ${n(g.draw.hashSlot)}`}, ${n(g.draw.hashSlot - g.lock.slot)} slots after the lock`],
     ["On chain", g.kind === 1 ? "the entry list itself" : "the list's SHA-256 fingerprint (the list is too long for one transaction)"],
     ["List fingerprint", `<code>${esc(g.listDigest)}</code>`],
   ];
+  if (g.fromChain && g.wallet) rows.push(["Run by", `<a href="${explorer("address", g.wallet)}" rel="noopener">${esc(shortKey(g.wallet))}</a>, the wallet that paid to lock it`]);
   if (g.repeatsRemoved) rows.push(["Repeats removed", `${n(g.repeatsRemoved)} before locking`]);
   $("g-facts").innerHTML = rows.map(([k, v]) => `<li><span>${k}</span><span style="color:inherit;font-size:inherit">${v}</span></li>`).join("");
   const won = new Set(g.winners.map((w: any) => w.index));
-  $("entries").innerHTML = g.entries.map((e: string, i: number) => `<li${won.has(i) ? ' class="won"' : ""}>${esc(e)}</li>`).join("");
-  ($("tamper") as HTMLTextAreaElement).value = g.entries.join("\n");
+  $("entries").innerHTML = (g.entries ?? []).map((e: string, i: number) => `<li${won.has(i) ? ' class="won"' : ""}>${esc(e)}</li>`).join("");
+  ($("tamper") as HTMLTextAreaElement).value = (g.entries ?? []).join("\n");
   ($("find") as HTMLInputElement).value = "";
   $("verify-out").hidden = true; $("ask-out").hidden = true; $("verify-note").textContent = ""; $("ask-note").textContent = "";
   $("card").hidden = false;
@@ -106,8 +116,48 @@ $("find").addEventListener("input", () => {
   document.querySelectorAll<HTMLLIElement>("#entries li").forEach((li) => { li.hidden = !!q && !li.textContent!.toLowerCase().includes(q); });
 });
 
+// ---- a giveaway run from the website, found by its address ----
+const listKey = (g: { listDigest: string }) => `philcoin.list.${g.listDigest}`;
+function withList(g: ChainGiveaway, entries: string[]): ChainGiveaway {
+  return { ...g, entries, winners: g.winners.map((w) => ({ index: w.index, entry: entries[w.index] })) };
+}
+async function showFromChain(account: string): Promise<void> {
+  const note = $("community");
+  note.hidden = false; note.className = "community"; note.textContent = "Reading this giveaway from Solana…";
+  try {
+    if (!PROGRAM?.programId) throw new Error("The giveaway program is not deployed.");
+    let g = await giveawayFromChain(NET, PROGRAM.programId, new PublicKey(account).toBase58());
+    const kept = !g.entries ? listMatches(store(listKey(g)) ?? "", g) : null;
+    if (kept) g = withList(g, kept);
+    note.innerHTML = `<b>A community giveaway.</b> Anyone can run one from <a href="../coin/">My coin</a>. This one was read from Solana just now; it was not run by the maintainers of this site.`;
+    show(g);
+  } catch (e: any) { note.className = "community bad"; note.textContent = /Invalid public key|Non-base58/.test(String(e?.message)) ? "That is not a valid giveaway address." : String(e?.message ?? e); }
+}
+$("list-go").addEventListener("click", () => {
+  const entries = listMatches(($("list-in") as HTMLTextAreaElement).value, current);
+  if (!entries) { $("list-note").textContent = `That is not the locked list. It must be exactly the ${n(current.count)} entries, in the same order.`; return; }
+  store(listKey(current), entries.join("\n"));
+  show(withList(current, entries));
+});
+$("draw-now").addEventListener("click", async () => {
+  const b = $("draw-now") as HTMLButtonElement, g = current, say = (t: string) => { $("draw-note").textContent = t; };
+  b.disabled = true; b.classList.add("busy");
+  try {
+    const slot: number = await NET.rpc("getSlot", [{ commitment: "confirmed" }]);
+    if (slot <= g.draw.targetSlot + 1) throw new Error(`Too early. About ${Math.max(1, Math.ceil((g.draw.targetSlot + 2 - slot) * 0.4))} seconds to go.`);
+    if (slot > g.draw.targetSlot + DRAW_WINDOW_SLOTS) say("The window has probably passed. Sending anyway, which will mark it expired…");
+    let wallet;
+    try { wallet = await connectWallet(); } catch (e) { $("draw-note").innerHTML = noWalletHtml(NET, e); b.disabled = false; b.classList.remove("busy"); return; }
+    await signAndSend(NET, wallet, new Transaction().add(drawInstruction(new PublicKey(g.program), new PublicKey(g.account))), [], say);
+    say("Drawn."); await showFromChain(g.account);
+  } catch (e: any) { say(/too early/i.test((e?.logs ?? []).join(" ")) ? "Too early: the winning block has not passed yet. Try again in a few seconds." : explain(e)); }
+  b.disabled = false; b.classList.remove("busy");
+});
+
 // ---- the page ----
-if (DRAWS.length === 0) $("none").hidden = false;
+const askedDraw = new URLSearchParams(location.search).get("draw");
+if (askedDraw) { $("pick").hidden = true; void showFromChain(askedDraw); }
+else if (DRAWS.length === 0) $("none").hidden = false;
 else {
   $("pick").innerHTML = DRAWS.length > 1 ? DRAWS.map((g) => `<button type="button" data-id="${esc(g.id)}" aria-pressed="false">${esc(g.title)}</button>`).join("") : "";
   document.querySelectorAll<HTMLButtonElement>("#pick button").forEach((b) => b.addEventListener("click", () => show(DRAWS.find((g) => g.id === b.dataset.id))));

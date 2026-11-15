@@ -55,6 +55,7 @@ textarea.list { width: 100%; min-height: 150px; box-sizing: border-box; border: 
 .empty { border: 1px dashed var(--ink); padding: 22px 18px; margin-top: 18px; color: var(--muted); }
 .flash { animation: flash 1s ease-out; }
 @media (max-width: 720px) { .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } .entries { columns: 1; } }
+.community { margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; background: var(--code-bg); font-size: 15px; } .community.bad { border-color: var(--bad); color: var(--bad); }
 </style>
 </head>
 <body>
@@ -67,12 +68,27 @@ __HEADER__
     <p class="muted" style="font-size:15px">The code that decides whether a list is accepted on chain is Phil's: the upload server that Phil's compiler backend emits, running on Solana.</p>
   </div>
 
+  <p class="community" id="community" role="status" hidden></p>
   <div id="none" class="empty" hidden>No giveaway has been drawn yet. The first one will appear here.</div>
   <div class="pick" id="pick" role="group" aria-label="Giveaways"></div>
   <article class="card" id="card" hidden>
     <div class="head"><span class="k" id="g-when"></span><h2 id="g-title"></h2></div>
     <div class="winners" id="g-winners"></div>
     <ul class="facts" id="g-facts"></ul>
+
+    <section class="act" id="draw-wrap" aria-labelledby="d-h" hidden>
+      <h3 id="d-h">Send the draw</h3>
+      <p id="draw-lead"></p>
+      <div class="row"><button class="btn" id="draw-now" type="button">Draw now</button><span class="muted" id="draw-note" role="status"></span></div>
+      <p class="muted" style="font-size:13.5px;margin:8px 0 0">This needs a wallet for the small network fee. Whoever sends it cannot affect who wins.</p>
+    </section>
+
+    <section class="act" id="need-list" aria-labelledby="n-h" hidden>
+      <h3 id="n-h">Paste the entry list to see names</h3>
+      <p>This list was too long to put on Solana whole, so only its fingerprint was locked. Paste the list its organiser published. If it is the locked list, the names and the checks appear.</p>
+      <textarea class="list" id="list-in" spellcheck="false" aria-label="The entry list"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn" id="list-go" type="button">Check this list</button><span class="muted" id="list-note" role="status"></span></div>
+    </section>
 
     <section class="act" aria-labelledby="v-h">
       <h3 id="v-h">Check it yourself</h3>
@@ -89,7 +105,7 @@ __HEADER__
       <div id="ask-out" hidden><p class="verdict" id="ask-verdict"></p><ol class="steps" id="ask-steps"></ol></div>
     </section>
 
-    <section class="act" aria-labelledby="e-h">
+    <section class="act" id="e-wrap" aria-labelledby="e-h">
       <h3 id="e-h">The entries</h3>
       <input class="find" id="find" type="search" placeholder="Find a name" aria-label="Find a name in the entries">
       <ul class="entries" id="entries"></ul>
@@ -108,7 +124,7 @@ __HEADER__
   <ul class="limits">
     <li><b>Proves:</b> the list was fixed before the winning block existed, the winner follows from that block and nothing else, and the list shown here is the one that was locked.</li>
     <li><b>Does not prove</b> the list is complete or honest. Whoever runs a giveaway decides who is on the list. Entrants should find their own name in it; the list is public for that reason.</li>
-    <li><b>Share the giveaway before the draw.</b> Someone could run many draws in private and show only the one they like. A draw that was announced before its result is worth far more than one that was not. Every draw made with this tool stays listed here.</li>
+    <li><b>Share the giveaway before the draw.</b> Someone could run many draws in private and show only the one they like. A draw that was announced before its result is worth far more than one that was not. Every official draw stays listed here. A giveaway someone runs themselves exists only at its own link, so ask for that link before the draw.</li>
     <li>Whoever produces the winning block could, in principle, influence its hash. For a community giveaway on a test network this does not matter; for large sums it would.</li>
     <li>This runs on devnet, Solana's test network. Devnet is reset from time to time, which would remove the accounts; the records in the repository would remain.</li>
   </ul>
@@ -118,6 +134,7 @@ __HEADER__
   <ul class="facts card" id="p-facts" style="margin-top:14px"></ul>
 
   <h2 class="sec">Run one</h2>
+  <p class="lead">Anyone can run a giveaway with their own wallet from <a href="../coin/">My coin</a>. It gets its own page here, read straight from Solana.</p>
   <p class="lead">Official draws are started by the maintainers of this repository: on GitHub, open <a href="__REPO__/actions/workflows/giveaway-start.yml">Actions, Start a giveaway</a>, press Run workflow, and fill in a title and the entries. The result appears on this page a few minutes later. To run your own, fork the repository; the whole pipeline is in <a href="__REPO__/tree/main/giveaway">giveaway/</a>.</p>
   <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
 </main>

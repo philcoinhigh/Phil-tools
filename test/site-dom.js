@@ -26,12 +26,12 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
   {
     const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
-    const pages = ["tour/", "learn/", "playground/", "hacks/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
     check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
     check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
@@ -398,6 +398,138 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     const relIx = rel.instructions[1];
     check("locker: releasing sends the coins only to the named receiver's own token account", rel.instructions.length === 2 && rel.instructions[0].keys[2].pubkey.equals(friend) && relIx.programId.toBase58() === program && relIx.data[0] === 2 && relIx.keys[0].pubkey.equals(ready.key) && relIx.keys[2].pubkey.equals(ready.escrow) && relIx.keys[3].pubkey.equals(rel.instructions[0].keys[1].pubkey) && rel.verifySignatures());
     check("locker: no script errors", p.errors.length === 0, p.errors.join("|"));
+  }
+
+  // My coin: the launch kit, and a giveaway page read from Solana alone
+  p = load("docs/coin/index.html", "https://example.test/coin/");
+  check("my coin: the page loads, is plain about its limits and names the three programs", /has not been audited/.test(p.d.getElementById("limits").textContent) && /Anyone can open a vault for any coin/.test(p.d.getElementById("limits").textContent) && /does not hold or send a prize/.test(p.d.getElementById("limits").textContent) && p.d.querySelectorAll("#p-facts li").length === 4 && p.d.getElementById("kit").hidden && p.errors.length === 0, p.errors.join("|"));
+  if (["locker", "burn", "giveaway"].every((d) => fs.existsSync(d + "/program.json"))) {
+    const web3 = require("@solana/web3.js"), crypto = require("crypto"), bs58 = require("bs58");
+    const b58 = (b) => (bs58.default ?? bs58).encode(b);
+    const sha = (...parts) => crypto.createHash("sha256").update(Buffer.concat(parts)).digest();
+    const P = Object.fromEntries(["locker", "burn", "giveaway"].map((d) => [d, JSON.parse(fs.readFileSync(d + "/program.json", "utf8")).programId]));
+    const me = web3.Keypair.generate(), mint = web3.Keypair.generate().publicKey;
+    const TOKEN = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", now = Math.floor(Date.now() / 1000);
+    const mintData = Buffer.alloc(82); mintData.writeBigUInt64LE(1000000000000000n, 36); mintData[44] = 6; mintData[45] = 1;
+    const lockBytes = (o) => { const d = Buffer.alloc(320); d.write("PHILLOCK", 0); d[8] = 1; d[9] = 254; d[10] = 6; d[11] = Buffer.byteLength(o.label); d.writeBigUInt64LE(o.amount, 16); d.writeBigInt64LE(BigInt(o.unlock), 24); d.writeBigUInt64LE(BigInt(now - 86400), 40);
+      mint.toBuffer().copy(d, 64); me.publicKey.toBuffer().copy(d, 128); me.publicKey.toBuffer().copy(d, 160); d.write(o.label, 256); return d; };
+    const vaultBytes = (o) => { const d = Buffer.alloc(256); d.write("PHILBURN", 0); d[8] = 1; d[9] = Buffer.byteLength(o.label); d.writeBigUInt64LE(o.threshold, 16); d.writeBigUInt64LE(2672640n, 24); mint.toBuffer().copy(d, 32);
+      d.writeBigUInt64LE(BigInt(o.burns), 80); d.writeBigUInt64LE(BigInt(o.burns) * o.threshold, 88); d.writeBigUInt64LE(o.paid, 96); d.write(o.label, 160); return d; };
+    const vaultKey = web3.Keypair.generate().publicKey;
+    const lockRows = [{ pubkey: web3.Keypair.generate().publicKey.toBase58(), account: { data: [lockBytes({ label: "Team tokens", amount: 250000000000000n, unlock: now + 90 * 86400 }).toString("base64"), "base64"], lamports: 3118080 } }];
+    const vaultRows = [{ pubkey: vaultKey.toBase58(), account: { data: [vaultBytes({ label: "Creator fees", threshold: 1000000000000n, burns: 3, paid: 30000000n }).toString("base64"), "base64"], lamports: 2672640 + 250000000 } }];
+    const drawState = { bytes: null, slot: 1000 };
+    const calls = []; let held = "400000000000000";
+    const node = (extra = {}) => async (url, init) => {
+      const q = JSON.parse(init.body); calls.push(q);
+      const table = { getProgramAccounts: () => (q.params[0] === P.locker ? lockRows : q.params[0] === P.burn ? vaultRows : []),
+        getAccountInfo: () => (q.params[0] === mint.toBase58() ? { value: { data: [mintData.toString("base64"), "base64"], owner: TOKEN } } : { value: drawState.bytes ? { data: [drawState.bytes.toString("base64"), "base64"], owner: P.giveaway } : null }),
+        getTokenAccountBalance: () => ({ value: { amount: held } }), getLatestBlockhash: () => ({ value: { blockhash: web3.Keypair.generate().publicKey.toBase58() } }),
+        getMinimumBalanceForRentExemption: () => 2672640, sendTransaction: () => "5".repeat(88), getSignatureStatuses: () => ({ value: [{ confirmationStatus: "confirmed", err: null }] }), getSlot: () => drawState.slot, ...extra };
+      const result = table[q.method] ? table[q.method](q) : null;
+      return { ok: true, status: 200, json: async () => ({ result }) };
+    };
+    p.w.fetch = node();
+    const el = (id) => p.d.getElementById(id), set = (id, v) => { el(id).value = v; };
+    const settle = async (b) => { for (let i = 0; i < 80 && b.classList.contains("busy"); i++) await wait(25); await wait(60); };
+    const sentAfter = async (from) => { for (let i = 0; i < 120 && !calls.slice(from).some((q) => q.method === "getSignatureStatuses"); i++) await wait(25); await wait(160); return web3.Transaction.from(Buffer.from(calls.slice(from).find((q) => q.method === "sendTransaction").params[0], "base64")); };
+    set("coin", mint.toBase58()); el("open").click(); await settle(el("open"));
+    const gpa = calls.filter((q) => q.method === "getProgramAccounts");
+    check("my coin: opening a coin reads its locks and its vaults from Solana, with no wallet", gpa.length === 2 && gpa[0].params[0] === P.locker && gpa[0].params[1].filters[0].dataSize === 320 && gpa[0].params[1].filters[1].memcmp.offset === 64 && gpa[1].params[0] === P.burn && gpa[1].params[1].filters[0].dataSize === 256 && gpa[1].params[1].filters[1].memcmp.offset === 32 && gpa[1].params[1].filters[1].memcmp.bytes === mint.toBase58());
+    check("my coin: three numbers sum the coin up", !el("kit").hidden && el("t-locked").textContent === "25%" && /250,000,000 in 1 lock/.test(el("t-locked-sub").textContent) && el("t-pot").textContent === "0.25 SOL" && el("t-burned").textContent === "3,000,000" && /3 burns, paid 0.03 SOL/.test(el("t-burned-sub").textContent), [el("t-locked").textContent, el("t-locked-sub").textContent, el("t-pot").textContent, el("t-burned").textContent, el("t-burned-sub").textContent].join(" / "));
+    check("my coin: the vault's rule and fee address are shown, and the link carries the coin", /burn 1,000,000 coins \(0.1% of supply\)/.test(el("vaults").textContent) && el("vaults").textContent.includes(vaultKey.toBase58()) && p.w.location.search === "?coin=" + mint.toBase58() && el("locks-link").getAttribute("href").endsWith("locker/?coin=" + mint.toBase58()), el("vaults").textContent);
+    check("my coin: without a wallet there is nothing to sign", [...p.d.querySelectorAll("#kit [data-form]")].every((f) => f.hidden) && [...p.d.querySelectorAll("#kit [data-need]")].every((f) => !f.hidden) && !p.d.querySelector("#vaults button.burn"));
+    p.w.phantom = { solana: { connect: async () => ({ publicKey: me.publicKey }), signTransaction: async (tx) => { tx.partialSign(me); return tx; } } };
+    el("connect").click(); await wait(120);
+    check("my coin: connecting a wallet opens the forms", [...p.d.querySelectorAll("#kit [data-form]")].every((f) => !f.hidden) && el("l-to").value === me.publicKey.toBase58() && /holds 400,000,000/.test(el("l-have").textContent) && !!p.d.querySelector("#vaults button.burn"));
+
+    // Lock
+    set("l-amount", "1,000,000"); set("l-label", "Kit lock"); p.d.querySelector('#l-quick button[data-d="30"]').click(); el("lock-review").click(); await wait(60);
+    check("my coin: a lock is reviewed in words and needs a tick", /1,000,000/.test(el("lock-say").textContent) && /0.1% of supply/.test(el("lock-say").textContent) && !el("lock-go").hidden && el("lock-go").disabled);
+    el("lock-agree").checked = true; el("lock-agree").dispatchEvent(new p.w.Event("change"));
+    let from = calls.length; el("lock-go").click(); let tx = await sentAfter(from);
+    check("my coin: the lock is the locker's own three-step transaction, fully signed", tx.instructions.length === 3 && tx.instructions[2].programId.toBase58() === P.locker && tx.instructions[2].data[0] === 1 && tx.verifySignatures() && tx.signatures.length === 2 && /Locked\./.test(el("lock-done").textContent));
+
+    // Open a vault
+    set("v-threshold", "5,000,000"); el("v-threshold").dispatchEvent(new p.w.Event("input")); set("v-label", "Kit vault");
+    check("my coin: the burn amount is shown as a share of supply while typing", /0.5% of the supply/.test(el("v-pct").textContent));
+    set("v-threshold", "2,000,000,000"); el("vault-review").click(); await wait(60);
+    check("my coin: a rule nobody could ever meet is refused", el("vault-say").classList.contains("bad") && /more than the coin's whole supply/.test(el("vault-say").textContent) && el("vault-go").hidden);
+    set("v-threshold", "5,000,000"); el("vault-review").click(); await wait(60);
+    check("my coin: opening a vault says plainly that nothing can be withdrawn", /Nobody, including you, can change the rule or withdraw/.test(el("vault-say").textContent) && el("vault-go").disabled);
+    el("vault-agree").checked = true; el("vault-agree").dispatchEvent(new p.w.Event("change"));
+    from = calls.length; el("vault-go").click(); tx = await sentAfter(from);
+    let ix = tx.instructions[1], rec = ix.data.subarray(ix.data.length - (5 + 32 + 8 + 1 + 9));
+    check("my coin: the vault is made and opened in one transaction, with the reviewed rule", tx.instructions.length === 2 && tx.instructions[0].programId.equals(web3.SystemProgram.programId) && ix.programId.toBase58() === P.burn && ix.data[0] === 1 && ix.keys.length === 1 && ix.keys[0].pubkey.equals(tx.instructions[0].keys[1].pubkey) && rec.subarray(0, 5).toString() === "BURN1" && rec.subarray(5, 37).equals(mint.toBuffer()) && rec.readBigUInt64LE(37) === 5000000000000n && rec.subarray(46).toString() === "Kit vault" && tx.verifySignatures() && tx.signatures.length === 2);
+    check("my coin: afterwards the page gives the new vault's fee address", el("vault-done").textContent.includes(tx.instructions[0].keys[1].pubkey.toBase58()));
+
+    // Burn for the pot
+    held = "500000000000"; await (async () => { set("coin", mint.toBase58()); el("open").click(); await settle(el("open")); })();
+    p.d.querySelector("#vaults button.burn").click(); await wait(200);
+    check("my coin: burning with too few coins is refused before anything is signed", el("burn-say").classList.contains("bad") && /Your wallet holds 500,000/.test(el("burn-say").textContent) && el("burn-go").hidden, el("burn-say").textContent);
+    held = "400000000000000"; p.d.querySelector("#vaults button.burn").click(); await wait(200);
+    check("my coin: the burn is reviewed: what is destroyed and what is received", /burn 1,000,000/.test(el("burn-say").textContent) && /0.25 SOL/.test(el("burn-say").textContent) && el("burn-go").disabled, el("burn-say").textContent);
+    el("burn-agree").checked = true; el("burn-agree").dispatchEvent(new p.w.Event("change"));
+    from = calls.length; el("burn-go").click(); tx = await sentAfter(from); ix = tx.instructions[0];
+    const ata = web3.PublicKey.findProgramAddressSync([me.publicKey.toBuffer(), new web3.PublicKey(TOKEN).toBuffer(), mint.toBuffer()], new web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"))[0];
+    rec = ix.data.subarray(ix.data.length - 13);
+    check("my coin: the burn names the vault, the coin, the wallet's own coins, and the least it accepts", tx.instructions.length === 1 && ix.programId.toBase58() === P.burn && ix.data[0] === 2 && ix.keys[0].pubkey.equals(vaultKey) && ix.keys[1].pubkey.equals(mint) && ix.keys[2].pubkey.equals(ata) && ix.keys[3].pubkey.equals(me.publicKey) && ix.keys[3].isSigner && ix.keys[4].pubkey.toBase58() === TOKEN && rec.subarray(0, 5).toString() === "BOFF1" && rec.readBigUInt64LE(5) === 250000000n && tx.verifySignatures());
+
+    // Giveaway: lock, wait for the block, draw
+    const names = ["@ana", "@bo", "@cy", "@di", "@ed"];
+    set("g-title", "Kit giveaway"); set("g-entries", names.join("\n") + "\n@ANA\n"); set("g-winners", "2"); el("give-review").click(); await wait(60);
+    check("my coin: a giveaway is reviewed: entries, repeats removed, winners", /5 entries \(1 repeat removed\)/.test(el("give-say").textContent.replace(/\s+/g, " ")) && /2 winners/.test(el("give-say").textContent) && /whole list goes on Solana/.test(el("give-say").textContent) && !el("give-go").hidden && !el("give-go").disabled, el("give-say").textContent);
+    // The stand-in node plays the program: after the lock it holds a locked account, after the draw a drawn one.
+    const payloadOf = (data) => { let at = 1; for (let i = 0; i < 2; i++) at += 8 + data.readUInt16BE(at + 6); return data.subarray(at + 1); };
+    const drawBytes = (account, payload, state) => { const d = Buffer.alloc(256); d.write("PHILDRAW", 0); d[8] = state; d[9] = payload[5]; d[10] = payload[10]; d[11] = payload[15]; d.writeUInt32LE(payload.readUInt32LE(6), 12); d.writeUInt32LE(payload.readUInt32LE(11), 16); d.writeUInt32LE(payload.length, 20);
+      d.writeBigUInt64LE(1000n, 24); d.writeBigUInt64LE(BigInt(now), 32); d.writeBigUInt64LE(1150n, 40); sha(payload).copy(d, 48); (payload[5] === 1 ? sha(payload.subarray(16 + payload[15])) : payload.subarray(16 + payload[15])).copy(d, 80); payload.subarray(16, 16 + payload[15]).copy(d, 192);
+      if (state === 2) { const slotHash = sha(Buffer.from("a block")); d.writeBigUInt64LE(1151n, 112); slotHash.copy(d, 120); sha(sha(payload), slotHash, account.toBuffer()).copy(d, 152); }
+      return d; };
+    const expected = (d, count, winners) => { const out = []; for (let j = 0; out.length < winners; j++) { const k = Buffer.alloc(4); k.writeUInt32LE(j); const i = Number(sha(d.subarray(152, 184), k).readBigUInt64LE(0) % BigInt(count)); if (!out.includes(i)) out.push(i); } return out; };
+    let account = null, payload = null, sends = 0;
+    p.w.fetch = node({ sendTransaction: (q) => { const t = web3.Transaction.from(Buffer.from(q.params[0], "base64")); sends++;
+      if (t.instructions.length === 2) { account = t.instructions[0].keys[1].pubkey; payload = Buffer.from(payloadOf(t.instructions[1].data)); drawState.bytes = drawBytes(account, payload, 1); drawState.slot = 1100; }
+      else { drawState.bytes = drawBytes(account, payload, 2); }
+      return "5".repeat(88); } });
+    from = calls.length; el("give-go").click(); tx = await sentAfter(from); ix = tx.instructions[1];
+    check("my coin: the giveaway's account is made and locked in one transaction, and the locked list is the cleaned one", tx.instructions.length === 2 && tx.instructions[0].programId.equals(web3.SystemProgram.programId) && ix.programId.toBase58() === P.giveaway && ix.data[0] === 1 && payload.subarray(0, 5).toString() === "DRAW1" && payload[5] === 1 && payload[10] === 2 && payload.readUInt32LE(11) === 150 && payload.subarray(16 + payload[15]).toString() === names.join("\n") && tx.verifySignatures() && tx.signatures.length === 2);
+    await wait(300);
+    check("my coin: after locking, the page counts down to the block and gives the link to share first", !el("g-run").hidden && /slot 1,150/.test(el("g-status").textContent) && el("g-draw").disabled && el("give-done").querySelector("a[href*='giveaway/?draw=']").getAttribute("href").endsWith("giveaway/?draw=" + account.toBase58()) && /before the draw/.test(el("give-done").textContent), el("g-status").textContent);
+    drawState.slot = 1155; from = calls.length;
+    for (let i = 0; i < 200 && sends < 2; i++) await wait(50); await wait(400);
+    const drawTx = web3.Transaction.from(Buffer.from(calls.slice(from).find((q) => q.method === "sendTransaction").params[0], "base64"));
+    const won = expected(drawState.bytes, 5, 2).map((i) => names[i]);
+    check("my coin: once the block exists the page asks the wallet to draw, with the program's draw instruction", drawTx.instructions.length === 1 && drawTx.instructions[0].programId.toBase58() === P.giveaway && drawTx.instructions[0].data.length === 1 && drawTx.instructions[0].data[0] === 2 && drawTx.instructions[0].keys[0].pubkey.equals(account) && drawTx.instructions[0].keys[1].pubkey.toBase58() === "SysvarS1otHashes111111111111111111111111111" && drawTx.verifySignatures());
+    check("my coin: the winners shown are the ones the block picked", [...p.d.querySelectorAll("#g-won b")].map((b) => b.textContent).join() === won.join() && /Drawn by the block at slot 1,151/.test(el("g-status").textContent) && !el("mine-wrap").hidden && /Kit giveaway/.test(el("mine").textContent), [...p.d.querySelectorAll("#g-won b")].map((b) => b.textContent).join() + " vs " + won.join());
+    check("my coin: no script errors", p.errors.length === 0, p.errors.join("|"));
+
+    // The giveaway's own page, made from Solana alone
+    const lockTx = { meta: { logMessages: ["Program log: Phil: ACCEPTED"] }, transaction: { message: { accountKeys: [me.publicKey.toBase58(), account.toBase58(), "11111111111111111111111111111111", P.giveaway], instructions: [{ programIdIndex: 2, data: b58(Buffer.from([0])) }, { programIdIndex: 3, data: b58(tx.instructions[1].data) }] } } };
+    const drawnTx = { meta: { logMessages: ["Program log: Phil draw: DRAWN. Block slot, then the winning entry's position (counting from 0):"] }, transaction: { message: { accountKeys: [me.publicKey.toBase58(), account.toBase58(), P.giveaway], instructions: [{ programIdIndex: 2, data: b58(Buffer.from([2])) }] } } };
+    const chainNode = (bytes, txs) => async (url, init) => { const q = JSON.parse(init.body);
+      const result = { getAccountInfo: { value: { data: [bytes.toString("base64"), "base64"], owner: P.giveaway } }, getSignaturesForAddress: Object.keys(txs).map((signature) => ({ signature, err: null })), getTransaction: txs[q.params[0]], getSlot: 1155 }[q.method];
+      return { ok: true, status: 200, json: async () => ({ result }) }; };
+    // jsdom runs the page's script before fetch can be replaced, so each page is loaded with the stand-in already in place.
+    const loadWith = (url, fetcher) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/giveaway/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = fetcher; } }); return { w: dom.window, d: dom.window.document, errors }; };
+    let g = loadWith("https://example.test/giveaway/?draw=" + account.toBase58(), chainNode(drawState.bytes, { L: lockTx, D: drawnTx })); await wait(300);
+    check("giveaway: a giveaway run from the website gets a page from its address alone", g.d.getElementById("g-title").textContent === "Kit giveaway" && [...g.d.querySelectorAll("#g-winners b")].map((b) => b.textContent).join() === won.join() && g.d.querySelectorAll("#entries li").length === 5 && /community giveaway/i.test(g.d.getElementById("community").textContent) && /not run by the maintainers/.test(g.d.getElementById("community").textContent) && g.d.getElementById("pick").hidden, g.d.getElementById("community").textContent);
+    check("giveaway: it names the wallet that ran it and links both transactions", /Run by/.test(g.d.getElementById("g-facts").textContent) && !!g.d.querySelector("#g-facts a[href*='/tx/L']") && !!g.d.querySelector("#g-facts a[href*='/tx/D']") && g.d.getElementById("draw-wrap").hidden && g.d.getElementById("need-list").hidden && !g.d.getElementById("verify").closest("section").hidden);
+    g = loadWith("https://example.test/giveaway/?draw=" + account.toBase58(), chainNode(drawBytes(account, payload, 1), { L: lockTx })); await wait(300);
+    check("giveaway: before the draw the page says so and offers the draw to anyone", /Not drawn yet/.test(g.d.getElementById("g-winners").textContent) && !g.d.getElementById("draw-wrap").hidden && /slot 1,150/.test(g.d.getElementById("draw-lead").textContent) && g.d.getElementById("verify").closest("section").hidden);
+    // A list too long for Solana: only its fingerprint is locked, and the page asks for the list.
+    const longList = Array.from({ length: 4 }, (_, i) => "@long" + i), listBuf = Buffer.from(longList.join("\n"));
+    const head = Buffer.from(payload.subarray(0, 16 + payload[15])); head[5] = 2; head.writeUInt32LE(4, 6);
+    const p2 = Buffer.concat([head, sha(listBuf)]);
+    const data2 = Buffer.concat([tx.instructions[1].data.subarray(0, 1), tx.instructions[1].data.subarray(1, 13), (() => { const b = Buffer.from(tx.instructions[1].data.subarray(13, 13 + 8 + tx.instructions[1].data.readUInt16BE(13 + 6))); return b; })(), Buffer.from([1]), p2]);
+    const lock2 = { ...lockTx, transaction: { message: { ...lockTx.transaction.message, instructions: [{ programIdIndex: 3, data: b58(data2) }] } } };
+    g = loadWith("https://example.test/giveaway/?draw=" + account.toBase58(), chainNode(drawBytes(account, p2, 2), { L: lock2, D: drawnTx })); await wait(300);
+    check("giveaway: with only a fingerprint on Solana, winners are numbered and the list is asked for", !g.d.getElementById("need-list").hidden && g.d.getElementById("e-wrap").hidden && /Entry number \d/.test(g.d.getElementById("g-winners").textContent), g.d.getElementById("community").textContent + g.d.getElementById("g-winners").textContent);
+    g.d.getElementById("list-in").value = longList.slice(0, 3).concat("@mallory").join("\n"); g.d.getElementById("list-go").click(); await wait(40);
+    check("giveaway: a list that is not the locked one is refused", /not the locked list/.test(g.d.getElementById("list-note").textContent) && !g.d.getElementById("need-list").hidden);
+    g.d.getElementById("list-in").value = longList.join("\n"); g.d.getElementById("list-go").click(); await wait(40);
+    check("giveaway: the real list is recognised and the names appear", g.d.getElementById("need-list").hidden && /@long\d/.test(g.d.getElementById("g-winners").textContent) && g.d.querySelectorAll("#entries li").length === 4);
+    g = loadWith("https://example.test/giveaway/?draw=not-an-address", chainNode(drawState.bytes, {})); await wait(120);
+    check("giveaway: a bad address is explained, and nothing else is shown", /not a valid giveaway address/.test(g.d.getElementById("community").textContent) && g.d.getElementById("card").hidden && g.errors.length === 0, g.errors.join("|"));
   }
 
   // Burn vault
