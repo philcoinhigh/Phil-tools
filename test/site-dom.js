@@ -182,14 +182,16 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // Hacks
   p = load("docs/hacks/index.html", "https://example.test/hacks/");
   const says = (id) => p.d.querySelector(`#demo-${id} .says`).textContent;
-  check("hacks: five exhibits, each refused", p.d.querySelectorAll(".hack").length === 5 && /A promise was broken/.test(says("lighter")) && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
-  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 5);
+  check("hacks: six exhibits, each refused", p.d.querySelectorAll(".hack").length === 6 && /A promise was broken/.test(says("lighter")) && /Ownership error, line 1[5-9]/.test(says("lighter-nonce")) && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
+  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 6);
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: the working version runs", /Ran to completion/.test(says("wormhole")) && /120000/.test(says("wormhole")) && /Ownership error/.test(says("dao")), says("wormhole"));
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: flipping back shows the mistake", /A promise was broken/.test(says("wormhole")));
-  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 10 && p.d.querySelectorAll("#limits li").length === 4);
-  check("hacks: the newest exhibit says plainly that it is unconfirmed, and what Phil would not have done", /Not confirmed\./.test(p.d.querySelector("#lighter .caution").textContent) && /would not have kept the keys from leaking/.test(p.d.getElementById("lighter").textContent) && p.d.querySelectorAll(".hack .caution").length === 1);
+  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 12 && p.d.querySelectorAll("#limits li").length === 4);
+  check("hacks: the Lighter exhibits say they were revised, what is still unconfirmed, and what Phil does not do", p.d.querySelectorAll(".hack .update").length === 2 && p.d.querySelectorAll(".hack .caution").length === 0 && /has not been confirmed by Lighter/.test(p.d.getElementById("lighter").textContent) && /cannot make a broken random-number source/.test(p.d.getElementById("lighter-nonce").textContent) && /official SDKs were not at fault/.test(p.d.getElementById("lighter-nonce").textContent));
+  p.d.querySelector('[data-flip="lighter-nonce"]').click();
+  check("hacks: two messages with two nonces sign", /Ran to completion/.test(says("lighter-nonce")), says("lighter-nonce"));
   p.d.querySelector('[data-flip="lighter"]').click();
   check("hacks: the same move to an account the owner wholly holds goes through", /Ran to completion/.test(says("lighter")), says("lighter"));
   check("hacks: no script errors", p.errors.length === 0, p.errors.join("|"));

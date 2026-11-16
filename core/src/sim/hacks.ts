@@ -14,20 +14,78 @@ export interface Hack {
   fixNote: string;
   /** Shown above the exhibit when the facts are not settled. */
   caution?: string;
+  /** Shown above the exhibit when it has been revised after the fact. */
+  update?: string;
 }
 
 export const HACKS: Hack[] = [
   {
-    id: "lighter", year: "2026", name: "Lighter (as reported)", loss: "about $15.5 million, by early estimates",
-    caution: "Reported on 16 November 2026 and not confirmed by Lighter when this was written. What follows is the account given by on-chain analysts. If the post-mortem says otherwise, this exhibit will change.",
-    happened: "Lighter is an exchange where a trading key is meant to be able to trade but not to send money to anyone else. According to analysts, the keys of two large market-maker accounts leaked. The attacker could not send the money out directly. Instead the keys were used to close the accounts' positions and open a new public pool from one of those accounts, the attacker put in about $10,000 to hold 99.99% of that pool, and the victims' USDC was then moved into the pool and redeemed by the attacker. Moves between accounts under the same owner address needed no further signature, and the pool counted as one.",
+    id: "lighter-nonce", year: "2026", name: "Lighter: the root cause", loss: "about $10.4 million traced leaving; about $5 million recovered",
+    update: "Lighter's post-mortem, 16 November 2026: the affected accounts signed with code outside Lighter's official SDKs, and that code reused nonces.",
+    happened: "A signature needs a fresh secret number each time, called a nonce. The affected trader's own signing code used the same nonce more than once. With this family of signatures, two signatures made with one nonce are enough for anyone watching to work out the private key, and the signatures were public. The attacker rebuilt the API keys that way, with no break-in at all. Lighter says its protocol, contracts and official SDKs were not at fault.",
     sources: [
-      { label: "PANews, first report", url: "https://panews.io/articles/01a1e3fb-3b78-70fe-9417-115bc4c74113" },
-      { label: "TechFlow, the key-leak analysis", url: "https://www.techflowpost.com/en-US/newsletter/144880" },
+      { label: "Crypto Briefing via Cryptonews, on the post-mortem", url: "https://cryptonews.net/news/security/33761628/" },
+      { label: "Lighter's update on X", url: "https://x.com/Lighter_xyz/status/2122311006604984497" },
+    ],
+    shape: "A number that must be used once was used twice.",
+    kind: "linearity",
+    why: "“Use exactly once” is the rule Phil is built around. Here a nonce is a thing, not a number in a variable, and signing uses it up, so signing a second message with it is refused before the program runs anywhere. The limit: Phil stops one nonce being spent twice. It cannot make a broken random-number source hand out different numbers, so where nonces come from still has to be right.",
+    broken: `record Nonce mode linear {
+  secret : U64
+}
+
+callable Sign(message : U64, nonce : Nonce) -> U64 {
+  outcomes { success U64 };
+}
+
+// A stand-in for the real signature maths. Signing uses the nonce up.
+fn sign(message : U64, nonce : Nonce) -> U64 satisfies Sign {
+  let Nonce { secret } = nonce;
+  return message + secret;
+}
+
+component main provides U64 {
+  let nonce = construct Nonce { secret = 7741 };
+  let first = sign(100, nonce);
+  let second = sign(200, nonce);
+  return first + second;
+}
+`,
+    fixed: `record Nonce mode linear {
+  secret : U64
+}
+
+callable Sign(message : U64, nonce : Nonce) -> U64 {
+  outcomes { success U64 };
+}
+
+// A stand-in for the real signature maths. Signing uses the nonce up.
+fn sign(message : U64, nonce : Nonce) -> U64 satisfies Sign {
+  let Nonce { secret } = nonce;
+  return message + secret;
+}
+
+component main provides U64 {
+  let one = construct Nonce { secret = 7741 };
+  let two = construct Nonce { secret = 90210 };
+  let first = sign(100, one);
+  let second = sign(200, two);
+  return first + second;
+}
+`,
+    fixNote: "Two messages, two nonces.",
+  },
+  {
+    id: "lighter", year: "2026", name: "Lighter: the way out", loss: "the same incident",
+    update: "Confirmed by Lighter's post-mortem. Lighter now requires a wallet signature for transfers into public pools, which is the rule written below. Researchers' estimate of $15.5 million across two accounts has not been confirmed by Lighter.",
+    happened: "A trading key on Lighter is meant to be able to trade but not to send money to anyone else. With the rebuilt keys the attacker could not send the money out directly. Instead the keys were used to open a new public pool from the affected account, a separate account bought the pool's shares, the victim's funds were moved into the pool, and the shares were redeemed. Moves between accounts under the same owner address needed no further signature, and the pool counted as one.",
+    sources: [
+      { label: "Crypto Briefing via Cryptonews, on the post-mortem", url: "https://cryptonews.net/news/security/33761628/" },
+      { label: "CoinDesk", url: "https://www.coindesk.com/tech/2026/11/16/lighter-suspends-all-withdrawals-after-usd10-4-million-crypto-exploit" },
     ],
     shape: "A limited key was checked on where the money went, not on who would own it afterwards.",
     kind: "contract",
-    why: "Phil would not have kept the keys from leaking, and nothing here says Lighter's code did anything but follow its rules. The rule was the gap: “same owner address” was standing in for “still the owner's money”, and a pool mostly held by someone else passes the first and fails the second. In Phil the second is what gets written down, as a promise on the move itself, and a move that breaks it stops. The leaked key can still trade badly. It cannot hand the money over.",
+    why: "Every step followed Lighter's rules, and the rule was the gap: “same owner address” was standing in for “still the owner's money”, and a pool mostly held by someone else passes the first and fails the second. In Phil the second is what gets written down, as a promise on the move itself, and a move that breaks it stops. A stolen key can still trade badly. It cannot hand the money over.",
     inputs: { owner_share_bps: "1" },
     fixedInputs: { owner_share_bps: "10000" },
     broken: `record Funds mode linear {
@@ -49,9 +107,9 @@ fn move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds satisfi
 }
 
 component main(owner_share_bps : U64) provides Funds {
-  // The market maker is owner 7. The pool was opened from its own
-  // account, so it is under owner 7's address. But the attacker
-  // holds 99.99% of it: the owner's share is 1 basis point.
+  // The trader is owner 7. The pool was opened from its own
+  // account, so it is under owner 7's address. But someone else
+  // holds nearly all of it: the owner's share is 1 basis point.
   let funds = construct Funds { owner = 7, amount = 10390000 };
   return move(funds, 7, owner_share_bps);
 }
@@ -75,9 +133,9 @@ fn move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds satisfi
 }
 
 component main(owner_share_bps : U64) provides Funds {
-  // The market maker is owner 7. The pool was opened from its own
-  // account, so it is under owner 7's address. But the attacker
-  // holds 99.99% of it: the owner's share is 1 basis point.
+  // The trader is owner 7. The pool was opened from its own
+  // account, so it is under owner 7's address. But someone else
+  // holds nearly all of it: the owner's share is 1 basis point.
   let funds = construct Funds { owner = 7, amount = 10390000 };
   return move(funds, 7, owner_share_bps);
 }
@@ -285,7 +343,7 @@ component main(refunds_done : U64, bids : U64) provides Eth {
 
 /** Losses Phil's guarantees do not cover. Named so the page does not over-claim. */
 export const NOT_STOPPED = [
-  "Stolen or leaked signing keys. If the attacker holds the key, the program is doing what it was told. What a language can do is limit what a leaked key is able to reach, which is the Lighter exhibit above.",
+  "Stolen or leaked signing keys. If the attacker holds the key, the program is doing what it was told. What a language can do is limit what a leaked key is able to reach, which is the second Lighter exhibit above.",
   "People tricked into approving a transaction they did not understand.",
   "Bad prices from outside: a contract that trusts a manipulated price feed is following its rules.",
   "A wrong rule written down correctly. Phil checks that the code keeps its promises, not that the promises are the right ones.",
