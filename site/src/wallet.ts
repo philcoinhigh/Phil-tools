@@ -85,3 +85,28 @@ export function explain(e: any): string {
   if (/insufficient (funds|lamports)|Attempt to debit/i.test(String(e?.message) + (e?.logs ?? []).join(" "))) return "The wallet does not hold enough SOL for the fee and the account rent. Nothing was moved.";
   return String(e?.message ?? e);
 }
+
+// ---- keys the page itself holds (throwaway keys for a game's moves): sign here, no wallet prompt ----
+import type { TransactionInstruction } from "@solana/web3.js";
+const b64 = (raw: Uint8Array) => { let s = ""; for (const b of raw) s += String.fromCharCode(b); return btoa(s); };
+/** Signs with keys held in the page and sends. The first signer pays the fee. */
+export async function sendLocal(c: Chain, ixs: TransactionInstruction[], signers: Keypair[]): Promise<string> {
+  const tx = new Transaction().add(...ixs);
+  tx.feePayer = signers[0].publicKey; tx.recentBlockhash = (await c.rpc("getLatestBlockhash", [{ commitment: "confirmed" }])).value.blockhash;
+  tx.sign(...signers);
+  const signature: string = await c.rpc("sendTransaction", [b64(tx.serialize()), { encoding: "base64", preflightCommitment: "confirmed" }]);
+  for (let i = 0; i < 50; i++) {
+    const st = (await c.rpc("getSignatureStatuses", [[signature]])).value?.[0];
+    if (st?.err) throw new Error("Solana rejected the transaction.");
+    if (st?.confirmationStatus === "confirmed" || st?.confirmationStatus === "finalized") return signature;
+    await new Promise((r) => setTimeout(r, 900));
+  }
+  throw new Error("Solana has not confirmed it yet.");
+}
+/** Runs instructions on the node without sending anything, and returns what the programs logged. */
+export async function simulateOnly(c: Chain, payer: PublicKey, ixs: TransactionInstruction[]): Promise<{ failed: boolean; logs: string[] }> {
+  const tx = new Transaction().add(...ixs);
+  tx.feePayer = payer; tx.recentBlockhash = "11111111111111111111111111111111";
+  const r = await c.rpc("simulateTransaction", [b64(tx.serialize({ requireAllSignatures: false, verifySignatures: false })), { encoding: "base64", sigVerify: false, replaceRecentBlockhash: true, commitment: "confirmed" }]);
+  return { failed: !!r?.value?.err, logs: r?.value?.logs ?? [] };
+}

@@ -5,32 +5,45 @@
 //   demo <rpc> <program id> <payer.json> <demo.json>
 //       one whole match between two practice players, recorded for the site.
 import * as fs from "fs";
-import { Connection, Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { readVerdict, sha256 } from "../site/src/draw";
 import { commitment, decodeMatch, practicePull, playRound, newBoard, revealData, resultText, Match, Side, Board, MATCH_SIZE } from "../site/src/line";
 import { openInstructions, joinInstruction, commitInstruction, revealInstruction, timeoutInstruction, Move } from "../site/src/line-tx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const [command, url, programText, payerFile, ...rest] = process.argv.slice(2);
-const conn = new Connection(url, "confirmed");
+const conn = new Connection(url, { commitment: "confirmed", disableRetryOnRateLimit: true });
 const program = new PublicKey(programText);
 const payer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(fs.readFileSync(payerFile, "utf8"))));
 const note = (...a: unknown[]) => console.error(...a);
 const json = (f: string, fallback: any) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return fallback; } };
 
 interface Sent { ok: boolean; signature: string | null; logs: string[]; units: number | null; error?: string }
-/** Devnet's public node refuses bursts. A refused request is retried; a refused transaction is not. */
+// A public node refuses bursts, and shared CI addresses get little room. Every request is retried
+// with a growing wait, confirmation is polled slowly, and logs are fetched only when a check reads them.
+const local = /127\.0\.0\.1|localhost/.test(url);
 async function patiently<T>(f: () => Promise<T>): Promise<T> {
   for (let i = 0; ; i++) {
-    try { return await f(); } catch (e: any) { if (i >= 6 || !/429|Too Many|fetch failed|ECONNRESET|ETIMEDOUT|503|502/i.test(String(e?.message ?? e))) throw e; await sleep(2000 * (i + 1)); }
+    try { return await f(); } catch (e: any) { if (i >= 9 || !/429|Too Many|fetch failed|ECONNRESET|ETIMEDOUT|503|502|socket hang up/i.test(String(e?.message ?? e))) throw e; await sleep(1500 * (i + 1)); }
   }
 }
-async function send(ixs: TransactionInstruction[], signers: Keypair[]): Promise<Sent> {
+async function send(ixs: TransactionInstruction[], signers: Keypair[], wantLogs = true): Promise<Sent> {
   try {
-    const signature = await patiently(() => sendAndConfirmTransaction(conn, new Transaction().add(...ixs), signers, { commitment: "confirmed" }));
-    let tx = null;
-    for (let i = 0; i < 20 && !tx; i++) { tx = await patiently(() => conn.getTransaction(signature, { commitment: "confirmed", maxSupportedTransactionVersion: 0 })); if (!tx) await sleep(1500); }
-    return { ok: true, signature, logs: tx?.meta?.logMessages ?? [], units: tx?.meta?.computeUnitsConsumed ?? null };
+    const tx = new Transaction().add(...ixs);
+    tx.recentBlockhash = (await patiently(() => conn.getLatestBlockhash("confirmed"))).blockhash; tx.feePayer = signers[0].publicKey; tx.sign(...signers);
+    const raw = tx.serialize();
+    const signature = await patiently(() => conn.sendRawTransaction(raw, { preflightCommitment: "confirmed" }));   // the same signed bytes each try: it can land once
+    for (let i = 0; ; i++) {
+      await sleep(local ? 400 : 1600);
+      const st = (await patiently(() => conn.getSignatureStatuses([signature]))).value[0];
+      if (st?.err) return { ok: false, signature, logs: [], units: null, error: "failed on chain: " + JSON.stringify(st.err) };
+      if (st?.confirmationStatus === "confirmed" || st?.confirmationStatus === "finalized") break;
+      if (i >= 50) return { ok: false, signature, logs: [], units: null, error: "not confirmed in time" };
+    }
+    if (!wantLogs) return { ok: true, signature, logs: [], units: null };
+    let found = null;
+    for (let i = 0; i < 20 && !found; i++) { found = await patiently(() => conn.getTransaction(signature, { commitment: "confirmed", maxSupportedTransactionVersion: 0 })); if (!found) await sleep(1500); }
+    return { ok: true, signature, logs: found?.meta?.logMessages ?? [], units: found?.meta?.computeUnitsConsumed ?? null };
   } catch (e: any) {
     return { ok: false, signature: null, logs: e?.logs ?? e?.transactionLogs ?? [], units: null, error: String(e?.message ?? e).split("\n")[0] };
   }
@@ -77,8 +90,8 @@ async function selftest() {
   expect("player B joins and round 1 opens", joined.ok && (await readMatch(match)).phase === "committing", joined.error + " " + joined.logs.join(" | "));
 
   const move = (round: number, side: Side, pull: number): Move => ({ round, side, pull, nonce: nonceFor(seed, round, side) });
-  const commit = (m: Move) => send([commitInstruction(program, match, keys[m.side].publicKey, m.round, commitment(match.toBytes(), m.round, m.side, m.pull, m.nonce))], [keys[m.side]]);
-  const reveal = (m: Move) => send([revealInstruction(program, match, keys[m.side].publicKey, m)], [keys[m.side]]);
+  const commit = (m: Move, logs = true) => send([commitInstruction(program, match, keys[m.side].publicKey, m.round, commitment(match.toBytes(), m.round, m.side, m.pull, m.nonce))], [keys[m.side]], logs);
+  const reveal = (m: Move, logs = true) => send([revealInstruction(program, match, keys[m.side].publicKey, m)], [keys[m.side]], logs);
   const mA = move(1, 0, 12), mB = move(1, 1, 9);
   r = await send([commitInstruction(program, match, payer.publicKey, 1, commitment(match.toBytes(), 1, 0, 1, mA.nonce))], [payer]);
   expect("a key that is not a player cannot move", !r.ok && /REJECTED by policy/.test(r.logs.join("\n")), r.error);
@@ -106,9 +119,9 @@ async function selftest() {
   const rand = () => Math.random();
   while (board.result === "none" && agreed) {
     const x = move(board.round, 0, practicePull(board, 0, rand)), y = move(board.round, 1, Math.min(board.energy[1], practicePull(board, 1, rand) + 3));
-    const sent = [await commit(x), await commit(y), await reveal(y), await reveal(x)];
+    const sent = [await commit(x, false), await commit(y, false), await reveal(y, false), await reveal(x, board.round === 2)];
     if (sent.some((s) => !s.ok)) { agreed = false; note(sent.map((s) => s.error).join(" / ")); break; }
-    units += sent[3].units ?? 0; sends++;
+    if (sent[3].units) { units += sent[3].units; sends++; }
     board = playRound(board, x.pull, y.pull);
     m = await readMatch(match);
     agreed = m.node === board.node && m.energy.join() === board.energy.join() && m.result === board.result && m.how === board.how;
@@ -124,7 +137,7 @@ async function selftest() {
   await commit2(0); await commit2(1);
   await send([revealInstruction(program, second.match, b.publicKey, { round: 1, side: 1, pull: 5, nonce: nonceFor(seed, 1, 1) })], [b]);
   const start = (await readMatch(second.match)).phaseStart;
-  for (;;) { const t = (await conn.getBlockTime(await conn.getSlot("confirmed"))) ?? 0; if (t > start + 21) break; await sleep(3000); }
+  for (;;) { const t = (await patiently(async () => conn.getBlockTime(await conn.getSlot("confirmed")))) ?? 0; if (t > start + 21) break; await sleep(4000); }
   r = await send([timeoutInstruction(program, second.match)], [payer]);
   m = await readMatch(second.match);
   expect("a side that committed and did not reveal in time forfeits, on anyone's call", r.ok && m.phase === "over" && m.result === "b" && m.how === "no-reveal", r.error + " " + JSON.stringify([m.result, m.how]));
@@ -147,8 +160,8 @@ async function demo() {
   while (board.result === "none") {
     const moves: Move[] = ([0, 1] as Side[]).map((side) => ({ round: board.round, side, pull: practicePull(board, side, Math.random), nonce: nonceFor(seed, board.round, side) }));
     const commits: Sent[] = [], reveals: Sent[] = [];
-    for (const m of moves) commits.push(await send([commitInstruction(program, match, keys[m.side].publicKey, m.round, commitment(match.toBytes(), m.round, m.side, m.pull, m.nonce))], [keys[m.side]]));
-    for (const m of moves) reveals.push(await send([revealInstruction(program, match, keys[m.side].publicKey, m)], [keys[m.side]]));
+    for (const m of moves) commits.push(await send([commitInstruction(program, match, keys[m.side].publicKey, m.round, commitment(match.toBytes(), m.round, m.side, m.pull, m.nonce))], [keys[m.side]], false));
+    for (const m of moves) reveals.push(await send([revealInstruction(program, match, keys[m.side].publicKey, m)], [keys[m.side]], false));
     const bad = [...commits, ...reveals].find((s) => !s.ok);
     if (bad) throw new Error(`round ${board.round} failed: ${bad.error}\n${bad.logs.join("\n")}`);
     rounds.push({ round: board.round, commits: commits.map((s) => s.signature), reveals: reveals.map((s) => s.signature) });

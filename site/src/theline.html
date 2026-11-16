@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>The Line: a game refereed on Solana by Phil's compiled code</title>
+<meta name="description" content="A tug of war for two players with hidden moves and no stakes. Every reveal is checked on Solana by the upload server Phil's compiler emits. Practice in your browser or play on devnet.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.panel { border: 1px solid var(--ink); background: var(--sheet); border-radius: 18px; padding: 18px 18px 20px; margin-top: 18px; }
+.panel h2 { margin: 0 0 6px; font: 600 21px var(--font-mark); letter-spacing: -.02em; } .panel > p { margin: 0 0 12px; max-width: 64ch; }
+label.f { display: block; font: 600 13px var(--font-body); margin: 12px 0 4px; }
+input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-code); padding: 10px 12px; border-radius: 10px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .quick button { border: 1px solid var(--rule); background: none; border-radius: 999px; padding: 4px 11px; font: 600 12.5px var(--font-body); color: var(--ink); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.say { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; font-size: 15px; background: var(--code-bg); } .say b { font-family: var(--font-code); }
+.say.bad { border-color: var(--bad); color: var(--bad); } .say.good { border-color: var(--good); }
+.agree { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14.5px; } .agree input { margin-top: 3px; width: 18px; height: 18px; }
+.locks { display: grid; gap: 12px; margin-top: 14px; }
+.lock { border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); overflow: hidden; }
+.lock .hd { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+.lock .hd b { font: 600 20px var(--font-code); letter-spacing: -.02em; } .lock .hd span { font-size: 13px; color: var(--muted); }
+.lock .st { display: inline-block; font: 600 11.5px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); }
+.lock .st.locked { background: var(--ink); color: var(--paper); } .lock .st.ready { background: var(--gold, #e8b23a); color: #15171a; } .lock .st.released { color: var(--muted); border-color: var(--rule); }
+.lock dl { margin: 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; padding: 12px 14px; font-size: 14px; } .lock dt { color: var(--muted); font-size: 13px; } .lock dd { margin: 0; overflow-wrap: anywhere; } .lock dd a, .lock dd code { font: 12.5px var(--font-code); background: none; padding: 0; }
+.lock .count { font: 600 15px var(--font-code); }
+.lock .act { padding: 0 14px 14px; }
+.bar { height: 8px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-top: 6px; } .bar i { display: block; height: 100%; background: var(--accent); }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.how > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.how > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.how h3 { margin: 0 0 4px; font-size: 17px; } .how p { margin: 0; max-width: 70ch; color: var(--muted); }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .facts li:first-child { border-top: 0; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } .lock dl { grid-template-columns: minmax(0, 1fr); gap: 1px; } .lock dt { margin-top: 8px; } .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+.stage { border: 1px solid var(--ink); background: var(--sheet); border-radius: 22px; padding: 18px 18px 20px; margin-top: 18px; }
+.sides { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.side { min-width: 0; } .side.b { text-align: right; }
+.side .who { font: 600 15px var(--font-mark); letter-spacing: -.02em; overflow-wrap: anywhere; } .side .who small { font: 500 12px var(--font-body); color: var(--muted); display: block; letter-spacing: 0; }
+.side .bar { height: 12px; border: 1px solid var(--ink); border-radius: 999px; background: var(--paper); margin-top: 8px; overflow: hidden; display: flex; } .side.b .bar { justify-content: flex-end; }
+.side .bar i { display: block; height: 100%; background: var(--accent); transition: width .5s ease; }
+.side .en { font: 600 13px var(--font-code); margin-top: 4px; } .side .chip { display: inline-block; margin-top: 6px; font: 600 11px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.side .chip.on { border-color: var(--good); color: var(--good); }
+.round { text-align: center; font: 600 12px var(--font-mark); color: var(--muted); padding-top: 2px; white-space: nowrap; } .round b { display: block; font: 600 30px/1 var(--font-code); color: var(--ink); letter-spacing: -.04em; }
+.wire { position: relative; height: 118px; margin: 18px 34px 6px; }
+.wire .rope { position: absolute; left: -34px; right: -34px; top: 50%; height: 3px; background: var(--ink); transform: translateY(-50%); }
+.wire .place { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%); }
+.wire .place.end { width: 22px; height: 22px; background: var(--ink); } .wire .place.mid { border-style: dashed; }
+.wire .tag { position: absolute; top: calc(50% + 22px); transform: translateX(-50%); font: 600 10.5px var(--font-mark); color: var(--muted); white-space: nowrap; }
+.wire .node { position: absolute; top: 50%; width: 58px; height: 58px; transform: translate(-50%, -50%); transition: left .8s cubic-bezier(.3, 1.5, .5, 1); border-radius: 50%; background: radial-gradient(circle at 34% 28%, #f6d27a, #e2a93b 58%, #c98f1f); border: 2.5px solid #15171a; box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .22), 3px 4px 0 #15171a; display: grid; place-items: center; z-index: 2; }
+.wire .node svg { width: 58%; height: 58%; color: #15171a; }
+.wire .node.tug { animation: tug .5s ease; } @keyframes tug { 30% { transform: translate(-50%, -50%) scale(1.14) rotate(-6deg); } 60% { transform: translate(-50%, -50%) scale(.96) rotate(4deg); } }
+.status { margin: 6px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; background: var(--code-bg); font-size: 15.5px; min-height: 24px; } .status b { font-family: var(--font-code); }
+.status.good { border-color: var(--good); } .status.bad { border-color: var(--bad); }
+.pull { margin-top: 14px; } .pull .row1 { display: flex; align-items: center; gap: 14px; } .pull input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); height: 32px; }
+.pull output { font: 600 34px/1 var(--font-code); letter-spacing: -.04em; min-width: 2ch; text-align: right; }
+.starts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.starts button { text-align: left; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); border-radius: 14px; padding: 14px; cursor: pointer; font: inherit; }
+.starts button:hover { background: var(--code-bg); } .starts button b { display: block; font: 600 15.5px var(--font-mark); letter-spacing: -.02em; margin-bottom: 4px; } .starts button span { font-size: 13.5px; color: var(--muted); }
+.starts button.first { background: var(--ink); color: var(--paper); } .starts button.first span { color: inherit; opacity: .75; }
+.reflog { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); max-height: 300px; overflow: auto; }
+.reflog li { padding: 8px 14px; border-top: 1px solid var(--rule); font-size: 14px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; } .reflog li:first-child { border-top: 0; }
+.reflog .t { font: 600 11px var(--font-mark); color: var(--muted); min-width: 64px; } .reflog .phil { color: var(--good); font-family: var(--font-code); font-size: 12.5px; } .reflog .phil.no { color: var(--bad); } .reflog a { font: 12.5px var(--font-code); }
+.reflog:empty::after { content: "Nothing yet. Start a match."; display: block; padding: 12px 14px; color: var(--muted); font-size: 14px; }
+.rounds { width: 100%; border-collapse: collapse; margin-top: 12px; font: 14px var(--font-code); } .rounds th { font: 600 11px var(--font-mark); color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--ink); } .rounds td { padding: 6px 8px; border-bottom: 1px solid var(--rule); } .rounds td.w { font-weight: 700; }
+.steps4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; } .steps4 div { border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); padding: 14px; } .steps4 b { font: 600 14px var(--font-mark); display: block; margin-bottom: 6px; } .steps4 p { margin: 0; font-size: 14px; } .steps4 .by { display: inline-block; margin-top: 8px; font: 600 11px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); } .steps4 .by.phil { background: var(--ink); color: var(--paper); }
+@media (max-width: 760px) { .starts { grid-template-columns: minmax(0, 1fr); } .steps4 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .wire { margin-left: 30px; margin-right: 30px; } .wire .node { width: 48px; height: 48px; } }
+@media (max-width: 460px) { .steps4 { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .wire .node { transition: none; } .wire .node.tug { animation: none; } .side .bar i { transition: none; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Solana devnet · no stakes</span>
+    <h1>The Line.</h1>
+    <p>A tug of war for two. Both sides secretly choose how hard to pull; the bigger pull moves the coin one place; both pay what they pulled. Get it to your end.</p>
+    <p class="muted" style="font-size:15px">On Solana, the referee is a program built around the upload server that Phil's compiler emits. Nobody can change a move after committing it, and it is Phil's code that checks.</p>
+  </div>
+
+  <section class="stage" aria-labelledby="stage-h">
+    <h2 id="stage-h" class="sec" style="margin-top:0">The match <span class="muted" id="referee" style="text-transform:none;font-weight:500"></span></h2>
+    <div class="sides" style="margin-top:14px">
+      <div class="side a"><div class="who" id="name-a">A<small>pulls left</small></div><div class="bar"><i id="bar-a" style="width:100%"></i></div><div class="en"><span id="en-a">30</span> energy</div><span class="chip" id="chip-a">waiting</span></div>
+      <div class="round">ROUND<b id="round">1</b>of 15</div>
+      <div class="side b"><div class="who" id="name-b">B<small>pulls right</small></div><div class="bar"><i id="bar-b" style="width:100%"></i></div><div class="en"><span id="en-b">30</span> energy</div><span class="chip" id="chip-b">waiting</span></div>
+    </div>
+    <div class="wire" id="wire" role="img" aria-label="The wire: seven places, the coin in the middle"><div class="rope"></div><div class="node" id="node" style="left:50%">__MARK__</div></div>
+    <div class="status" id="status" role="status" aria-live="polite">Pick how to play.</div>
+
+    <div class="starts" id="starts">
+      <button type="button" class="first" id="start-local"><b>Practice now</b><span>Against a bot, in your browser. No wallet, nothing to install.</span></button>
+      <button type="button" id="start-bot"><b>Play a bot on Solana</b><span>Every move goes through the on-chain referee. One wallet approval, then no more prompts.</span></button>
+      <button type="button" id="start-friend"><b>Challenge a friend</b><span>Open a match on Solana and send them the link.</span></button>
+    </div>
+
+    <div class="pull" id="pull" hidden>
+      <label class="f" for="pull-in">Your pull this round <span class="muted" id="pull-max"></span></label>
+      <div class="row1"><input type="range" id="pull-in" min="0" max="30" value="10" step="1"><output id="pull-out" for="pull-in">10</output></div>
+      <div class="quick" id="pull-quick"><button type="button" data-f="0">0</button><button type="button" data-f="0.25">a quarter</button><button type="button" data-f="0.5">half</button><button type="button" data-f="1">all in</button></div>
+      <div class="row"><button class="btn" id="commit" type="button">Commit this pull</button><label class="agree" id="cheat-wrap" style="margin:0" hidden><input type="checkbox" id="cheat"><span>Then try to change it (a dry run: nothing is sent)</span></label></div>
+    </div>
+    <div class="row" id="after" hidden><button class="btn" id="again" type="button">New match</button><button class="btn ghost small" id="claim" type="button" hidden>Claim the win on time</button><button class="btn ghost small" id="sweep" type="button" hidden>Send the leftover SOL back</button><button class="btn ghost small" id="copy-link" type="button" hidden>Copy the match link</button><span class="muted" id="after-note" role="status"></span></div>
+    <p class="hint" id="no-wallet" hidden></p>
+    <p class="hint" id="key-note" hidden>Moves are signed by a throwaway key kept in this browser, so you are not asked to approve each one. It only ever holds a little devnet SOL for fees.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="log-h">
+    <h2 id="log-h">Referee log</h2>
+    <p>Every step of the match, newest first. On Solana each one is a transaction you can open.</p>
+    <ul class="reflog" id="reflog" aria-live="polite"></ul>
+    <table class="rounds" id="rounds" hidden><thead><tr><th>ROUND</th><th id="th-a">A PULLED</th><th id="th-b">B PULLED</th><th>COIN</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <h2 class="sec">How a round is refereed</h2>
+  <div class="steps4">
+    <div><b>1. Commit</b><p>Each side sends only a SHA-256 hash of its move: the match, the round, the side, the pull and a random 32-byte secret.</p><span class="by phil">through Phil's server</span></div>
+    <div><b>2. Both in</b><p>Reveals open only when both hashes are recorded. Until then nobody, including the referee, knows a pull.</p><span class="by">our code</span></div>
+    <div><b>3. Reveal</b><p>Each side uploads the move itself. It must declare the committed hash, and Phil's server checks the bytes against it. A changed pull does not match.</p><span class="by phil">checked by Phil's server</span></div>
+    <div><b>4. Play</b><p>With both pulls open the program applies the rules: move the coin, charge both sides, check for a win, open the next round.</p><span class="by">our code</span></div>
+  </div>
+  <p class="lead">A side that commits and does not reveal in time forfeits. That is what stops a player who sees they are about to lose a round from simply walking away.</p>
+
+  <h2 class="sec">Matches on Solana</h2>
+  <p class="lead" id="recent-lead">Every night two practice players play a whole match on devnet and the result is recorded here.</p>
+  <ul class="rows" id="recent" style="list-style:none;margin:12px 0 0;padding:0;border:1px solid var(--ink);border-radius:14px;background:var(--sheet)"></ul>
+
+  <h2 class="sec">Before you rely on it</h2>
+  <ul class="limits" id="limits">
+    <li><b>Nothing is staked, and nothing can be.</b> A match holds no SOL beyond its own account's rent, and the program has no instruction that pays anyone. This is a game and a demonstration, on a test network.</li>
+    <li><b>It has not been audited, and the program can still be replaced.</b> On devnet our deploy key can upgrade it.</li>
+    <li><b>What Phil's code checks, and what it does not.</b> Phil's server checks each upload's handshake, its policy, and that the bytes match the hash they declare. The rules of the game, the clock and who may move are our C code, which is not Phil and is not verified.</li>
+    <li><b>Against the bot, your browser holds both keys.</b> The bot commits its move on Solana before you choose yours, so it cannot react to you, but it is a practice opponent and not proof of anything. Against a friend, each side holds only its own key.</li>
+    <li><b>If you close the page mid-round you may forfeit.</b> Your secret for the round lives in this browser. Come back in time and the page picks the match up again.</li>
+    <li>A match's account costs about 0.003 devnet SOL in rent, which is not returned.</li>
+  </ul>
+
+  <h2 class="sec">Where this comes from</h2>
+  <p class="lead">The game and its rules ("duels-1") are from <a href="https://github.com/HigherMaestro/highwire">Highwire</a> by HigherMaestro (MIT), built for AI agents on higher.fun. Phil's repository has <a href="https://github.com/abiggerhammer/phil/tree/main/examples/wager">an example</a> that writes one player's side of a round as a Phil protocol and leaves the referee outside Phil. This page is a referee for that round with Phil's compiled server inside it. It is a separate program from Highwire's, with no stakes.</p>
+  <ul class="facts" id="p-facts"></ul>
+  <p class="lead">This is a community project and is not affiliated with Phil, Highwire or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>
