@@ -29,6 +29,7 @@ $("hacks").innerHTML = HACKS.map((h) => `<article class="hack" id="${h.id}">
     <h2>${esc(h.name)}</h2>
     <p class="loss">${esc(h.loss)}</p>
     ${h.caution ? `<p class="caution"><b>Not confirmed.</b> ${esc(h.caution)}</p>` : ""}
+    ${h.update ? `<p class="update"><b>Updated.</b> ${esc(h.update)}</p>` : ""}
     <p>${esc(h.happened)}</p>
     <p class="shape">${esc(h.shape)}</p>
     <p>${esc(h.why)}</p>
