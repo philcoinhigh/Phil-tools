@@ -26,12 +26,12 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
   {
     const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
-    const pages = ["tour/", "learn/", "playground/", "hacks/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
     check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
     check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
@@ -182,13 +182,16 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // Hacks
   p = load("docs/hacks/index.html", "https://example.test/hacks/");
   const says = (id) => p.d.querySelector(`#demo-${id} .says`).textContent;
-  check("hacks: four exhibits, each refused", p.d.querySelectorAll(".hack").length === 4 && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
-  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 4);
+  check("hacks: five exhibits, each refused", p.d.querySelectorAll(".hack").length === 5 && /A promise was broken/.test(says("lighter")) && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
+  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 5);
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: the working version runs", /Ran to completion/.test(says("wormhole")) && /120000/.test(says("wormhole")) && /Ownership error/.test(says("dao")), says("wormhole"));
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: flipping back shows the mistake", /A promise was broken/.test(says("wormhole")));
-  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 8 && p.d.querySelectorAll("#limits li").length === 4);
+  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 10 && p.d.querySelectorAll("#limits li").length === 4);
+  check("hacks: the newest exhibit says plainly that it is unconfirmed, and what Phil would not have done", /Not confirmed\./.test(p.d.querySelector("#lighter .caution").textContent) && /would not have kept the keys from leaking/.test(p.d.getElementById("lighter").textContent) && p.d.querySelectorAll(".hack .caution").length === 1);
+  p.d.querySelector('[data-flip="lighter"]').click();
+  check("hacks: the same move to an account the owner wholly holds goes through", /Ran to completion/.test(says("lighter")), says("lighter"));
   check("hacks: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Changelog
@@ -530,6 +533,98 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     check("giveaway: the real list is recognised and the names appear", g.d.getElementById("need-list").hidden && /@long\d/.test(g.d.getElementById("g-winners").textContent) && g.d.querySelectorAll("#entries li").length === 4);
     g = loadWith("https://example.test/giveaway/?draw=not-an-address", chainNode(drawState.bytes, {})); await wait(120);
     check("giveaway: a bad address is explained, and nothing else is shown", /not a valid giveaway address/.test(g.d.getElementById("community").textContent) && g.d.getElementById("card").hidden && g.errors.length === 0, g.errors.join("|"));
+  }
+
+  // The Line
+  p = load("docs/line/index.html", "https://example.test/line/");
+  {
+    const el = (id) => p.d.getElementById(id);
+    check("the line: the page loads with three ways to play, and is plain about what it is", !el("starts").hidden && el("pull").hidden && /Nothing is staked, and nothing can be/.test(el("limits").textContent) && /not Phil and is not verified/.test(el("limits").textContent) && /your browser holds both keys/.test(el("limits").textContent) && /HigherMaestro/.test(p.d.body.textContent) && p.d.querySelectorAll("#wire .place").length === 7 && p.errors.length === 0, p.errors.join("|"));
+    el("start-local").click(); await wait(20);
+    check("the line: practice starts at once, with the bot's move already committed", el("starts").hidden && !el("pull").hidden && /bot has committed a hidden pull/i.test(el("status").textContent) && /The bot committed its move: [0-9a-f]{16}/.test(el("reflog").textContent) && el("chip-b").textContent === "committed" && /your browser \(rules only\)/.test(el("referee").textContent) && el("cheat-wrap").hidden);
+    el("pull-in").value = "30"; el("pull-in").dispatchEvent(new p.w.Event("input")); el("commit").click(); await wait(700);
+    const row = el("rounds").querySelector("tbody tr");
+    check("the line: a round is played: both pay, and the bigger pull moves the coin", !el("rounds").hidden && row.children[1].textContent === "30" && el("en-a").textContent === "2" && Number(el("en-b").textContent) > 2 && el("node").style.left !== "50%" && el("round").textContent === "2" && /You pulled 30/.test(el("status").textContent), el("status").textContent);
+    check("the line: you cannot pull more than you have", el("pull-in").max === "2");
+    for (let i = 0; i < 20 && el("after") && !/won|lost|Drawn/.test(el("status").textContent); i++) { el("pull-in").value = el("pull-in").max; el("commit").click(); await wait(520); }
+    check("the line: a practice match ends, says who won, and offers another", /You won|You lost|Drawn/.test(el("status").textContent) && el("pull").hidden && el("again").textContent === "New match" && /over/.test(el("reflog").textContent), el("status").textContent);
+    el("again").click(); await wait(20);
+    check("the line: New match goes back to the start", !el("starts").hidden && el("rounds").hidden && el("node").style.left === "50%" && el("en-a").textContent === "30" && p.errors.length === 0, p.errors.join("|"));
+  }
+  if (fs.existsSync("line/program.json") && JSON.parse(fs.readFileSync("line/program.json", "utf8")).programId) {
+    // The stand-in node runs the real referee: Phil's emitted server and line/runtime.c, built natively.
+    const web3 = require("@solana/web3.js"), { execFileSync, execSync } = require("child_process");
+    execSync("giveaway/native/build.sh out/phil-line-native line/runtime.c", { stdio: "inherit" });
+    const PROGRAM = JSON.parse(fs.readFileSync("line/program.json", "utf8")).programId, programKey = new web3.PublicKey(PROGRAM);
+    const hexOf = (b) => Buffer.from(b).toString("hex");
+    const chainState = { accounts: {}, sent: [] };
+    const runIx = (ix, keep) => {
+      const input = ["slot 7000", `time ${Math.floor(Date.now() / 1000)}`, `program ${hexOf(programKey.toBytes())}`,
+        ...ix.keys.map((k) => { const a = chainState.accounts[k.pubkey.toBase58()]; return `account ${hexOf(k.pubkey.toBytes())} ${a ? hexOf(programKey.toBytes()) : "00".repeat(32)} ${k.isSigner ? 2 : k.isWritable ? 1 : 0} ${a ? hexOf(a) : "-"} 1`; }), `ix ${hexOf(ix.data)}`, ""].join("\n");
+      const out = execFileSync("out/phil-line-native", { input }).toString().split("\n");
+      const ret = Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")))[1]), logs = out.filter((l) => l.startsWith("LOG ")).map((l) => "Program log: " + l.slice(4));
+      if (ret === 0 && keep) chainState.accounts[ix.keys[0].pubkey.toBase58()] = Buffer.from(out.find((l) => l.startsWith("ACCOUNT 0 ")).split(" ")[2], "hex");
+      return { ret, logs };
+    };
+    const node = async (url, init) => {
+      const q = JSON.parse(init.body); let result = null, error = null;
+      if (q.method === "getAccountInfo") { const a = chainState.accounts[q.params[0]]; result = { value: a ? { data: [a.toString("base64"), "base64"], owner: PROGRAM } : null }; }
+      else if (q.method === "getBalance") result = { value: 0 };
+      else if (q.method === "getLatestBlockhash") result = { value: { blockhash: web3.Keypair.generate().publicKey.toBase58() } };
+      else if (q.method === "getMinimumBalanceForRentExemption") result = 3118080;
+      else if (q.method === "getSignatureStatuses") result = { value: [{ confirmationStatus: "confirmed", err: null }] };
+      else if (q.method === "getProgramAccounts") result = [];
+      else if (q.method === "sendTransaction" || q.method === "simulateTransaction") {
+        const tx = web3.Transaction.from(Buffer.from(q.params[0], "base64")), send = q.method === "sendTransaction"; let logs = [], failed = false;
+        if (send && !tx.verifySignatures()) error = { message: "signature verification failed" };
+        else for (const ix of tx.instructions) {
+          if (ix.programId.equals(web3.SystemProgram.programId)) { if (send && web3.SystemInstruction.decodeInstructionType(ix) === "Create") { const c = web3.SystemInstruction.decodeCreateAccount(ix); chainState.accounts[c.newAccountPubkey.toBase58()] = Buffer.alloc(c.space); } continue; }
+          const r = runIx(ix, send); logs = logs.concat(r.logs);
+          if (r.ret !== 0) { failed = true; break; }
+        }
+        if (send) { chainState.sent.push({ tx, failed }); if (failed) error = { message: "Transaction simulation failed", data: { logs } }; else if (!error) result = "5".repeat(80) + String(chainState.sent.length).padStart(8, "1"); }
+        else result = { value: { err: failed ? { InstructionError: [0, "Custom"] } : null, logs } };
+      }
+      return { ok: true, status: 200, json: async () => (error ? { error } : { result }) };
+    };
+    const loadWith = (url) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/line/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; w.crypto.getRandomValues = (a) => require("crypto").webcrypto.getRandomValues(a); } }); return { w: dom.window, d: dom.window.document, errors }; };
+    const me = web3.Keypair.generate();
+    const g = loadWith("https://example.test/line/");
+    const el = (id) => g.d.getElementById(id), until = async (f, ms = 15000) => { for (let t = 0; t < ms && !f(); t += 100) await wait(100); return f(); };
+    g.w.phantom = { solana: { connect: async () => ({ publicKey: me.publicKey }), signTransaction: async (tx) => { tx.partialSign(me); return tx; } } };
+    el("start-bot").click();
+    await until(() => chainState.sent.length >= 1);
+    const open = chainState.sent[0].tx, last = open.instructions[open.instructions.length - 1];
+    check("the line on Solana: one wallet approval funds the page's keys and opens the match, signed by wallet, match and player key", !chainState.sent[0].failed && open.signatures.length === 3 && open.feePayer.equals(me.publicKey) && last.programId.equals(programKey) && last.data[0] === 1 && last.keys[2].pubkey.equals(me.publicKey) && !last.keys[1].pubkey.equals(me.publicKey) && open.instructions.filter((i) => i.programId.equals(web3.SystemProgram.programId)).length === 3);
+    await until(() => !el("pull").hidden);
+    check("the line on Solana: the bot joins and commits with its own key, before you choose, and no wallet is asked", chainState.sent.length === 3 && chainState.sent.slice(1).every((s) => !s.failed && s.tx.signatures.length === 1 && !s.tx.feePayer.equals(me.publicKey)) && /Bot has committed a hidden pull/.test(el("status").textContent) && /Phil's server on Solana/.test(el("referee").textContent) && !el("cheat-wrap").hidden && g.w.location.search.startsWith("?match="), el("status").textContent);
+    const matchAddress = g.w.location.search.slice(7), before = chainState.accounts[matchAddress];
+    check("the line on Solana: the bot's move is on chain as a hash only", before[8] === 2 && before[15] === 2 && !before.subarray(224, 256).every((x) => x === 0) && before[49] === 0);
+    el("cheat").checked = true; el("pull-in").value = "30"; el("pull-in").dispatchEvent(new g.w.Event("input")); el("commit").click();
+    await until(() => !el("rounds").hidden, 25000);
+    const logText = el("reflog").textContent;
+    check("the line on Solana: the dry-run cheat is refused by Phil's server, and nothing is sent for it", /Dry run: you committed 30 and tried to reveal 29\. Refused/.test(logText) && /Phil: REJECTED, the bytes do not match the declared digest/.test(logText), logText.slice(0, 500));
+    const now = chainState.accounts[matchAddress];
+    check("the line on Solana: both reveals went through the referee and the round was played on chain", chainState.sent.every((s) => !s.failed) && chainState.sent.length >= 6 && chainState.sent.length <= 7 && now[256] === 30 && now[9] === 2 && now[13] === 2 && el("en-a").textContent === "2" && el("rounds").querySelector("tbody tr").children[1].textContent === "30" && /You revealed 30\. Phil's server checked it/.test(logText) && g.d.querySelectorAll("#reflog a[href*='/tx/']").length >= 5, String(chainState.sent.length));
+    check("the line on Solana: the page shows what the chain says", el("node").style.left === `${(now[10] / 6) * 100}%` && el("round").textContent === "2" && g.errors.length === 0, g.errors.join("|"));
+    el("again").click();
+    // A second browser opens the link to a match that waits for an opponent.
+    const waiting = web3.Keypair.generate().publicKey, a = web3.Keypair.generate();
+    chainState.accounts[waiting.toBase58()] = Buffer.alloc(320);
+    const opened = new web3.Transaction().add(open.instructions[open.instructions.length - 1]); opened.instructions[0].keys = [{ pubkey: waiting, isSigner: false, isWritable: true }, { pubkey: a.publicKey, isSigner: true, isWritable: false }, { pubkey: a.publicKey, isSigner: true, isWritable: false }];
+    runIx(opened.instructions[0], true);
+    const f = loadWith("https://example.test/line/?match=" + waiting.toBase58());
+    await until(() => !!f.d.getElementById("join"), 5000);
+    check("the line on Solana: a friend's link shows the open seat and offers to join", !!f.d.getElementById("join") && /waiting for an opponent/.test(f.d.getElementById("status").textContent) && f.d.getElementById("chip-b").textContent === "empty seat" && f.d.getElementById("starts").hidden);
+    const friend = web3.Keypair.generate(), sentBefore = chainState.sent.length;
+    f.w.phantom = { solana: { connect: async () => ({ publicKey: friend.publicKey }), signTransaction: async (tx) => { tx.partialSign(friend); return tx; } } };
+    f.d.getElementById("join").click();
+    await until(() => chainState.sent.length > sentBefore && !f.d.getElementById("pull").hidden, 12000);
+    const joined = chainState.accounts[waiting.toBase58()];
+    check("the line on Solana: joining seats you as B, for your wallet, and round 1 opens", joined[8] === 2 && Buffer.from(joined.subarray(160, 192)).equals(friend.publicKey.toBuffer()) && /^You/.test(f.d.getElementById("name-b").textContent) && !f.d.getElementById("pull").hidden && f.errors.length === 0, f.errors.join("|"));
+    f.d.getElementById("again").click();
+    const bad = loadWith("https://example.test/line/?match=nonsense"); await wait(150);
+    check("the line on Solana: a bad match address is explained", /not a valid match address/.test(bad.d.getElementById("status").textContent) && bad.errors.length === 0);
   }
 
   // Burn vault

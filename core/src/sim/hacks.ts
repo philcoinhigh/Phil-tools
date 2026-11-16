@@ -12,9 +12,78 @@ export interface Hack {
   broken: string; fixed: string;
   inputs?: Record<string, string>; fixedInputs?: Record<string, string>;
   fixNote: string;
+  /** Shown above the exhibit when the facts are not settled. */
+  caution?: string;
 }
 
 export const HACKS: Hack[] = [
+  {
+    id: "lighter", year: "2026", name: "Lighter (as reported)", loss: "about $15.5 million, by early estimates",
+    caution: "Reported on 16 November 2026 and not confirmed by Lighter when this was written. What follows is the account given by on-chain analysts. If the post-mortem says otherwise, this exhibit will change.",
+    happened: "Lighter is an exchange where a trading key is meant to be able to trade but not to send money to anyone else. According to analysts, the keys of two large market-maker accounts leaked. The attacker could not send the money out directly. Instead the keys were used to close the accounts' positions and open a new public pool from one of those accounts, the attacker put in about $10,000 to hold 99.99% of that pool, and the victims' USDC was then moved into the pool and redeemed by the attacker. Moves between accounts under the same owner address needed no further signature, and the pool counted as one.",
+    sources: [
+      { label: "PANews, first report", url: "https://panews.io/articles/01a1e3fb-3b78-70fe-9417-115bc4c74113" },
+      { label: "TechFlow, the key-leak analysis", url: "https://www.techflowpost.com/en-US/newsletter/144880" },
+    ],
+    shape: "A limited key was checked on where the money went, not on who would own it afterwards.",
+    kind: "contract",
+    why: "Phil would not have kept the keys from leaking, and nothing here says Lighter's code did anything but follow its rules. The rule was the gap: “same owner address” was standing in for “still the owner's money”, and a pool mostly held by someone else passes the first and fails the second. In Phil the second is what gets written down, as a promise on the move itself, and a move that breaks it stops. The leaked key can still trade badly. It cannot hand the money over.",
+    inputs: { owner_share_bps: "1" },
+    fixedInputs: { owner_share_bps: "10000" },
+    broken: `record Funds mode linear {
+  owner : U64,
+  amount : U64
+}
+
+// What a trade-only key may do with funds: move them, but only to
+// somewhere the same owner still holds all of them afterwards.
+// (10000 basis points is all of it.)
+callable Move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds {
+  requires funds.owner == dest_owner;
+  requires owner_share_bps == 10000;
+  outcomes { success Funds };
+}
+
+fn move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds satisfies Move {
+  return funds;
+}
+
+component main(owner_share_bps : U64) provides Funds {
+  // The market maker is owner 7. The pool was opened from its own
+  // account, so it is under owner 7's address. But the attacker
+  // holds 99.99% of it: the owner's share is 1 basis point.
+  let funds = construct Funds { owner = 7, amount = 10390000 };
+  return move(funds, 7, owner_share_bps);
+}
+`,
+    fixed: `record Funds mode linear {
+  owner : U64,
+  amount : U64
+}
+
+// What a trade-only key may do with funds: move them, but only to
+// somewhere the same owner still holds all of them afterwards.
+// (10000 basis points is all of it.)
+callable Move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds {
+  requires funds.owner == dest_owner;
+  requires owner_share_bps == 10000;
+  outcomes { success Funds };
+}
+
+fn move(funds : Funds, dest_owner : U64, owner_share_bps : U64) -> Funds satisfies Move {
+  return funds;
+}
+
+component main(owner_share_bps : U64) provides Funds {
+  // The market maker is owner 7. The pool was opened from its own
+  // account, so it is under owner 7's address. But the attacker
+  // holds 99.99% of it: the owner's share is 1 basis point.
+  let funds = construct Funds { owner = 7, amount = 10390000 };
+  return move(funds, 7, owner_share_bps);
+}
+`,
+    fixNote: "The program is unchanged. A move to an account the owner wholly holds goes through; a move into a pool that is mostly someone else's does not.",
+  },
   {
     id: "dao", year: "2016", name: "The DAO", loss: "about 3.6 million ETH",
     happened: "The DAO was an investment fund run by a contract. Its withdrawal code paid out first and updated its records afterwards, so an attacker asked for the same withdrawal again and again before the books caught up. About 3.6 million ETH, roughly a third of the fund, was drained, and Ethereum split in two over how to respond.",
@@ -216,7 +285,7 @@ component main(refunds_done : U64, bids : U64) provides Eth {
 
 /** Losses Phil's guarantees do not cover. Named so the page does not over-claim. */
 export const NOT_STOPPED = [
-  "Stolen or leaked signing keys. If the attacker holds the key, the program is doing what it was told.",
+  "Stolen or leaked signing keys. If the attacker holds the key, the program is doing what it was told. What a language can do is limit what a leaked key is able to reach, which is the Lighter exhibit above.",
   "People tricked into approving a transaction they did not understand.",
   "Bad prices from outside: a contract that trusts a manipulated price feed is following its rules.",
   "A wrong rule written down correctly. Phil checks that the code keeps its promises, not that the promises are the right ones.",
