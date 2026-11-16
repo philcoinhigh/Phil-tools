@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "62b21dbb1e",
-  "date": "2026-11-15",
-  "subject": "FSEM-02: shared-Server Ping contention through terminal Close and loser frame (#1790)"
+  "commit": "f2431c2928",
+  "date": "2026-11-16",
+  "subject": "FSEM-01 CORR-7: terminal-aware finite predecessor join and source replay (#1822)"
  },
- "files": 338,
+ "files": 339,
  "grammar": {
   "accept": {
    "files": 28,
@@ -17,10 +17,10 @@
  },
  "behaviour": {
   "accept": {
-   "files": 55,
+   "files": 56,
    "ran": 45,
    "parsedOnly": 8,
-   "review": 2
+   "review": 3
   },
   "reject": {
    "files": 219,

@@ -1,24 +1,178 @@
 {
  "phil": {
-  "commit": "62b21dbb1e",
-  "date": "2026-11-15"
+  "commit": "f2431c2928",
+  "date": "2026-11-16"
  },
- "since": "2026-10-25",
+ "since": "2026-10-26",
  "days": [
   {
-   "date": "2026-11-15",
-   "commits": 3,
-   "merges": 0,
+   "date": "2026-11-16",
+   "commits": 9,
+   "merges": 1,
    "streams": [
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 6
+    },
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 3
+     "n": 2
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-terminal-predecessors-corr7-fsem01-v1.md",
+     "title": "FSEM-01 CORR-7 / J-4 — terminal-aware predecessor joins"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-partner-suffix-fsem02-v1.md",
+     "title": "FSEM-02: adaptive partner choice after a committed Ping prefix"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-mixed-join-corr6-fsem01-v1.md",
+     "title": "FSEM-01 CORR-6 / J-3 — executable finite mixed-resource branch join"
+    },
+    {
+     "path": "docs/phase-1/p8-f1-recursive-inversion.md",
+     "title": "P8-F1 — universal finite canonical structural-wire inversion"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-linear-trace-corr5-fsem01-v1.md",
+     "title": "FSEM-01 CORR-5: source-derived executable finite Linear traces"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-partial-partner-prefix-fsem02-v1.md",
+     "title": "FSEM-02: partial external Ping partner selection and cross-rematch refusal"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-linear-step-corr4-fsem01-v1.md",
+     "title": "FSEM-01 CORR-4: executable finite Linear consume/insert correspondence"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-join-loop-corr3-fsem01-v1.md",
+     "title": "FSEM-01 CORR-3: finite four-zone source-cut to Rocq model relation"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-partner-selection-fsem02-v1.md",
+     "title": "FSEM-02: externally chosen typed Ping partner selection"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-join-loop-corr2-fsem01-v1.md",
+     "title": "FSEM-01 CORR-2: bounded join/loop native resource-cut and failure-prefix replay"
+    }
+   ],
+   "proofsAdded": 14,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "f2431c2928",
+     "subject": "FSEM-01 CORR-7: terminal-aware finite predecessor join and source replay"
+    },
+    {
+     "sha": "4b2c9cac5b",
+     "subject": "FSEM-02: adaptive external Ping partner choices after committed prefixes"
+    },
+    {
+     "sha": "83e5260fd4",
+     "subject": "FSEM-01 CORR-6: executable mixed-resource continuing branch join"
+    },
+    {
+     "sha": "55eef27209",
+     "subject": "Merged: p8 representation / f1 recursive inverse"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-15",
+   "commits": 15,
+   "merges": 5,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 10
+    },
+    {
+     "name": "CI",
+     "about": "build and test automation",
+     "n": 2
+    },
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 1
+    },
+    {
+     "name": "Docs",
+     "about": "documentation",
+     "n": 1
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-closure-capture-corr1-v1.md",
+     "title": "FSEM-01 CORR-1 C-1 — source capture checkpoints and negative-prefix replay"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-mixed-prefix-stale-joint-ping-fsem02-v1.md",
+     "title": "FSEM-02: stale joint Ping refusal at every mixed terminal prefix"
+    },
+    {
+     "path": "docs/community-and-sponsorship.md",
+     "title": "Community & Sponsorship"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-mixed-prefix-fault-retry-fsem02-v1.md",
+     "title": "FSEM-02: exact Close fault classification at every mixed Ping prefix"
+    },
+    {
+     "path": "docs/phase-1/p9-f1-checked-static-source-use-v1.md",
+     "title": "P9-F1 checked static source use — producer contract (bounded)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-mixed-interleavings-fsem02-v1.md",
+     "title": "FSEM-02: mixed Ping rendezvous and terminal Close partial orders"
+    },
+    {
+     "path": "docs/phase-1/p8-e2-canonical-application-model-v1.md",
+     "title": "P8-E2 finite structural canonical-acceptance and typed GenericApplication model"
+    },
+    {
+     "path": "docs/phase-1/p8-e1-canonical-wire-model-v1.md",
+     "title": "P8-E1 independent diagnostic wire framing and recursive parser — bounded contract"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-three-disjoint-terminal-fsem02-v1.md",
+     "title": "FSEM-02: three independent Ping rendezvous and six-End Close scheduling"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-close-prefix-fault-retry-fsem02-v1.md",
+     "title": "FSEM-02: disjoint Ping terminal Close prefix fault/retry"
+    },
+    {
+     "path": "docs/phase-1/p8-d2-structural-order-proof-boundary-v1.md",
+     "title": "P8-D2 recursive structural order and canonical-key model — bounded proof boundary"
+    },
+    {
+     "path": "docs/phase-1/p8-d1-unicode-stream-proof-boundary-v1.md",
+     "title": "P8-D1 independent Unicode UTF-8 stream proof boundary"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-disjoint-terminal-interleavings-fsem02-v1.md",
+     "title": "FSEM-02: disjoint Ping terminal Close interleavings"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-shared-client-terminal-close-fsem02-v1.md",
+     "title": "FSEM-02 shared-Client contention through terminal Close (non-normative)"
+    },
     {
      "path": "docs/phase-1/formal-semantics-source-ping-shared-server-terminal-close-fsem02-v1.md",
      "title": "FSEM-02 shared-Server contention through terminal Close (non-normative)"
@@ -32,22 +186,28 @@
      "title": "FSEM-02 shared-Client Ping contention (non-normative)"
     }
    ],
-   "proofsAdded": 3,
+   "proofsAdded": 15,
    "proofsChanged": 0,
-   "modules": [],
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceClosureCaptureCorrespondence"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "62b21dbb1e",
-     "subject": "FSEM-02: shared-Server Ping contention through terminal Close and loser frame"
+     "sha": "b534882258",
+     "subject": "FSEM-01 CORR-1: replay closure-capture cuts and exact error prefixes"
     },
     {
-     "sha": "14f43f5bca",
-     "subject": "FSEM-02: shared Server Ping Receive predecessor contention and exact sender-first replay"
+     "sha": "872938a0cc",
+     "subject": "FSEM-02: stale joint Ping refusal at every mixed terminal prefix"
     },
     {
-     "sha": "dba7686950",
-     "subject": "FSEM-02: enforce shared-Client Ping contender stale refusal with conditional Rocq model"
+     "sha": "7fe525a2de",
+     "subject": "ci(examples): fail closed on missing wager source or test"
+    },
+    {
+     "sha": "96e7b67e6b",
+     "subject": "docs: add Community & Sponsorship and verified Philcoin mint"
     }
    ]
   },
@@ -1189,6 +1349,18 @@
    "grammar": "64/64",
    "ranClean": 45,
    "accepted": 55,
+   "caught": 123,
+   "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-16",
+   "commit": "f2431c2928",
+   "files": 339,
+   "grammar": "64/64",
+   "ranClean": 45,
+   "accepted": 56,
    "caught": 123,
    "rejected": 219,
    "philcAccepts": 3,
