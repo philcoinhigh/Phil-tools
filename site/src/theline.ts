@@ -36,7 +36,7 @@ function render(): void {
   const v = view, b = v.board;
   for (const [i, side] of ["a", "b"].entries()) {
     const you = v.you === i;
-    $(`name-${side}`).innerHTML = `${esc(v.names[i])}${you ? " (you)" : ""}<small>pulls ${i === 0 ? "left" : "right"}</small>`;
+    $(`name-${side}`).innerHTML = `${esc(v.names[i])}${you && v.names[i] !== "You" ? " (you)" : ""}<small>pulls ${i === 0 ? "left" : "right"}</small>`;
     ($(`bar-${side}`) as HTMLElement).style.width = `${(b.energy[i] / START_ENERGY) * 100}%`;
     $(`en-${side}`).textContent = String(b.energy[i]);
     const chip = $(`chip-${side}`);
@@ -50,7 +50,8 @@ function render(): void {
   $("wire").setAttribute("aria-label", `The wire: the coin is ${b.node === 3 ? "in the middle" : `${Math.abs(b.node - 3)} place${Math.abs(b.node - 3) === 1 ? "" : "s"} toward ${v.names[b.node < 3 ? 0 : 1]}`}`);
   $("referee").textContent = v.phase === "idle" ? "" : v.referee === "solana" ? "· referee: Phil's server on Solana" : "· referee: your browser (rules only)";
   $("starts").hidden = v.phase !== "idle";
-  const canMove = v.phase === "committing" && v.you !== null && !v.committed[v.you] && !busy;
+  // Against the bot you choose only once its move is committed, so it plainly could not have reacted to yours.
+  const canMove = v.phase === "committing" && v.you !== null && !v.committed[v.you] && !busy && !(saved?.bot && !v.committed[v.you === 0 ? 1 : 0]);
   $("pull").hidden = !canMove;
   if (canMove) {
     const max = b.energy[v.you!], input = $("pull-in") as HTMLInputElement;
@@ -60,7 +61,8 @@ function render(): void {
   }
   $("after").hidden = v.phase === "idle";
   ($("again") as HTMLElement).hidden = v.phase !== "over" && v.referee === "solana" && v.you !== null;
-  $("again").textContent = v.phase === "over" ? "New match" : v.you === null ? "Play your own" : "Leave this match";
+  $("again").textContent = v.phase === "over" ? "New match" : v.you === null ? "Play your own" : v.referee === "browser" ? "Start over" : "Leave this match";
+  $("again").className = v.phase === "over" ? "btn" : "btn ghost small";
   // The rounds so far.
   const rows = $("rounds"), boards = replay(v.history);
   rows.hidden = v.history.length === 0;
@@ -128,6 +130,7 @@ async function commitLocal(pull: number): Promise<void> {
 
 // ================= on Solana =================
 interface Saved { match: string; side: Side; seed: string; owner: string; bot?: number[]; pulls: Record<number, number>; botPulls: Record<number, number> }
+let recap = "";
 let saved: Saved | null = null, timer: ReturnType<typeof setInterval> | null = null, ticking = false, seen = "", wallet: PublicKey | null = null, cheated = 0;
 const keyOf = (address: string) => `philcoin.line.match.${address}`;
 const persist = () => { if (saved) store(keyOf(saved.match), JSON.stringify(saved)); };
@@ -173,9 +176,11 @@ async function tick(): Promise<void> {
     const stamp = `${m.phase}/${m.round}/${m.committed}/${m.revealed}/${m.history.length}`;
     if (stamp !== seen) {
       const before = view; seen = stamp; view = viewOf(m, s.match);
-      if (m.history.length > before.history.length && before.referee === "solana") { const [a, b] = m.history[m.history.length - 1]; setStatus(`${describeRound(view, a, b)}${m.phase === "over" ? ` <b>${esc(overText(view))}</b>` : ` Round <b>${m.round}</b>: your pull?`}`, m.phase === "over" ? (view.board.result === (s.side === 0 ? "a" : "b") ? "good" : "bad") : ""); }
+      const played = m.history.length > before.history.length && before.referee === "solana";
+      if (played) { const [a, b] = m.history[m.history.length - 1]; recap = describeRound(view, a, b) + " "; }
+      if (played && m.phase === "over") { setStatus(`${recap}<b>${esc(overText(view))}</b>`, view.board.result === (s.side === 0 ? "a" : "b") ? "good" : view.board.result === "drawn" ? "" : "bad"); log({ tag: "over", text: overText(view) }); }
       else if (m.phase === "waiting") setStatus(s.bot ? "The match is open. Seating the bot…" : "The match is open on Solana. Send your friend the link; the game starts when they join.");
-      else if (m.phase === "committing" && !m.committed[s.side]) setStatus(`Round <b>${m.round}</b>. ${m.committed[other] ? `${esc(view.names[other])} has committed a hidden pull.` : `${esc(view.names[other])} is choosing.`} Choose yours.`);
+      else if (m.phase === "committing" && !m.committed[s.side]) setStatus(`${recap}Round <b>${m.round}</b>. ${m.committed[other] ? `${esc(view.names[other])} has committed a hidden pull. Choose yours.` : s.bot ? "The bot is committing its move first…" : `${esc(view.names[other])} is choosing. Choose yours.`}`);
       else if (m.phase === "committing") setStatus(`Your move is committed. Waiting for ${esc(view.names[other])}…`);
       else if (m.phase === "revealing") setStatus("Both moves are committed. Opening them through Phil's server…");
       else if (m.phase === "over") { setStatus(`<b>${esc(overText(view))}</b>`, view.board.result === (s.side === 0 ? "a" : "b") ? "good" : view.board.result === "drawn" || view.board.result === "void" ? "" : "bad"); log({ tag: "over", text: overText(view) }); }
@@ -216,13 +221,13 @@ async function tick(): Promise<void> {
   } catch (e: any) { $("after-note").textContent = String(e?.message ?? e); }
   finally { ticking = false; }
 }
-function watch(s: Saved): void { saved = s; persist(); seen = ""; cheated = 0; if (timer) clearInterval(timer); timer = setInterval(() => { void tick(); }, 2200); void tick(); try { history.replaceState(null, "", `?match=${s.match}`); } catch { /* sandboxed */ } $("key-note").hidden = false; }
+function watch(s: Saved): void { saved = s; persist(); seen = ""; cheated = 0; recap = ""; if (timer) clearInterval(timer); timer = setInterval(() => { void tick(); }, 2200); void tick(); try { history.replaceState(null, "", `?match=${s.match}`); } catch { /* sandboxed */ } $("key-note").hidden = false; }
 async function commitChain(pull: number): Promise<void> {
   const s = saved!, m = await readMatch(s.match);
   if (!m || m.phase !== "committing") return;
   s.pulls[m.round] = pull; persist();                                    // kept before it is sent: without it the move could never be revealed
   const mv = moveFor(s, m.round, s.side, pull), address = new PublicKey(s.match), hash = commitment(address.toBytes(), mv.round, mv.side, mv.pull, mv.nonce);
-  busy = true; render(); setStatus("Committing your hidden move…");
+  busy = true; recap = ""; render(); setStatus("Committing your hidden move…");
   const ok = await step(`round ${m.round}`, `You committed: ${hex(hash).slice(0, 16)}…`, commitInstruction(programId(), address, sessionKey().publicKey, m.round, hash), sessionKey());
   busy = false; seen = "";
   if (!ok) { delete s.pulls[m.round]; persist(); setStatus("Your move was not recorded. Try again.", "bad"); render(); }
