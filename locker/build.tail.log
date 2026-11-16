@@ -3,19 +3,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-<<<<<<< HEAD
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.iYnrH7VbNz/phil.ll -o /tmp/tmp.iYnrH7VbNz/phil.o
-1.	Code generation
-moved 11 stack slots to the top of their functions
-stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 34168 Nov 16 10:36 locker/out/phil_lock.so
-=======
 0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.retrTdixSV/phil.ll -o /tmp/tmp.retrTdixSV/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
 -rwxr-xr-x 1 runner runner 34168 Nov 16 09:15 locker/out/phil_lock.so
->>>>>>> origin/main
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -34,12 +26,7 @@ ok   an existing lock's terms cannot be replaced
 ok   when the time comes it still cannot be sent to anyone but the beneficiary 
 ok   anyone can release it once the time has come, and the beneficiary receives everything 
 ok   it cannot be released twice 
-<<<<<<< HEAD
-{"ok":true,"lockUnits":25746,"releaseUnits":27711}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.35809376 SOL
-=======
 {"ok":true,"lockUnits":27246,"releaseUnits":24711}
 devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.36187304 SOL
->>>>>>> origin/main
 program BABLKeToWgX54ALFGhHUTo4AvXfpmFbGUYwf8QSiDhzM is deployed and unchanged
 demo: locked 1,000,000 for 45 seconds and released it; 3 short locks so far

@@ -27,17 +27,10 @@
   },
   {
    "day": "2026-11-16",
-<<<<<<< HEAD
-   "lock": "2WfwU9GEZat4c5bfgL3g5mtaa5zghv4oNbz7bj1C2MQo",
-   "locked": "2bwRwocT88qYv3zfsE5kYYKNhFgLkbqUcJkpywu8pFFzc3cjF1aNfbXMssJiaTNYG91VEBtCkv1k2Wx3uzqsuun9",
-   "released": "29Y3vJWJ891h8Q9zfpKKPcswN5hM7AABjVdEzxJbmTESbQDFWzih6TwjdPvmxLsSFYdzLxyyP4M6JWfdj3BhyZLt",
-   "lockUnits": 27390,
-=======
    "lock": "6Ekd5HcKrNsXKB39AC4aStd2WPDQjTdLCTaXL16iL45V",
    "locked": "3J7ye5YPJBURwYPex9jdQibWWCtCVCR3y66qSQSQHVEeXfmjBvw1eosVxpwo9jpPgodNrdJqa2xKJonPvfuCVZz7",
    "released": "DYa5nqu6eVVDupM4BbLG2UdPdXoXJBVxpQZGLpV2zKwLKeima5rbnumyUrhdbgwbFcRBogkQu9okt72GaPPyqfB",
    "lockUnits": 30390,
->>>>>>> origin/main
    "releaseUnits": 15531
   }
  ]
