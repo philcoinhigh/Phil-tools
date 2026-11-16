@@ -7,8 +7,13 @@
   "checkedOn": "2026-11-16",
   "selftest": {
     "ok": true,
+<<<<<<< HEAD
     "lockUnits": 25746,
     "releaseUnits": 27711
+=======
+    "lockUnits": 27246,
+    "releaseUnits": 24711
+>>>>>>> origin/main
   },
   "deployedOn": "2026-11-14"
 }

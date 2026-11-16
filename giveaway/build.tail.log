@@ -1,13 +1,15 @@
+[2026-11-16T09:12:55.505895505Z ERROR cargo_build_sbf::toolchain] Failed to install platform-tools: Failed to parse Github response: error decoding response body
+fetching platform-tools v1.57 directly (try 1)
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
 Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.q468l9HhNM/phil.ll -o /tmp/tmp.q468l9HhNM/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.74aPBnUgij/phil.ll -o /tmp/tmp.74aPBnUgij/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 31328 Nov 15 12:19 giveaway/out/phil_draw.so
+-rwxr-xr-x 1 runner runner 31328 Nov 16 09:13 giveaway/out/phil_draw.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -17,7 +19,7 @@ undefined symbols (these must all be Solana's own calls):
 ok   a tampered upload is rejected by Phil on chain 
 ok   and leaves the account empty 
 ok   an unsupported protocol version is refused 
-draw account FEJaeAMGFKFPYgQ8SPP1tcmDVHQ814y6AHdHPihPWFv2; uploading 78 bytes (the list itself)
+draw account 3A9tZhNPXKRE4VkSBQTC3QvJ4eGD1AaHD5wYqWh8WbVk; uploading 78 bytes (the list itself)
 locked at slot 12; target slot 32
 ok   Phil accepts the giveaway and it is drawn 
 ok   a finished giveaway can be read back from the chain alone 
@@ -31,6 +33,8 @@ ok   a byte changed in transit is rejected on chain, and the client ends in reje
 ok   the website can read the draw account 
 ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
 ok   wallet-free: Phil rejects an edited list 
-{"ok":true,"lockUnits":5127,"drawUnits":1797,"checkUnits":2288,"winners":["@carol","@dave"]}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.36565732 SOL
+{"ok":true,"lockUnits":5127,"drawUnits":1797,"checkUnits":2288,"winners":["@frank","@bob"]}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 19.36187304 SOL
 program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH is deployed and unchanged
+https://github.com/philcoinhigh/Phil-tools/actions/runs/43837893676
+nightly chain: asked for locker.yml
