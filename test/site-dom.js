@@ -182,13 +182,16 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   // Hacks
   p = load("docs/hacks/index.html", "https://example.test/hacks/");
   const says = (id) => p.d.querySelector(`#demo-${id} .says`).textContent;
-  check("hacks: four exhibits, each refused", p.d.querySelectorAll(".hack").length === 4 && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
-  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 4);
+  check("hacks: five exhibits, each refused", p.d.querySelectorAll(".hack").length === 5 && /A promise was broken/.test(says("lighter")) && /Ownership error, line 17/.test(says("dao")) && /Arithmetic error/.test(says("bec")) && /A promise was broken/.test(says("wormhole")) && /Ownership error/.test(says("akutars")), ["dao", "bec", "wormhole", "akutars"].map(says).join(" | "));
+  check("hacks: the offending code is marked", p.d.querySelectorAll(".hack .errmark").length >= 5);
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: the working version runs", /Ran to completion/.test(says("wormhole")) && /120000/.test(says("wormhole")) && /Ownership error/.test(says("dao")), says("wormhole"));
   p.d.querySelector('[data-flip="wormhole"]').click();
   check("hacks: flipping back shows the mistake", /A promise was broken/.test(says("wormhole")));
-  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 8 && p.d.querySelectorAll("#limits li").length === 4);
+  check("hacks: every exhibit links its sources and the limits are stated", p.d.querySelectorAll(".hack .src a").length === 10 && p.d.querySelectorAll("#limits li").length === 4);
+  check("hacks: the newest exhibit says plainly that it is unconfirmed, and what Phil would not have done", /Not confirmed\./.test(p.d.querySelector("#lighter .caution").textContent) && /would not have kept the keys from leaking/.test(p.d.getElementById("lighter").textContent) && p.d.querySelectorAll(".hack .caution").length === 1);
+  p.d.querySelector('[data-flip="lighter"]').click();
+  check("hacks: the same move to an account the owner wholly holds goes through", /Ran to completion/.test(says("lighter")), says("lighter"));
   check("hacks: no script errors", p.errors.length === 0, p.errors.join("|"));
 
   // Changelog
