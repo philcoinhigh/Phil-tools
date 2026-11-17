@@ -1,29 +1,147 @@
 {
  "phil": {
-  "commit": "f2431c2928",
-  "date": "2026-11-16"
+  "commit": "2d0320625e",
+  "date": "2026-11-17"
  },
- "since": "2026-10-26",
+ "since": "2026-10-27",
  "days": [
   {
-   "date": "2026-11-16",
-   "commits": 9,
-   "merges": 1,
+   "date": "2026-11-17",
+   "commits": 3,
+   "merges": 2,
    "streams": [
-    {
-     "name": "FSEM-01",
-     "about": "formal semantics: values, ownership and loops",
-     "n": 6
-    },
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 2
+     "n": 3
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-dual-head-resource-ladder-fsem02-v1.md",
+     "title": "FSEM-02 — dual projected-head / independent resource fault ladder"
+    },
+    {
+     "path": "docs/phase-1/surface-parser-record-data-requirements-recursive-grouping-v1.md",
+     "title": "Record/data optional generic-requirements recursive grouping v1"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-cross-peer-head-resource-shape-retry-fsem02-v1.md",
+     "title": "FSEM-02 — adaptive cross-peer head/resource-shape diagnostic precedence"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-cross-peer-head-owner-retry-fsem02-v1.md",
+     "title": "FSEM-02 — adaptive cross-peer projected-head / missing-owner precedence"
+    }
+   ],
+   "proofsAdded": 6,
+   "proofsChanged": 24,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "2d0320625e",
+     "subject": "FSEM-02: dual-head and resource-shape three-stage refusal/retry ladder"
+    },
+    {
+     "sha": "cbb062efce",
+     "subject": "Merged: rocq refinement / merge intent self census"
+    },
+    {
+     "sha": "f9299c0905",
+     "subject": "Merged: rocq refinement / record data requirements recursive grouping"
+    },
+    {
+     "sha": "f85a9612d2",
+     "subject": "fsem-02: test cross-peer projected-head versus remote resource-shape fault priority"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-16",
+   "commits": 19,
+   "merges": 8,
+   "streams": [
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 10
+    },
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 7
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-j6-two-affine-source-v1",
+     "accepted": 3,
+     "rejected": 15
+    },
+    {
+     "suite": "fsem01-linear-join-telescope-v1",
+     "accepted": 2,
+     "rejected": 12
+    },
+    {
+     "suite": "fsem01-data05a-nested-product-v1",
+     "accepted": 2,
+     "rejected": 11
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-head-resource-priority-retry-fsem02-v1.md",
+     "title": "FSEM-02: paired projected-head and linear-resource faults after adaptive half-Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-free-peer-resource-shape-retry-fsem02-v1.md",
+     "title": "FSEM-02: malformed free-peer linear resource shapes after adaptive half-Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-free-peer-resource-retry-fsem02-v1.md",
+     "title": "FSEM-02: missing free-peer predecessor owners after adaptive half-Close"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-nested-product-data05b-fsem01-v1.md",
+     "title": "FSEM-01 DATA-05B — two actual Surface eliminations for bounded nested source"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-nested-product-data05a-fsem01-v1.md",
+     "title": "FSEM-01 DATA-05A — source-derived nested tuple ownership foundation"
+    },
+    {
+     "path": "docs/mhb-atc-immutable-publisher.md",
+     "title": "MHB-ATC A3 — dedicated GitHub App / immutable PR heads"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-free-peer-head-retry-fsem02-v1.md",
+     "title": "FSEM-02: rejected free-peer heads after adaptive half-Close, then exact retry"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-failure-corr8-fsem01-v1.md",
+     "title": "FSEM-01 CORR-8 — original-source pre-join failure-prefix correspondence"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-auto-admission.md",
+     "title": "MHB-ATC opt-in scheduled admission (A1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-affine-join-j6a-fsem01-v1.md",
+     "title": "FSEM-01 J-6A — distinct-owner Affine join groundwork"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-linear-join-j5-fsem01-v1.md",
+     "title": "FSEM-01 J-5 — source-checked Linear Bytes[N] join-state slot"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-ping-adaptive-half-close-suffix-fsem02-v1.md",
+     "title": "FSEM-02: adaptive partner reselection after terminal half-Close"
+    },
     {
      "path": "docs/phase-1/formal-semantics-terminal-predecessors-corr7-fsem01-v1.md",
      "title": "FSEM-01 CORR-7 / J-4 — terminal-aware predecessor joins"
@@ -65,26 +183,28 @@
      "title": "FSEM-01 CORR-2: bounded join/loop native resource-cut and failure-prefix replay"
     }
    ],
-   "proofsAdded": 14,
+   "proofsAdded": 25,
    "proofsChanged": 0,
-   "modules": [],
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceLinearJoinTelescope"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "f2431c2928",
-     "subject": "FSEM-01 CORR-7: terminal-aware finite predecessor join and source replay"
+     "sha": "d5008898f9",
+     "subject": "fsem-02: test combined adaptive free-peer head/resource diagnostic priority and exact repair"
     },
     {
-     "sha": "4b2c9cac5b",
-     "subject": "FSEM-02: adaptive external Ping partner choices after committed prefixes"
+     "sha": "b1b89ac8de",
+     "subject": "FSEM-01 DATA-05B: source-derived nested ownership through two actual Surface eliminations"
     },
     {
-     "sha": "83e5260fd4",
-     "subject": "FSEM-01 CORR-6: executable mixed-resource continuing branch join"
+     "sha": "9d3dbd1ec7",
+     "subject": "FSEM-02: reject malformed free-peer linear resource shapes after adaptive half-Close"
     },
     {
-     "sha": "55eef27209",
-     "subject": "Merged: p8 representation / f1 recursive inverse"
+     "sha": "5b69a24e04",
+     "subject": "fsem-02: refuse missing free-peer linear owner after adaptive half-close"
     }
    ]
   },
@@ -1363,6 +1483,18 @@
    "accepted": 56,
    "caught": 123,
    "rejected": 219,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-17",
+   "commit": "2d0320625e",
+   "files": 384,
+   "grammar": "64/64",
+   "ranClean": 51,
+   "accepted": 63,
+   "caught": 150,
+   "rejected": 257,
    "philcAccepts": 3,
    "philcTried": 11
   }
