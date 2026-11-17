@@ -1,0 +1,47 @@
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.K3GOhkvToP/phil.ll -o /tmp/tmp.K3GOhkvToP/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 30568 Nov 17 13:12 qvault/out/phil_qvault.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
+    34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+ok   Phil accepts the opening; the vault holds its deposit under a hash-based key 
+ok   the signature cannot be redirected to another recipient 
+ok   nor raised to a larger amount 
+ok   nor can the next key be swapped for an attacker's 
+ok   bytes changed after their digest was declared are rejected by Phil on chain 
+ok   a signature made from any other seed is refused 
+ok   a one-time signature moves the money; the only wallet that signed was a stranger paying the fee 
+ok   the vault moved to the next key in the same step 
+ok   the used signature is worthless: it can never be accepted again 
+ok   a vault with money left in it cannot be left without a next key 
+ok   the last spend empties the vault and ends it 
+{"ok":true,"openUnits":3975,"spendUnits":543553,"hashSteps":2040}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 18.64251424 SOL
+deploying because the program is not on devnet
+Program Id: 72oBGfeCf9YZLv3J4xicdskhPb9KjeHyAUvSCNx1JM6J
+
+Signature: 2EmXo6KWEVwMQfpUkwJT4kN8KKVSxpPJDFEsS1wNTf59wp3bSQjxxQ6xLg8pVjw82xh5w6pS9zK98ProTggQmMfq
+
+ok   Phil accepts the opening; the vault holds its deposit under a hash-based key 
+ok   the signature cannot be redirected to another recipient 
+ok   nor raised to a larger amount 
+ok   nor can the next key be swapped for an attacker's 
+ok   bytes changed after their digest was declared are rejected by Phil on chain 
+ok   a signature made from any other seed is refused 
+ok   a one-time signature moves the money; the only wallet that signed was a stranger paying the fee 
+ok   the vault moved to the next key in the same step 
+ok   the used signature is worthless: it can never be accepted again 
+ok   a vault with money left in it cannot be left without a next key 
+ok   the last spend empties the vault and ends it 
+{"ok":true,"openUnits":3975,"spendUnits":609755,"hashSteps":2295}
+demo: a vault opened, paid out twice under two one-time keys (609853, 543683 compute units) and closed
