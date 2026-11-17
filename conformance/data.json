@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "f2431c2928",
-  "date": "2026-11-16",
-  "subject": "FSEM-01 CORR-7: terminal-aware finite predecessor join and source replay (#1822)"
+  "commit": "2d0320625e",
+  "date": "2026-11-17",
+  "subject": "FSEM-02: dual-head and resource-shape three-stage refusal/retry ladder (#1872)"
  },
- "files": 339,
+ "files": 384,
  "grammar": {
   "accept": {
    "files": 28,
@@ -17,15 +17,15 @@
  },
  "behaviour": {
   "accept": {
-   "files": 56,
-   "ran": 45,
+   "files": 63,
+   "ran": 51,
    "parsedOnly": 8,
-   "review": 3
+   "review": 4
   },
   "reject": {
-   "files": 219,
-   "caught": 123,
-   "missed": 96
+   "files": 257,
+   "caught": 150,
+   "missed": 107
   }
  },
  "suites": [
@@ -98,6 +98,60 @@
    "grammar": false,
    "files": 15,
    "agree": 11,
+   "parsedOnly": 0,
+   "missed": 4
+  },
+  {
+   "name": "fsem01-data05a-nested-product-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 2,
+   "agree": 2,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-data05a-nested-product-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 11,
+   "agree": 9,
+   "parsedOnly": 0,
+   "missed": 2
+  },
+  {
+   "name": "fsem01-j6-two-affine-source-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 3,
+   "agree": 3,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-j6-two-affine-source-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 15,
+   "agree": 10,
+   "parsedOnly": 0,
+   "missed": 5
+  },
+  {
+   "name": "fsem01-linear-join-telescope-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-linear-join-telescope-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 12,
+   "agree": 8,
    "parsedOnly": 0,
    "missed": 4
   },
@@ -586,6 +640,50 @@
   {
    "file": "test/fixtures/fsem01-bool-join-telescope-v1/wrong-return-width.phil",
    "suite": "fsem01-bool-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05a-nested-product-v1/shadow-packet.phil",
+   "suite": "fsem01-data05a-nested-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05a-nested-product-v1/wrong-leaf-width.phil",
+   "suite": "fsem01-data05a-nested-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-j6-two-affine-source-v1/missing-invariant.phil",
+   "suite": "fsem01-j6-two-affine-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-j6-two-affine-source-v1/same-source-owner.phil",
+   "suite": "fsem01-j6-two-affine-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-j6-two-affine-source-v1/shadow-parameter.phil",
+   "suite": "fsem01-j6-two-affine-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-j6-two-affine-source-v1/wrong-permit-declaration-mode.phil",
+   "suite": "fsem01-j6-two-affine-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-j6-two-affine-source-v1/wrong-result-width.phil",
+   "suite": "fsem01-j6-two-affine-source-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-join-telescope-v1/missing-invariant.phil",
+   "suite": "fsem01-linear-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-join-telescope-v1/shadow-parameter.phil",
+   "suite": "fsem01-linear-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-join-telescope-v1/wrong-return-width.phil",
+   "suite": "fsem01-linear-join-telescope-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-linear-join-telescope-v1/wrong-slot-width.phil",
+   "suite": "fsem01-linear-join-telescope-v1"
   },
   {
    "file": "test/fixtures/fsem01-linear-loop-transfer-v1/body-before-continue.phil",

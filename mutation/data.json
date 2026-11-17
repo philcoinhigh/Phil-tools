@@ -1,20 +1,20 @@
 {
- "day": "2026-11-16",
+ "day": "2026-11-17",
  "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
- "philRuntimeCommit": "f2431c292872feb24b38bfa040b5fa7c78b6bc5c",
+ "philRuntimeCommit": "2d0320625e755e00ca7bcad7324ebe2bc131acd9",
  "module": "phil-llvm-phase0-control-codec.ll",
  "generated": 425,
  "malformed": 74,
  "total": {
   "mutants": 351,
-  "philKills": 218,
+  "philKills": 217,
   "oursKills": 265,
   "eitherKills": 339,
   "survivors": 12
  },
  "server": {
   "mutants": 267,
-  "philKills": 144,
+  "philKills": 143,
   "oursKills": 265,
   "eitherKills": 265,
   "survivors": 2
@@ -62,7 +62,7 @@
   {
    "name": "load",
    "mutants": 60,
-   "philKills": 35,
+   "philKills": 34,
    "oursKills": 60,
    "eitherKills": 60,
    "survivors": 0
@@ -224,7 +224,7 @@
   {
    "name": "server_version",
    "mutants": 43,
-   "philKills": 33,
+   "philKills": 32,
    "oursKills": 43,
    "eitherKills": 43,
    "survivors": 0

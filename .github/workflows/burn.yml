@@ -135,6 +135,8 @@ jobs:
         # own address as creator, trades it, rolls the creator fees into the vault and burns for the pot.
         # Run when asked for ("[higher]" in the commit message), when never run, or once a week.
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        timeout-minutes: 10
+        continue-on-error: true
         run: |
           last=$(jq -r '.day // "1970-01-01"' burn/higher.json 2>/dev/null || echo 1970-01-01)
           age=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 86400 ))

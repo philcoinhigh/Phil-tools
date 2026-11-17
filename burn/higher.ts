@@ -55,8 +55,10 @@ const tokenBalance = async (account: PublicKey): Promise<bigint> => { try { retu
 const instructionsOf = (tx: unknown): TransactionInstruction[] => { if (!(tx instanceof Transaction)) throw new Error("expected a legacy transaction from Raydium's SDK"); return tx.instructions; };
 
 async function main() {
+  note("higher.fun devnet proof: starting");
   const raydium = await Raydium.load({ connection: conn, owner: payer, cluster: "devnet", disableLoadToken: true, disableFeatureCheck: true, blockhashCommitment: "confirmed" });
   // The SDK's only HTTP read that a launch needs is LaunchLab's default curve; everything else comes from the chain.
+  note("ok   Raydium's SDK is loaded");
   const api = raydium.api as unknown as Record<string, unknown>;
   api.fetchLaunchConfigs = async () => ((await (await fetch(HIGHER_DEVNET.launchConfigs, { headers: { accept: "application/json" } })).json()) as any).data.data;
   api.getTokenInfo = async () => [];
