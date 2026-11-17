@@ -1,0 +1,10 @@
+{
+ "ok": true,
+ "runGas": 654261,
+ "submitGas": 665690,
+ "deployGas": 3124896,
+ "steps": 1101,
+ "imageBytes": 6495,
+ "imageSha256": "58493bb3efec3bc7a4d31ae81bd57cad13821043a28a7ef2a108f155329b3155",
+ "solc": "0.8.28+commit.7893614a.Emscripten.clang"
+}
