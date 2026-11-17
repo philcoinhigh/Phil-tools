@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Same Phil, every chain: one Phil program on Solana, Robinhood Chain and BNB Chain</title>
+<meta name="description" content="One program compiled from Phil, running on Solana natively and on Ethereum-style chains through a small RISC-V interpreter contract. Send the same upload to each and compare the answers. Test networks, unaudited.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.panel { border: 1px solid var(--ink); background: var(--sheet); border-radius: 18px; padding: 18px 18px 20px; margin-top: 18px; }
+.panel h2 { margin: 0 0 6px; font: 600 21px var(--font-mark); letter-spacing: -.02em; } .panel > p { margin: 0 0 12px; max-width: 64ch; }
+label.f { display: block; font: 600 13px var(--font-body); margin: 12px 0 4px; }
+input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-code); padding: 10px 12px; border-radius: 10px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.say { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; font-size: 15px; background: var(--code-bg); } .say b { font-family: var(--font-code); }
+.say.bad { border-color: var(--bad); color: var(--bad); } .say.good { border-color: var(--good); }
+.agree { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14.5px; } .agree input { margin-top: 3px; width: 18px; height: 18px; }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .facts li:first-child { border-top: 0; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+
+.kv { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } .kv li { display: flex; justify-content: space-between; gap: 14px; padding: 9px 14px; border-top: 1px solid var(--rule); font-size: 14.5px; } .kv li:first-child { border-top: 0; } .kv li span:last-child { font-family: var(--font-code); text-align: right; overflow-wrap: anywhere; } .kv b { font: 600 22px var(--font-code); }
+.steps4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; } .steps4 div { border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); padding: 14px; } .steps4 b { font: 600 14px var(--font-mark); display: block; margin-bottom: 6px; } .steps4 p { margin: 0; font-size: 14px; } .steps4 .by { display: inline-block; margin-top: 8px; font: 600 11px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); } .steps4 .by.phil { background: var(--ink); color: var(--paper); }
+@media (max-width: 460px) { .steps4 { grid-template-columns: minmax(0, 1fr); } }
+}
+
+.machines { display: grid; gap: 10px; margin-top: 16px; }
+.machine { border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+.machine b { font: 600 15px var(--font-mark); } .machine small { grid-column: 1 / -1; color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; } .machine small a { font: 12.5px var(--font-code); }
+.verdict { font: 600 12px var(--font-mark); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); white-space: nowrap; }
+.verdict.yes { border-color: var(--good); color: var(--good); } .verdict.no { border-color: var(--bad); color: var(--bad); }
+pre.log { margin: 10px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; background: var(--code-bg); font: 13px/1.55 var(--font-code); overflow-x: auto; white-space: pre; }
+.steps4.three { grid-template-columns: repeat(3, minmax(0, 1fr)); } @media (max-width: 760px) { .steps4.three { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Test networks · unaudited</span>
+    <h1>Same Phil, every chain.</h1>
+    <p>One program compiled from Phil, answering on Solana, Robinhood Chain and BNB Chain. Send all of them the same upload and compare what comes back.</p>
+    <p class="muted" style="font-size:15px">Nothing to connect and nothing to pay: each chain is asked with a read-only call to its live node.</p>
+  </div>
+
+  <section class="panel" aria-labelledby="ask-h">
+    <h2 id="ask-h">Ask every chain</h2>
+    <p>Your note is sealed with its SHA-256 and handed to Phil's upload server, the same compiled code on every machine below. It checks the handshake, the policy, and that the bytes still match their seal.</p>
+    <label class="f" for="note">A note (up to 280 bytes)</label>
+    <input class="t" id="note" autocomplete="off" maxlength="280" value="gm from every chain">
+    <label class="agree"><input type="checkbox" id="tamper"><span>Change one byte after it is sealed, the way someone in the middle would.</span></label>
+    <div class="row"><button class="btn" id="ask" type="button">Ask every chain</button><span class="muted" id="ask-note" role="status"></span></div>
+    <div class="say" id="answer" role="status" aria-live="polite" hidden></div>
+    <div class="machines" id="machines"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font:600 14px var(--font-body)">What Phil's server said, line by line</summary><pre class="log" id="log">Ask first.</pre></details>
+  </section>
+
+  <h2 class="sec">How one program gets onto different chains</h2>
+  <div class="steps4 three">
+    <div><b>1. Phil compiles once</b><p>Phil's compiler turns its upload server into LLVM, a form that can be built for many kinds of machine.</p><span class="by phil">Phil</span></div>
+    <div><b>2. Solana runs it natively</b><p>That code is built for Solana's own machine and deployed as an ordinary Solana program.</p><span class="by">our build</span></div>
+    <div><b>3. Ethereum-style chains run it through a small machine</b><p>Phil has no output for these chains. So the same code is built for RISC-V, a simple chip, and one contract plays that chip, instruction by instruction. That contract works on any such chain.</p><span class="by">our contract</span></div>
+  </div>
+
+  <h2 class="sec">Before you rely on it</h2>
+  <ul class="limits" id="limits">
+    <li><b>This is a demonstration on test networks.</b> Nobody independent has reviewed it, and it holds nothing of value.</li>
+    <li><b>On Ethereum-style chains Phil's code is interpreted, not native.</b> That costs far more gas than a contract written for the chain: about <span id="l-gas">650,000</span> gas for one upload. A real EVM backend for Phil would be the proper answer, and that is for Phil's author to build.</li>
+    <li><b>What is Phil, and what is ours.</b> The upload server is Phil's compiled code, unchanged. The runtime it calls, the Solana wrapper and the RISC-V interpreter contract are ours, are not Phil, and are not verified.</li>
+    <li><b>The same code is not the same guarantee.</b> Each chain has its own rules, fees and risks. This shows the logic is portable, and nothing more.</li>
+    <li><b>It is not a launchpad and launches nothing.</b> It answers one question: does the same Phil program give the same answer everywhere.</li>
+    <li>The program keeps no state. An accepted note is counted on the Ethereum-style chains and otherwise kept nowhere.</li>
+  </ul>
+
+  <h2 class="sec">The fingerprints</h2>
+  <p class="lead">Every machine runs a build of the same Phil module. These are the hashes to compare, and where each build lives.</p>
+  <ul class="facts" id="p-facts"></ul>
+  <p class="lead">This is a community project and is not affiliated with Phil, Solana, Robinhood or BNB Chain.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>
