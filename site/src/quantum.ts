@@ -115,7 +115,7 @@ $("ex-check").addEventListener("click", async () => {
     behind = ` Behind this key on mainnet right now: <b>${solText(lamports)} SOL</b>${coins ? ` and <b>${coins}</b> coin${coins === 1 ? "" : "s"}${phil ? `, including <b>${esc(Number(phil).toLocaleString("en-GB"))} Philcoin</b>` : ""}` : ""}.`;
   } catch (e: any) { behind = ` Its balances could not be read just now (${esc(String(e?.message ?? e))}). The answer does not depend on them.`; }
   b.classList.remove("busy");
-  out.className = "say bad";
+  out.className = "say";
   out.innerHTML = `<b>Exposed, like every Solana wallet.</b> On Solana an address is the public key itself, so there is nothing still hidden: a quantum computer able to break these keys could sign as this wallet.${behind} No such computer exists today, and nothing here is urgent. Funds moved into a hash-based vault are no longer behind this key.`;
   landed(out, null, "");
 });
