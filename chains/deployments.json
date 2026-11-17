@@ -6,8 +6,20 @@
   "deployer": "0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
   "checkedOn": "2026-11-17",
   "rpc": "https://rpc.testnet.chain.robinhood.com",
-  "balance": "0.0",
-  "status": "waiting for test ETH: send some to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63"
+  "balance": "0.01",
+  "status": "live",
+  "address": "0x3cf79D42178E97DEB0Ff2cCeC150061715fFb951",
+  "build": "6e816b25d69c814c-58493bb3efec3bc7",
+  "deployTx": "0x23cdf3eeccf7da781e533d6a1c359a2192c56278364a8fd45c25f8f0a56f4624",
+  "deployGas": 3124896,
+  "deployedOn": "2026-11-17",
+  "imageSha256": "58493bb3efec3bc7a4d31ae81bd57cad13821043a28a7ef2a108f155329b3155",
+  "ok": true,
+  "steps": 1095,
+  "submitTx": "0xe752ee719620e442622528dd3c9818be0998dcbb55cd95a818b0eda201662ee9",
+  "submitGas": 669840,
+  "submittedOn": "2026-11-17",
+  "accepted": 1
  },
  "bnb": {
   "name": "BNB Smart Chain testnet",
@@ -16,7 +28,8 @@
   "deployer": "0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
   "checkedOn": "2026-11-17",
   "rpc": "https://bsc-testnet-rpc.publicnode.com",
-  "balance": "0.0",
-  "status": "waiting for test BNB: send some to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63"
+  "balance": "0.0005",
+  "status": "waiting for test BNB: send some to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
+  "error": "insufficient funds for intrinsic transaction cost"
  }
 }
