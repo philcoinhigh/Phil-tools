@@ -12,12 +12,22 @@
 // the next key, and the vault moves to it in the same instruction. The used key can never be
 // accepted again.
 //
-//   OPEN   stores the first key's fingerprint.
-//   SPEND  pays an amount to a recipient if the one-time signature checks, and rotates the key.
-//          Nobody has to sign the transaction but its fee payer, who gains no say over the funds:
-//          the signature covers the vault, the recipient, the amount and the next key.
+//   OPEN    stores the first key's fingerprint and, if the owner wants them, a waiting time for
+//           every withdrawal and the fingerprint of a second, "guard" key kept offline.
+//   SPEND   if the one-time signature checks, rotates the key and pays an amount of SOL or of any
+//           token to a recipient. Nobody has to sign the transaction but its fee payer, who gains
+//           no say over the funds: the signature covers the vault, the recipient, the coin, the
+//           amount and the next key. In a vault with a waiting time the payment is not made yet:
+//           it is recorded, and can be completed once the time has passed.
+//   FINISH  completes a recorded payment after its waiting time. Anyone may send it; it can only
+//           pay what was signed, to whom it was signed.
+//   CANCEL  signed by the guard key: drops any recorded payment and replaces the vault's key (and
+//           the guard key, which is also one-time). This is the answer to a stolen phrase.
 //
-// Both are uploads through `UploadServer`, the function Phil's LLVM backend emits (see
+// Tokens sit in token accounts whose authority is an address derived from the vault's, which only
+// this program can sign for.
+//
+// All four are uploads through `UploadServer`, the function Phil's LLVM backend emits (see
 // giveaway/runtime.c for how that interface is met on Solana). Phil's server checks the upload's
 // handshake, its policy and that the bytes match their declared SHA-256; the signature check, the
 // payment and the rotation below are ours and are not Phil.
@@ -37,6 +47,12 @@ extern u64 sol_sha256(const struct sol_bytes *parts, u64 count, u8 *out);
 struct sol_clock { u64 slot; i64 epoch_start; u64 epoch; u64 leader_epoch; i64 unix_time; };
 extern u64 sol_get_clock_sysvar(struct sol_clock *out);
 struct sol_account_info { const u8 *key; u64 *lamports; u64 data_len; u8 *data; const u8 *owner; u64 rent_epoch; bool is_signer; bool is_writable; bool executable; };
+// Calling another program. These layouts are Solana's C interface.
+struct sol_meta { const u8 *pubkey; bool is_writable; bool is_signer; };
+struct sol_instruction { const u8 *program_id; struct sol_meta *accounts; u64 account_len; u8 *data; u64 data_len; };
+struct sol_seed { const u8 *addr; u64 len; };
+struct sol_seeds { const struct sol_seed *addr; u64 len; };
+extern u64 sol_invoke_signed_c(const struct sol_instruction *instruction, const struct sol_account_info *infos, int info_count, const struct sol_seeds *signer_seeds, int seed_count);
 
 extern int UploadServer(void *policy_context, void *supported_versions, void *transport);
 
@@ -53,24 +69,32 @@ static u64 le64(const u8 *p) { u64 v = 0; for (int i = 7; i >= 0; i--) v = (v <<
 static void put64(u8 *p, u64 v) { for (int i = 0; i < 8; i++) { p[i] = (u8)v; v >>= 8; } }
 
 // ---- instructions, outcomes, limits ----
-enum { OP_OPEN = 1, OP_SPEND = 2 };
+enum { OP_OPEN = 1, OP_SPEND = 2, OP_FINISH = 3, OP_CANCEL = 4 };
 enum { NONE = 0, ACCEPTED = 1, REJECTED = 2, UNSUPPORTED = 3, POLICY_REJECTED = 4, CANCELLED = 5,
        RECOGNITION_FAILED = 6, HELLO_POLICY_FAILED = 7, STORAGE_FAILED = 8, EARLY_EOF = 9 };
 enum { POLICY_TOO_LONG = 1, POLICY_WRONG_KIND = 2, POLICY_BAD_VAULT = 3, POLICY_WRONG_STATE = 4, POLICY_BAD_RECIPIENT = 5 };
-enum { STORE_BAD_RECORD = 1, STORE_NO_KEY = 2, STORE_NOTHING_TO_SEND = 3, STORE_TOO_MUCH = 4, STORE_NEEDS_NEXT_KEY = 5, STORE_BAD_SIGNATURE = 6 };
-#define MAX_PAYLOAD 700u
+enum { STORE_BAD_RECORD = 1, STORE_NO_KEY = 2, STORE_NOTHING_TO_SEND = 3, STORE_TOO_MUCH = 4, STORE_NEEDS_NEXT_KEY = 5, STORE_BAD_SIGNATURE = 6,
+       STORE_TOO_EARLY = 7, STORE_WRONG_ACCOUNTS = 8, STORE_NO_GUARD = 9, STORE_BAD_TERMS = 10, STORE_TOKEN_FAILED = 11 };
+#define MAX_PAYLOAD 720u
 static const char KIND_OPEN[] = "phil-qvault/open";
 static const char KIND_SPEND[] = "phil-qvault/spend";
+static const char KIND_FINISH[] = "phil-qvault/finish";
+static const char KIND_CANCEL[] = "phil-qvault/cancel";
+#define MAX_DELAY (30u * 86400u)
+static const u8 TOKEN_PROGRAM[32] = { 0x06, 0xdd, 0xf6, 0xe1, 0xd7, 0x65, 0xa1, 0x93, 0xd9, 0xcb, 0xe1, 0x46, 0xce, 0xeb, 0x79, 0xac, 0x1c, 0xb4, 0x85, 0xed, 0x5f, 0x5b, 0x37, 0x91, 0x3a, 0x8c, 0xf5, 0x85, 0x7e, 0xff, 0x00, 0xa9 };
+static const u8 TOKEN_2022_PROGRAM[32] = { 0x06, 0xdd, 0xf6, 0xe1, 0xee, 0x75, 0x8f, 0xde, 0x18, 0x42, 0x5d, 0xbc, 0xe4, 0x6c, 0xcd, 0xda, 0xb6, 0x1a, 0xfc, 0x4d, 0x83, 0xb9, 0x0d, 0x27, 0xfe, 0xbd, 0xf9, 0x28, 0xd8, 0xa1, 0x8b, 0xfc };
 
 // ---- the one-time signature ----
 #define N 24u              /* bytes kept of each hash in a chain */
 #define CHAINS 26u         /* 24 carry the message, 2 carry its checksum */
 #define SIG_BYTES (CHAINS * N)
 #define SPEND_BYTES (5u + 8u + 8u + 32u + SIG_BYTES)
+#define OPEN_BYTES (5u + 32u + 1u + 8u + 32u)
+#define CANCEL_BYTES (5u + 8u + 32u + 32u + SIG_BYTES)
 
-// ---- the vault account: 160 bytes ----
+// ---- the vault account: 320 bytes ----
 enum { EMPTY = 0, OPEN = 1, CLOSED = 2 };
-#define QVAULT_SIZE 160u
+#define QVAULT_SIZE 320u
 #define Q_MAGIC 0          /* "PHILQVLT" */
 #define Q_STATE 8
 #define Q_COUNTER 16       /* u64: how many keys have been used; also the number of the current key */
@@ -80,6 +104,16 @@ enum { EMPTY = 0, OPEN = 1, CLOSED = 2 };
 #define Q_LAST_TIME 72
 #define Q_TOTAL_SPENT 80
 #define Q_LAST_RECIPIENT 88
+#define Q_DELAY 120            /* u64: seconds every withdrawal waits; 0 pays at once */
+#define Q_GUARD_ROOT 128       /* the guard key's fingerprint; all zero if the vault has none */
+#define Q_GUARD_COUNTER 160    /* u64: how many guard keys have been used */
+#define Q_PENDING_READY 168    /* u64: when the recorded payment may be completed; 0 if none is recorded */
+#define Q_PENDING_AMOUNT 176
+#define Q_PENDING_RECIPIENT 184
+#define Q_PENDING_MINT 216     /* all zero for SOL */
+#define Q_LAST_MINT 248
+#define Q_CANCELS 280          /* u64 */
+#define Q_BUMP 288             /* of the address that is the authority of the vault's token accounts */
 
 // ---- working state, in the heap region ----
 struct transport { const u8 *bytes; u64 available; u64 cursor; };
@@ -225,8 +259,9 @@ void phil_runtime_select_version(void *transport, u16 selected_version) { MUST(T
 bool phil_runtime_validate_begin_policy(void *policy_context, void *begin_record, u8 *rejection_reason_out) {
   struct begin *b = begin_record;
   struct sol_account_info *vault = &S->accounts[0];
-  const char *kind = S->op == OP_OPEN ? KIND_OPEN : KIND_SPEND;
-  u64 kind_len = S->op == OP_OPEN ? sizeof(KIND_OPEN) - 1 : sizeof(KIND_SPEND) - 1;
+  const char *kind = S->op == OP_OPEN ? KIND_OPEN : S->op == OP_SPEND ? KIND_SPEND : S->op == OP_FINISH ? KIND_FINISH : KIND_CANCEL;
+  u64 kind_len = S->op == OP_OPEN ? sizeof(KIND_OPEN) - 1 : S->op == OP_SPEND ? sizeof(KIND_SPEND) - 1 : S->op == OP_FINISH ? sizeof(KIND_FINISH) - 1 : sizeof(KIND_CANCEL) - 1;
+  bool waiting;
   u8 why = 0;
   (void)policy_context;
   MUST(begin_record == &S->begin && S->begin_frame.stage == 2, 14);
@@ -234,7 +269,10 @@ bool phil_runtime_validate_begin_policy(void *policy_context, void *begin_record
   else if (b->kind_len != kind_len || !same(b->kind, (const u8 *)kind, kind_len)) why = POLICY_WRONG_KIND;
   else if (S->account_count < 1 || vault->data_len < QVAULT_SIZE || !vault->is_writable || !same(vault->owner, S->program_id, 32)) why = POLICY_BAD_VAULT;
   else if (vault->data[Q_STATE] != (S->op == OP_OPEN ? EMPTY : OPEN)) why = POLICY_WRONG_STATE;
-  else if (S->op == OP_SPEND && (S->account_count < 2 || !S->accounts[1].is_writable || same(S->accounts[1].key, vault->key, 32))) why = POLICY_BAD_RECIPIENT;
+  else if ((waiting = le64(vault->data + Q_PENDING_READY) != 0), S->op == OP_SPEND && waiting) why = POLICY_WRONG_STATE;       /* one recorded payment at a time */
+  else if (S->op == OP_FINISH && !waiting) why = POLICY_WRONG_STATE;
+  else if ((S->op == OP_SPEND || S->op == OP_FINISH) && (S->account_count < 2 || same(S->accounts[1].key, vault->key, 32))) why = POLICY_BAD_RECIPIENT;
+  else if ((S->op == OP_FINISH || (S->op == OP_SPEND && le64(vault->data + Q_DELAY) == 0)) && !S->accounts[1].is_writable) why = POLICY_BAD_RECIPIENT;
   if (why) { *rejection_reason_out = why; S->policy_reason = why; return 0; }
   return 1;
 }
@@ -295,17 +333,27 @@ void phil_buffer_release(void *payload) { MUST(payload == &S->payload && S->payl
 static i64 now(void) { struct sol_clock clock; sol_get_clock_sysvar(&clock); return clock.unix_time; }
 static bool all_zero(const u8 *p, u64 n) { while (n--) if (*p++) return 0; return 1; }
 
-// OPEN. What is uploaded: "QVLT1", then the first key's 32-byte fingerprint. Accounts: the vault.
+// OPEN. What is uploaded: "QVLT2", the first key's 32-byte fingerprint, the bump of the vault's token
+// authority, the waiting time in seconds (u64), and the guard key's fingerprint (all zero for none).
+// Accounts: the vault.
 static u8 open_vault(struct payload *p) {
   struct sol_account_info *vault = &S->accounts[0];
+  const u8 *r = p->bytes;
   u8 *d = vault->data;
-  if (p->length != 37 || !same(p->bytes, (const u8 *)"QVLT1", 5)) return STORE_BAD_RECORD;
-  if (all_zero(p->bytes + 5, 32)) return STORE_NO_KEY;
+  u64 delay;
+  if (p->length != OPEN_BYTES || !same(r, (const u8 *)"QVLT2", 5)) return STORE_BAD_RECORD;
+  if (all_zero(r + 5, 32)) return STORE_NO_KEY;
+  delay = le64(r + 38);
+  if (delay > MAX_DELAY) return STORE_BAD_TERMS;
+  if (delay != 0 && all_zero(r + 46, 32)) return STORE_BAD_TERMS;      /* a waiting time is only useful with a key that can cancel */
   memset(d, 0, QVAULT_SIZE);
   memcpy(d + Q_MAGIC, "PHILQVLT", 8);
   d[Q_STATE] = OPEN;
   put64(d + Q_RESERVE, *vault->lamports);            /* what the account holds now is its rent, never its balance */
-  memcpy(d + Q_ROOT, p->bytes + 5, 32);
+  memcpy(d + Q_ROOT, r + 5, 32);
+  d[Q_BUMP] = r[37];
+  put64(d + Q_DELAY, delay);
+  memcpy(d + Q_GUARD_ROOT, r + 46, 32);
   put64(d + Q_OPENED_TIME, (u64)now());
   LOG("Phil qvault: OPENED. The vault answers only to a hash-based one-time key");
   return 0;
@@ -320,28 +368,10 @@ static void chain_step(u8 i, u8 j, u8 *value) {
   sol_sha256(&part, 1, out);
   memcpy(value, out, N);
 }
-
-// SPEND. What is uploaded: "QSPD1", amount u64, salt u64, the next key's fingerprint (32 bytes),
-// the signature (26 chain values of 24 bytes). Accounts: the vault, the recipient.
-static u8 spend(struct payload *p) {
-  struct sol_account_info *vault = &S->accounts[0], *to = &S->accounts[1];
-  const u8 *r = p->bytes, *next = r + 21, *sig = r + 53;
-  u8 *d = vault->data;
-  u8 digest[32], root[32], pos[CHAINS], counter[8];
-  u64 amount, balance, check = 0;
-  if (p->length != SPEND_BYTES || !same(r, (const u8 *)"QSPD1", 5)) return STORE_BAD_RECORD;
-  amount = le64(r + 5);
-  balance = *vault->lamports - le64(d + Q_RESERVE);
-  if (amount == 0) return STORE_NOTHING_TO_SEND;
-  if (amount > balance) return STORE_TOO_MUCH;
-  // While anything is left in the vault it must have a next key. Only a spend that empties it may end it.
-  if (all_zero(next, 32) && amount != balance) return STORE_NEEDS_NEXT_KEY;
-  // What the signature covers: this vault, this recipient, this amount, the next key, which spend this is, the salt.
-  {
-    struct sol_bytes parts[7] = { { (const u8 *)"QM1", 3 }, { vault->key, 32 }, { to->key, 32 }, { r + 5, 8 }, { next, 32 }, { counter, 8 }, { r + 13, 8 } };
-    memcpy(counter, d + Q_COUNTER, 8);
-    sol_sha256(parts, 7, digest);
-  }
+// Does this one-time signature of this digest lead to this key's fingerprint?
+static bool signature_checks(const u8 *digest, const u8 *sig, const u8 *fingerprint) {
+  u8 root[32], pos[CHAINS];
+  u64 check = 0;
   // The chain positions: the digest's first 24 bytes, then a checksum that falls whenever any of them rises,
   // so nobody can turn this signature into one for another message by hashing forward.
   for (u64 i = 0; i < N; i++) { pos[i] = digest[i]; check += 255u - digest[i]; }
@@ -354,17 +384,135 @@ static u8 spend(struct payload *p) {
     struct sol_bytes parts[2] = { { (const u8 *)"QK1", 3 }, { S->ends, SIG_BYTES } };
     sol_sha256(parts, 2, root);
   }
-  if (!same(root, d + Q_ROOT, 32)) return STORE_BAD_SIGNATURE;
-  // The key is spent. Pay, and move to the next key in the same step.
-  *vault->lamports -= amount; *to->lamports += amount;
-  memcpy(d + Q_ROOT, next, 32);
-  put64(d + Q_COUNTER, le64(d + Q_COUNTER) + 1);
-  put64(d + Q_TOTAL_SPENT, le64(d + Q_TOTAL_SPENT) + amount);
+  return same(root, fingerprint, 32);
+}
+
+// Pays out of the vault: lamports directly, or a token from the vault's token account.
+// Token accounts: [2] the vault's token account, [3] the coin, [4] the vault's token authority, [5] the token program.
+// Token instruction 12 is TransferChecked: [source, mint, destination, authority], then amount and decimals.
+static u8 pay(bool token, u64 amount) {
+  struct sol_account_info *vault = &S->accounts[0], *to = &S->accounts[1];
+  u8 *d = vault->data;
+  if (!token) {
+    if (amount > *vault->lamports - le64(d + Q_RESERVE)) return STORE_TOO_MUCH;
+    *vault->lamports -= amount; *to->lamports += amount;
+    put64(d + Q_TOTAL_SPENT, le64(d + Q_TOTAL_SPENT) + amount);
+    memset(d + Q_LAST_MINT, 0, 32);
+  } else {
+    struct sol_account_info *from = &S->accounts[2], *mint = &S->accounts[3], *authority = &S->accounts[4], *program = &S->accounts[5];
+    u8 data[10], bump = d[Q_BUMP];
+    struct sol_meta metas[4] = { { from->key, 1, 0 }, { mint->key, 0, 0 }, { to->key, 1, 0 }, { authority->key, 0, 1 } };
+    struct sol_instruction ix = { program->key, metas, 4, data, 10 };
+    struct sol_seed seeds[3] = { { (const u8 *)"qv", 2 }, { vault->key, 32 }, { &bump, 1 } };
+    struct sol_seeds signer = { seeds, 3 };
+    struct sol_account_info infos[5];
+    if (S->account_count < 6) return STORE_WRONG_ACCOUNTS;
+    if (!same(program->key, TOKEN_PROGRAM, 32) && !same(program->key, TOKEN_2022_PROGRAM, 32)) return STORE_WRONG_ACCOUNTS;
+    if (!same(mint->owner, program->key, 32) || mint->data_len < 45) return STORE_WRONG_ACCOUNTS;
+    data[0] = 12; put64(data + 1, amount); data[9] = mint->data[44];
+    infos[0] = *from; infos[1] = *mint; infos[2] = *to; infos[3] = *authority; infos[4] = *program;
+    if (sol_invoke_signed_c(&ix, infos, 5, &signer, 1) != 0) return STORE_TOKEN_FAILED;
+    memcpy(d + Q_LAST_MINT, mint->key, 32);
+  }
   put64(d + Q_LAST_TIME, (u64)now());
   memcpy(d + Q_LAST_RECIPIENT, to->key, 32);
-  if (all_zero(next, 32)) { d[Q_STATE] = CLOSED; LOG("Phil qvault: SPENT and CLOSED. The vault was emptied and has no further key"); }
-  else LOG("Phil qvault: SPENT. The one-time key is used up and the vault has moved to the next. Lamports paid:");
+  return 0;
+}
+
+// SPEND. What is uploaded: "QSPD1", amount u64, salt u64, the next key's fingerprint (32 bytes),
+// the signature (26 chain values of 24 bytes).
+// Accounts, paying at once:   the vault, the recipient                                  (SOL)
+//                             the vault, the recipient's token account, then pay()'s four   (a token)
+// Accounts, with a waiting time: the vault, the recipient, and for a token the coin.
+static u8 spend(struct payload *p) {
+  struct sol_account_info *vault = &S->accounts[0], *to = &S->accounts[1];
+  const u8 *r = p->bytes, *next = r + 21, *sig = r + 53;
+  u8 *d = vault->data;
+  u8 digest[32], counter[8], sol[32];
+  u64 amount, delay = le64(d + Q_DELAY);
+  bool token = S->account_count > 2;
+  const u8 *mint = token ? S->accounts[delay ? 2 : 3].key : sol;
+  bool closing;
+  if (p->length != SPEND_BYTES || !same(r, (const u8 *)"QSPD1", 5)) return STORE_BAD_RECORD;
+  if (token && !delay && S->account_count < 6) return STORE_WRONG_ACCOUNTS;
+  memset(sol, 0, 32);
+  if (all_zero(mint, 32)) token = 0;
+  amount = le64(r + 5);
+  closing = all_zero(next, 32);
+  if (amount == 0) return STORE_NOTHING_TO_SEND;
+  if (!token && amount > *vault->lamports - le64(d + Q_RESERVE)) return STORE_TOO_MUCH;
+  // While anything is left in the vault it must have a next key. Only a spend that pays out all its SOL at
+  // once may end it. (Tokens are not counted: empty the token accounts first.)
+  if (closing && (token || delay || amount != *vault->lamports - le64(d + Q_RESERVE))) return STORE_NEEDS_NEXT_KEY;
+  // What the signature covers: this vault, this recipient, this coin, this amount, the next key, which spend this is, the salt.
+  {
+    struct sol_bytes parts[8] = { { (const u8 *)"QM2", 3 }, { vault->key, 32 }, { to->key, 32 }, { mint, 32 }, { r + 5, 8 }, { next, 32 }, { counter, 8 }, { r + 13, 8 } };
+    memcpy(counter, d + Q_COUNTER, 8);
+    sol_sha256(parts, 8, digest);
+  }
+  if (!signature_checks(digest, sig, d + Q_ROOT)) return STORE_BAD_SIGNATURE;
+  // The key is spent. Move to the next key in the same step, and pay or record the payment.
+  if (delay) {
+    put64(d + Q_PENDING_READY, (u64)now() + delay);
+    put64(d + Q_PENDING_AMOUNT, amount);
+    memcpy(d + Q_PENDING_RECIPIENT, to->key, 32);
+    memcpy(d + Q_PENDING_MINT, mint, 32);
+  } else {
+    u8 why = pay(token, amount);
+    if (why) return why;
+  }
+  memcpy(d + Q_ROOT, next, 32);
+  put64(d + Q_COUNTER, le64(d + Q_COUNTER) + 1);
+  if (delay) { LOG("Phil qvault: SIGNED and RECORDED. The one-time key is used up; the payment waits out the vault's delay"); return 0; }
+  if (closing) { d[Q_STATE] = CLOSED; LOG("Phil qvault: SPENT and CLOSED. The vault was emptied and has no further key"); }
+  else LOG("Phil qvault: SPENT. The one-time key is used up and the vault has moved to the next. Amount paid:");
   sol_log_64_(0, 0, 0, 0, amount);
+  return 0;
+}
+
+// FINISH. What is uploaded: "QFIN1". Accounts: the vault, the recorded recipient, and for a token pay()'s four.
+// Needs no signature: it can only do what the recorded payment says, and only once its time has come.
+static u8 finish(struct payload *p) {
+  struct sol_account_info *vault = &S->accounts[0], *to = &S->accounts[1];
+  u8 *d = vault->data;
+  bool token = !all_zero(d + Q_PENDING_MINT, 32);
+  u64 amount = le64(d + Q_PENDING_AMOUNT);
+  u8 why;
+  if (p->length != 5 || !same(p->bytes, (const u8 *)"QFIN1", 5)) return STORE_BAD_RECORD;
+  if ((u64)now() < le64(d + Q_PENDING_READY)) return STORE_TOO_EARLY;
+  if (!same(to->key, d + Q_PENDING_RECIPIENT, 32)) return STORE_WRONG_ACCOUNTS;
+  if (token && (S->account_count < 6 || !same(S->accounts[3].key, d + Q_PENDING_MINT, 32))) return STORE_WRONG_ACCOUNTS;
+  why = pay(token, amount);
+  if (why) return why;
+  memset(d + Q_PENDING_READY, 0, 8 + 8 + 32 + 32);
+  LOG("Phil qvault: PAID. The recorded payment waited out its delay. Amount paid:");
+  sol_log_64_(0, 0, 0, 0, amount);
+  return 0;
+}
+
+// CANCEL. What is uploaded: "QCNL1", salt u64, a new vault key's fingerprint, a new guard key's fingerprint,
+// and the guard key's signature over all of that. Accounts: the vault.
+// Whoever stole the vault's phrase knows every key that follows from it, so the vault gets a key from a new phrase.
+static u8 cancel(struct payload *p) {
+  struct sol_account_info *vault = &S->accounts[0];
+  const u8 *r = p->bytes, *key = r + 13, *guard = r + 45, *sig = r + 77;
+  u8 *d = vault->data;
+  u8 digest[32], counter[8];
+  if (p->length != CANCEL_BYTES || !same(r, (const u8 *)"QCNL1", 5)) return STORE_BAD_RECORD;
+  if (all_zero(d + Q_GUARD_ROOT, 32)) return STORE_NO_GUARD;
+  if (all_zero(key, 32) || all_zero(guard, 32)) return STORE_NO_KEY;
+  {
+    struct sol_bytes parts[6] = { { (const u8 *)"QC1", 3 }, { vault->key, 32 }, { key, 32 }, { guard, 32 }, { counter, 8 }, { r + 5, 8 } };
+    memcpy(counter, d + Q_GUARD_COUNTER, 8);
+    sol_sha256(parts, 6, digest);
+  }
+  if (!signature_checks(digest, sig, d + Q_GUARD_ROOT)) return STORE_BAD_SIGNATURE;
+  memset(d + Q_PENDING_READY, 0, 8 + 8 + 32 + 32);
+  memcpy(d + Q_ROOT, key, 32);
+  memcpy(d + Q_GUARD_ROOT, guard, 32);
+  put64(d + Q_GUARD_COUNTER, le64(d + Q_GUARD_COUNTER) + 1);
+  put64(d + Q_CANCELS, le64(d + Q_CANCELS) + 1);
+  LOG("Phil qvault: CANCELLED by the guard key. Nothing is waiting, and the vault has a new key");
   return 0;
 }
 
@@ -376,7 +524,7 @@ u8 phil_runtime_store_with_error(void *payload, void **upload_id_out, void **sto
   if (S->violation) return 0;
   p->held = 0;                                                                     /* storing consumes the payload, whatever the result */
   if (FAULT(4)) return 2;
-  why = S->op == OP_OPEN ? open_vault(p) : spend(p);
+  why = S->op == OP_OPEN ? open_vault(p) : S->op == OP_SPEND ? spend(p) : S->op == OP_FINISH ? finish(p) : cancel(p);
   if (why) { S->storage_reason = why; return 0; }
   S->stored = 1;
   *upload_id_out = (void *)S->accounts[0].key;
@@ -430,7 +578,7 @@ u64 entrypoint(const u8 *input) {
   S->program_id = in;
   if (ix_len < 1) return 102;
   S->op = ix[0];
-  if (S->op != OP_OPEN && S->op != OP_SPEND) return 103;
+  if (S->op < OP_OPEN || S->op > OP_CANCEL) return 103;
 
   S->transport.bytes = ix + 1; S->transport.available = ix_len - 1; S->transport.cursor = 0;
   S->supported[0] = 1; S->supported[1] = 1;     /* one version: 1 */
