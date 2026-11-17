@@ -60,6 +60,17 @@ input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(-
 @media (max-width: 760px) { .fear { grid-template-columns: minmax(0, 1fr); } .steps4 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 460px) { .steps4 { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+.sub { margin: 20px 0 0; font: 600 15px var(--font-mark); }
+.box { margin-top: 14px; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } .box > summary { cursor: pointer; padding: 12px 14px; font: 600 15px var(--font-body); } .box > div { padding: 0 14px 16px; }
+.seed.guard { border-color: var(--ink); }
+#sheet { display: none; }
+@media print {
+  body > *:not(#sheet) { display: none !important; }
+  #sheet { display: block; color: #000; background: #fff; font: 14px/1.5 Georgia, serif; }
+  #sheet section { page-break-after: always; padding: 24px; } #sheet section:last-child { page-break-after: auto; }
+  #sheet h1 { font: 700 22px Georgia, serif; margin: 0 0 12px; } #sheet dl { margin: 0; } #sheet dt { font-weight: 700; margin-top: 14px; } #sheet dd { margin: 2px 0 0; font: 15px/1.6 monospace; overflow-wrap: anywhere; }
+  #sheet .big { font: 700 18px/1.8 monospace; border: 2px solid #000; padding: 12px; margin-top: 4px; }
+}
 </style>
 </head>
 <body>
@@ -78,6 +89,15 @@ __HEADER__
     <div><b>What could change</b><p>A large enough quantum computer could. Whoever had one could sign as you, and nothing on chain would look wrong.</p></div>
     <div><b>What still holds</b><p>Hashing. Running a hash backwards stays hard, so signatures built only from hashes stay safe. They have one strict rule, below.</p></div>
   </div>
+
+  <section class="panel" aria-labelledby="ex-h">
+    <h2 id="ex-h">Is a wallet exposed?</h2>
+    <p>Paste any Solana address to see what a quantum computer would be looking at. Nothing is asked of your wallet; the address is only sent to a public Solana node to read its balances.</p>
+    <label class="f" for="ex-address">Wallet address</label>
+    <input class="t" id="ex-address" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="A Solana address">
+    <div class="row"><button class="btn" id="ex-check" type="button">Check</button></div>
+    <div class="say" id="ex-say" role="status" aria-live="polite" hidden></div>
+  </section>
 
   <section class="panel" aria-labelledby="one-h">
     <h2 id="one-h">The one rule: a key signs once</h2>
@@ -104,14 +124,24 @@ __HEADER__
       </div>
       <div class="quick" id="demos"></div>
       <div class="row"><button class="btn" id="open" type="button">Open</button><span class="muted" id="open-note" role="status"></span></div>
-      <details class="do" id="make" style="margin-top:14px;border:1px solid var(--ink);border-radius:14px;background:var(--paper)"><summary style="cursor:pointer;padding:12px 14px;font:600 15px var(--font-body)">Make a new vault</summary><div style="padding:0 14px 16px">
-        <label class="f" for="deposit">Deposit, in devnet SOL</label>
+      <details class="box" id="make"><summary>Make a new vault</summary><div>
+        <label class="f" for="deposit">First deposit, in devnet SOL</label>
         <input class="t" id="deposit" inputmode="decimal" autocomplete="off" value="0.05">
+        <p class="hint">Coins such as Philcoin can be added once the vault exists.</p>
+        <label class="agree"><input type="checkbox" id="guarded"><span><b>Add a waiting time and a guard key.</b> Every withdrawal then waits before it is paid, and a second phrase kept offline can cancel it. This is what protects you if the first phrase is stolen.</span></label>
+        <div id="delay-wrap" hidden><label class="f" for="delay">Withdrawals wait</label>
+          <select class="t" id="delay"><option value="60">1 minute (to try it out)</option><option value="3600">1 hour</option><option value="86400" selected>1 day</option><option value="259200">3 days</option><option value="604800">7 days</option></select></div>
+        <p class="hint" id="which-program"></p>
         <div class="row"><button class="btn" id="make-seed" type="button">Make its key</button></div>
         <div id="seed-wrap" hidden>
           <p class="hint" style="color:var(--bad)"><b>This phrase is the vault.</b> Whoever has it can spend; without it the funds can never be moved, by anyone. It was made in this browser and is not sent anywhere.</p>
           <div class="seed" id="seed"></div>
-          <label class="agree"><input type="checkbox" id="seed-ok"><span>I have saved this phrase somewhere that is not this browser.</span></label>
+          <div id="guard-wrap" hidden>
+            <p class="hint"><b>This is the guard phrase.</b> It cannot spend. It can cancel a waiting withdrawal and give the vault a new phrase, which makes it the stronger of the two. Keep it on paper, apart from the first. This page does not keep it.</p>
+            <div class="seed guard" id="guard-seed"></div>
+          </div>
+          <div class="row"><button class="btn ghost small" id="print-new" type="button">Print a backup sheet</button><span class="muted" style="font-size:13.5px">One page per phrase, so they can be kept apart.</span></div>
+          <label class="agree"><input type="checkbox" id="seed-ok"><span id="seed-ok-say">I have saved this phrase somewhere that is not this browser.</span></label>
           <div class="row"><button class="btn" id="create" type="button" disabled>Create the vault and deposit</button><span class="muted" id="create-note" role="status"></span></div>
         </div>
       </div></details>
@@ -120,15 +150,29 @@ __HEADER__
     <div id="vault-view" hidden>
       <ul class="kv" id="kv"></ul>
       <div class="row"><button class="btn ghost small" id="refresh" type="button">Read again</button><button class="btn ghost small" id="leave" type="button">Another vault</button><span class="muted" id="view-note" role="status"></span></div>
+      <div class="say" id="waiting" hidden></div>
+      <div class="row" id="waiting-row" hidden><button class="btn" id="finish" type="button">Complete it</button><span class="muted" id="finish-note" role="status"></span></div>
+
+      <details class="box" id="add"><summary>Add funds</summary><div>
+        <p class="hint" id="add-address"></p>
+        <div class="two">
+          <div><label class="f" for="add-coin">Coin address (leave empty for SOL)</label><input class="t" id="add-coin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="SOL"></div>
+          <div><label class="f" for="add-amount">Amount</label><input class="t" id="add-amount" inputmode="decimal" autocomplete="off" placeholder="0.01"></div>
+        </div>
+        <div class="quick" id="add-quick"></div>
+        <div class="row"><button class="btn" id="add-send" type="button">Deposit from wallet</button><span class="muted" id="add-note" role="status"></span></div>
+      </div></details>
+
       <div id="spend-wrap">
-        <h3 style="margin:18px 0 0;font:600 15px var(--font-mark)">Withdraw</h3>
+        <h3 class="sub">Withdraw</h3>
         <p class="hint" id="spend-need"></p>
         <div id="spend-form">
+          <label class="f" for="coin">Coin</label><select class="t" id="coin"></select>
           <div class="two">
-            <div><label class="f" for="amount">Amount, in SOL</label><input class="t" id="amount" inputmode="decimal" autocomplete="off" placeholder="0.01"></div>
+            <div><label class="f" for="amount">Amount</label><input class="t" id="amount" inputmode="decimal" autocomplete="off" placeholder="0.01"></div>
             <div><label class="f" for="to">To</label><input class="t" id="to" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="A wallet address"></div>
           </div>
-          <label class="agree" style="margin-top:10px"><input type="checkbox" id="all"><span>Everything, and close the vault</span></label>
+          <label class="agree" style="margin-top:10px" id="all-wrap"><input type="checkbox" id="all"><span>Everything, and close the vault</span></label>
           <div class="row"><button class="btn" id="sign" type="button">Sign with the one-time key</button><span class="muted" id="sign-note" role="status"></span></div>
         </div>
         <div id="pending" hidden>
@@ -138,28 +182,47 @@ __HEADER__
         </div>
         <div class="say" id="spend-done" hidden></div>
       </div>
+
+      <details class="box" id="rekey" hidden><summary>Phrase stolen? Cancel and re-key</summary><div>
+        <p class="hint">The guard phrase drops any waiting withdrawal and gives the vault a key from a brand-new phrase, so the stolen one is worth nothing. The guard key is one-time too and moves to its next key.</p>
+        <div id="rekey-form">
+          <label class="f" for="guard-in">Guard phrase</label><input class="t" id="guard-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="64 characters">
+          <div class="row"><button class="btn" id="rekey-make" type="button">Make the new phrase</button><span class="muted" id="rekey-note" role="status"></span></div>
+        </div>
+        <div id="rekey-ready" hidden>
+          <p class="hint" style="color:var(--bad)"><b>The vault's new phrase.</b> Save it now: once this is sent, the old phrase no longer works.</p>
+          <div class="seed" id="rekey-seed"></div>
+          <label class="agree"><input type="checkbox" id="rekey-ok"><span>I have saved the new phrase somewhere that is not this browser.</span></label>
+          <div class="row"><button class="btn" id="rekey-send" type="button" disabled>Cancel and re-key</button><span class="muted" id="rekey-send-note" role="status"></span></div>
+        </div>
+      </div></details>
+      <div class="row"><button class="btn ghost small" id="print-view" type="button" hidden>Print a backup sheet</button></div>
     </div>
   </section>
 
   <h2 class="sec">How a spend is checked</h2>
   <div class="steps4">
-    <div><b>1. Sign</b><p>Your browser signs one message with the current key: this vault, this recipient, this amount, the next key.</p><span class="by">your browser</span></div>
+    <div><b>1. Sign</b><p>Your browser signs one message with the current key: this vault, this recipient, this coin, this amount, the next key.</p><span class="by">your browser</span></div>
     <div><b>2. Upload</b><p>Anyone can carry it to Solana. Phil's server checks the upload arrived whole: the handshake, the policy, the bytes against their declared hash.</p><span class="by phil">Phil's server</span></div>
     <div><b>3. Verify</b><p>The program hashes each of the 26 chains forward to its end and compares the result with the fingerprint it holds.</p><span class="by">our code</span></div>
-    <div><b>4. Pay and rotate</b><p>The amount is paid and the vault takes the next key's fingerprint, in one step. The old key is finished.</p><span class="by">our code</span></div>
+    <div><b>4. Pay and rotate</b><p>The vault takes the next key's fingerprint and the amount is paid, or, in a vault with a waiting time, recorded to be paid once the time has passed. The old key is finished.</p><span class="by">our code</span></div>
   </div>
 
   <h2 class="sec">Before you rely on it</h2>
   <ul class="limits" id="limits">
-    <li><b>Do not put real money behind this.</b> It is on devnet, nobody independent has reviewed it, and the program can still be replaced by our deploy key. Cryptography is the last place to skip a review.</li>
-    <li><b>Lose the phrase, lose the funds.</b> There is no recovery and nobody to ask. This page keeps a copy in this browser's storage, which is convenient and is also a risk on a shared or infected computer.</li>
+    <li><b>Do not put real money behind this.</b> It is on devnet and nobody independent has reviewed it. Cryptography is the last place to skip a review.</li>
+    <li id="limit-lock"><b>Locked means it cannot be fixed either.</b> New vaults use a copy of the program whose upgrade key was given up, so nobody, us included, can change it. If a bug is found in it, the only remedy is to move to a new copy. The first copy we deployed can still be replaced by our deploy key.</li>
+    <li><b>Lose the phrase, lose the funds.</b> There is no recovery and nobody to ask. This page keeps a copy of the vault's phrase in this browser's storage, which is convenient and is also a risk on a shared or infected computer. Print the backup sheet.</li>
+    <li><b>The guard phrase is the stronger one.</b> It can replace the vault's key, so whoever holds it can take the vault over after one waiting time. It is never stored by this page. If both phrases are stolen together, the waiting time does not help.</li>
+    <li><b>A waiting time only helps if you look.</b> A withdrawal you did not sign has to be noticed and cancelled before its time is up.</li>
     <li><b>It protects what is in the vault, and nothing else.</b> Your ordinary wallet, and anything paid out to it, is as exposed as before.</li>
     <li><b>What Phil's code checks, and what it does not.</b> Phil's server checks each upload's handshake, its policy, and that the bytes match the hash they declare. The signature check, the payment and the key rotation are our C code, which is not Phil and is not verified.</li>
     <li><b>The signature is trimmed to fit a Solana transaction.</b> Each hash is kept to 192 bits. Finding a preimage with a quantum computer is estimated at about 2<sup>96</sup> hash steps: far out of reach, but less margin than the 256-bit versions used where size is no object.</li>
     <li><b>The fee payer still uses an ordinary wallet signature.</b> That is fine: the one-time signature fixes the recipient, the amount and the next key, so a forged fee signature can pay for a spend but cannot change it.</li>
     <li><b>A signed spend can only ever be that spend.</b> If a transaction fails after you sign, this page sends the same one again. It will not sign something different with the same key.</li>
-    <li><b>Solana itself is not quantum-safe.</b> Validators and our deploy key use the same kind of signature as wallets. This vault removes one weak point, the key that guards your funds, and not the others.</li>
-    <li>For now it holds SOL only. Nobody knows when, or whether, a quantum computer able to break wallet keys will exist.</li>
+    <li><b>Solana itself is not quantum-safe.</b> Validators use the same kind of signature as wallets. This vault removes one weak point, the key that guards your funds, and not the others.</li>
+    <li><b>Some coins can be moved by their issuer.</b> A coin whose issuer kept the power to freeze accounts or move balances keeps that power over a vault too. Coins with transfer hooks cannot be withdrawn by this version.</li>
+    <li>Nobody knows when, or whether, a quantum computer able to break wallet keys will exist.</li>
   </ul>
 
   <h2 class="sec">Where this comes from</h2>
@@ -167,6 +230,7 @@ __HEADER__
   <ul class="facts" id="p-facts"></ul>
   <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
 </main>
+<div id="sheet" aria-hidden="true"></div>
 __FOOTER__
 <script>/*__BUNDLE__*/</script>
 </body>

@@ -85,7 +85,7 @@ jobs:
           for i in $(seq 1 90); do [ "$(solana slot --url http://127.0.0.1:8899 2>/dev/null || echo 0)" -ge 5 ] 2>/dev/null && break; sleep 2; done
           node out/qvault-run.js selftest http://127.0.0.1:8899 "$LOCAL_PROGRAM" "$RUNNER_TEMP/payer.json" 2> >(tee -a qvault/out/build.log >&2) > qvault/out/selftest.local.json || { echo "--- local self-test failed; validator log:" >> qvault/out/build.log; tail -30 "$RUNNER_TEMP/validator.log" >> qvault/out/build.log; pkill -f solana-test-validator || true; exit 1; }
           pkill -f solana-test-validator || true
-          jq -c '{ok, openUnits, spendUnits, hashSteps}' qvault/out/selftest.local.json | tee -a qvault/out/build.log
+          jq -c '{ok, openUnits, spendUnits, tokenUnits, cancelUnits, finishUnits, hashSteps}' qvault/out/selftest.local.json | tee -a qvault/out/build.log
       - name: Deploy to devnet if the program changed
         id: deploy
         if: env.HAVE_KEY == '1'
@@ -106,9 +106,36 @@ jobs:
             echo "REDEPLOYED=true" >> "$GITHUB_ENV"
             sleep 20
             node out/qvault-run.js selftest "$URL" "$PROGRAM" ~/.phil-devnet/payer.json 2> >(tee -a qvault/out/build.log >&2) > qvault/out/selftest.devnet.json
-            jq -c '{ok, openUnits, spendUnits, hashSteps}' qvault/out/selftest.devnet.json | tee -a qvault/out/build.log
+            jq -c '{ok, openUnits, spendUnits, tokenUnits, cancelUnits, finishUnits, hashSteps}' qvault/out/selftest.devnet.json | tee -a qvault/out/build.log
           fi
           echo "DEPLOYED_SHA=$built" >> "$GITHUB_ENV"
+      # A second copy of the same program whose upgrade authority is removed for good: nobody, the
+      # deploy wallet included, can ever change it. That also means it can never be fixed, so a new
+      # one is only made when there is none, or when a commit to this branch asks with [lock].
+      - name: A locked copy that nobody can change
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        continue-on-error: true
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          set -o pipefail
+          URL=https://api.devnet.solana.com
+          built=$(sha256sum qvault/out/phil_qvault.so | cut -d' ' -f1)
+          have=$(jq -r '.[0].sha256 // empty' qvault/locked.json 2>/dev/null || true)
+          if [ -n "$have" ] && { [ "$have" = "$built" ] || ! printf '%s' "$MESSAGE" | grep -q '\[lock\]'; }; then echo "locked copy: keeping the one there is" | tee -a qvault/out/build.log; exit 0; fi
+          solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/locked.json"
+          solana-keygen new --no-bip39-passphrase --silent --force -o "$RUNNER_TEMP/buffer2.json"
+          LOCKED=$(solana-keygen pubkey "$RUNNER_TEMP/locked.json")
+          solana program deploy --url "$URL" --keypair ~/.phil-devnet/payer.json --program-id "$RUNNER_TEMP/locked.json" --buffer "$RUNNER_TEMP/buffer2.json" qvault/out/phil_qvault.so 2>&1 | grep -v -i -E "seed phrase|^([a-z]+ ){11}[a-z]+$|keypair|BUFFER_SIGNER|^=+$|recover|solana program close" | tee -a qvault/out/build.log
+          sleep 20
+          solana program set-upgrade-authority "$LOCKED" --final --url "$URL" --keypair ~/.phil-devnet/payer.json 2>&1 | tee -a qvault/out/build.log
+          sleep 20
+          node out/qvault-run.js selftest "$URL" "$LOCKED" ~/.phil-devnet/payer.json 2> >(tee -a qvault/out/build.log >&2) > qvault/out/selftest.locked.json
+          jq -c '{ok, upgradeAuthority}' qvault/out/selftest.locked.json | tee -a qvault/out/build.log
+          jq -e '.ok == true and .upgradeAuthority == "none"' qvault/out/selftest.locked.json > /dev/null
+          was=$(cat qvault/locked.json 2>/dev/null || echo '[]')
+          echo "$was" | jq --arg id "$LOCKED" --arg sha "$built" --arg day "$(date -u +%F)" --arg phil "$(jq -r .commit giveaway/emitted.json)" '[{programId: $id, sha256: $sha, lockedOn: $day, philCommit: $phil}] + .' > qvault/locked.json
+          echo "locked copy $LOCKED: its upgrade authority is none" | tee -a qvault/out/build.log
       - name: One vault through its whole life
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: node out/qvault-run.js demo https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json qvault/demo.json 2> >(tee -a qvault/out/build.log >&2) || echo "the demo vault failed" | tee -a qvault/out/build.log
@@ -121,7 +148,7 @@ jobs:
             was=$(cat qvault/program.json 2>/dev/null || echo '{}')
             echo "$was" | jq --arg id "$PROGRAM" --arg wallet "$WALLET" --arg sha "$DEPLOYED_SHA" --arg day "$(date -u +%F)" --arg phil "$(jq -r .commit giveaway/emitted.json)" \
               --argjson bytes "$(stat -c %s qvault/out/phil_qvault.so)" --arg redeployed "${REDEPLOYED:-false}" --slurpfile local qvault/out/selftest.local.json \
-              '. + {programId: $id, wallet: $wallet, deployedSha256: $sha, programBytes: $bytes, philCommit: $phil, checkedOn: $day, selftest: ($local[0] | {ok, openUnits, spendUnits, hashSteps})} + (if $redeployed == "true" or (.deployedOn | not) then {deployedOn: $day} else {} end)' > qvault/program.json.new && mv qvault/program.json.new qvault/program.json
+              '. + {programId: $id, wallet: $wallet, deployedSha256: $sha, programBytes: $bytes, philCommit: $phil, checkedOn: $day, selftest: ($local[0] | {ok, openUnits, spendUnits, tokenUnits, cancelUnits, finishUnits, hashSteps})} + (if $redeployed == "true" or (.deployedOn | not) then {deployedOn: $day} else {} end)' > qvault/program.json.new && mv qvault/program.json.new qvault/program.json
             cp qvault/out/phil_qvault.so qvault/phil_qvault.so
           fi
       - name: Rebuild the site
@@ -133,7 +160,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in qvault/program.json qvault/phil_qvault.so qvault/build.tail.log qvault/demo.json docs; do [ -e "$f" ] && git add "$f"; done
+          for f in qvault/program.json qvault/locked.json qvault/phil_qvault.so qvault/build.tail.log qvault/demo.json docs; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Quantum-safe vault: $(date -u +%F)"
           # Another run may have pushed first. Its generated pages are rebuilt by whoever lands last, so on a clash keep ours.

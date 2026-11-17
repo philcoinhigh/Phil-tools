@@ -3,17 +3,18 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.K3GOhkvToP/phil.ll -o /tmp/tmp.K3GOhkvToP/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.qlrlOC3onI/phil.ll -o /tmp/tmp.qlrlOC3onI/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 30568 Nov 17 13:12 qvault/out/phil_qvault.so
+-rwxr-xr-x 1 runner runner 39944 Nov 17 13:46 qvault/out/phil_qvault.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
     30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
     33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
     34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+    56: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_invoke_signed_c
 ok   Phil accepts the opening; the vault holds its deposit under a hash-based key 
 ok   the signature cannot be redirected to another recipient 
 ok   nor raised to a larger amount 
@@ -23,14 +24,24 @@ ok   a signature made from any other seed is refused
 ok   a one-time signature moves the money; the only wallet that signed was a stranger paying the fee 
 ok   the vault moved to the next key in the same step 
 ok   the used signature is worthless: it can never be accepted again 
+ok   a token is deposited into the vault's own token account 
+ok   a token spend cannot be redirected to another token account 
+ok   a one-time signature moves the token, and the vault moves to its next key 
 ok   a vault with money left in it cannot be left without a next key 
 ok   the last spend empties the vault and ends it 
-{"ok":true,"openUnits":3975,"spendUnits":543553,"hashSteps":2040}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 18.64251424 SOL
-deploying because the program is not on devnet
+ok   in a vault with a waiting time, a signed spend is recorded and nothing is paid yet 
+ok   the recorded payment cannot be completed before its time 
+ok   the vault's own phrase cannot cancel or re-key it 
+ok   the guard key cancels the withdrawal and gives the vault a key from a new phrase 
+ok   the thief's withdrawal can never be completed, even after the wait 
+ok   and the stolen phrase signs nothing the vault accepts 
+ok   the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed 
+{"ok":true,"openUnits":4955,"spendUnits":610040,"tokenUnits":547362,"cancelUnits":543335,"finishUnits":4467,"hashSteps":2295}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 18.34366464 SOL
+deploying because the program changed
 Program Id: 72oBGfeCf9YZLv3J4xicdskhPb9KjeHyAUvSCNx1JM6J
 
-Signature: 2EmXo6KWEVwMQfpUkwJT4kN8KKVSxpPJDFEsS1wNTf59wp3bSQjxxQ6xLg8pVjw82xh5w6pS9zK98ProTggQmMfq
+Signature: 2tJNg71kFZdACfNDpXFh4SCu1v78d9VjZF4GKPDEHj96eJbL5wVnQjy2NLSzeAbesqLWJa36eEyNcEe2r65sE5h2
 
 ok   Phil accepts the opening; the vault holds its deposit under a hash-based key 
 ok   the signature cannot be redirected to another recipient 
@@ -41,7 +52,47 @@ ok   a signature made from any other seed is refused
 ok   a one-time signature moves the money; the only wallet that signed was a stranger paying the fee 
 ok   the vault moved to the next key in the same step 
 ok   the used signature is worthless: it can never be accepted again 
+ok   a token is deposited into the vault's own token account 
+ok   a token spend cannot be redirected to another token account 
+ok   a one-time signature moves the token, and the vault moves to its next key 
 ok   a vault with money left in it cannot be left without a next key 
 ok   the last spend empties the vault and ends it 
-{"ok":true,"openUnits":3975,"spendUnits":609755,"hashSteps":2295}
-demo: a vault opened, paid out twice under two one-time keys (609853, 543683 compute units) and closed
+ok   in a vault with a waiting time, a signed spend is recorded and nothing is paid yet 
+ok   the recorded payment cannot be completed before its time 
+ok   the vault's own phrase cannot cancel or re-key it 
+ok   the guard key cancels the withdrawal and gives the vault a key from a new phrase 
+ok   the thief's withdrawal can never be completed, even after the wait 
+ok   and the stolen phrase signs nothing the vault accepts 
+ok   the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed 
+{"ok":true,"openUnits":4955,"spendUnits":609942,"tokenUnits":547460,"cancelUnits":609635,"finishUnits":4467,"hashSteps":2295}
+Program Id: 2aLbMF7rni7CaLxzpzhPG6m8BCYKcjeFEcQMe8L3hyvj
+
+Signature: 2nStMpojnYPQBSgDNnHvgY9ZAe3WhpxfSmfQCdwqY6A2pEFcuhBYYp3EXUgx1kTQg9f6qLbFm2FJq5KicE1vJEa9
+
+Account Type: Program
+Authority: none
+
+ok   Phil accepts the opening; the vault holds its deposit under a hash-based key 
+ok   the signature cannot be redirected to another recipient 
+ok   nor raised to a larger amount 
+ok   nor can the next key be swapped for an attacker's 
+ok   bytes changed after their digest was declared are rejected by Phil on chain 
+ok   a signature made from any other seed is refused 
+ok   a one-time signature moves the money; the only wallet that signed was a stranger paying the fee 
+ok   the vault moved to the next key in the same step 
+ok   the used signature is worthless: it can never be accepted again 
+ok   a token is deposited into the vault's own token account 
+ok   a token spend cannot be redirected to another token account 
+ok   a one-time signature moves the token, and the vault moves to its next key 
+ok   a vault with money left in it cannot be left without a next key 
+ok   the last spend empties the vault and ends it 
+ok   in a vault with a waiting time, a signed spend is recorded and nothing is paid yet 
+ok   the recorded payment cannot be completed before its time 
+ok   the vault's own phrase cannot cancel or re-key it 
+ok   the guard key cancels the withdrawal and gives the vault a key from a new phrase 
+ok   the thief's withdrawal can never be completed, even after the wait 
+ok   and the stolen phrase signs nothing the vault accepts 
+ok   the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed 
+{"ok":true,"upgradeAuthority":"none"}
+locked copy 2aLbMF7rni7CaLxzpzhPG6m8BCYKcjeFEcQMe8L3hyvj: its upgrade authority is none
+demo: a vault opened, paid out twice under two one-time keys (610040, 543819 compute units) and closed

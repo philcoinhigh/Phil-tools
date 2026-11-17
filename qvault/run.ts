@@ -4,11 +4,13 @@
 //       opens a vault and tries everything an attacker with the signatures in hand could try.
 //   demo <rpc> <program id> <payer.json> <demo.json>
 //       one vault's whole life (open, two spends, closed), recorded for the site.
+// The self-test also covers a token, a vault with a waiting time, and the guard key's cancel.
 import * as fs from "fs";
 import { Connection, Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { readVerdict, sha256 } from "../site/src/draw";
-import { keyRoot, makeSpend, decodeQVault, spendData, QVault, QVAULT_SIZE } from "../site/src/wots";
-import { openVaultInstructions, spendInstructions } from "../site/src/qvault-tx";
+import { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMint2Instruction, createMintToInstruction } from "@solana/spl-token";
+import { keyRoot, makeSpend, makeCancel, decodeQVault, spendData, QVault, QVAULT_SIZE } from "../site/src/wots";
+import { openVaultInstructions, spendInstructions, finishInstructions, cancelInstructions, depositTokenInstructions, createTokenAccount, tokenAccountOf, vaultTokenAccount, upgradeAuthority, programDataAddress } from "../site/src/qvault-tx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const [command, url, programText, payerFile, ...rest] = process.argv.slice(2);
@@ -55,9 +57,9 @@ async function readVault(vault: PublicKey): Promise<{ v: QVault; lamports: bigin
   return { v, lamports: BigInt(info!.lamports) };
 }
 const balance = async (k: PublicKey) => BigInt(await patiently(() => conn.getBalance(k, "confirmed")));
-async function open(seed: Uint8Array, deposit: bigint) {
+async function open(seed: Uint8Array, deposit: bigint, delaySeconds = 0, guardRoot?: Uint8Array) {
   const rentLamports = await patiently(() => conn.getMinimumBalanceForRentExemption(QVAULT_SIZE));
-  const made = openVaultInstructions({ program, payer: payer.publicKey, root: keyRoot(seed, 0n), rentLamports, depositLamports: deposit });
+  const made = openVaultInstructions({ program, payer: payer.publicKey, root: keyRoot(seed, 0n), rentLamports, depositLamports: deposit, delaySeconds, guardRoot });
   return { vault: made.vault.publicKey, sent: await send(made.instructions, [payer, made.vault]) };
 }
 /** A key that only pays the network fee. It has no claim on any vault. */
@@ -101,13 +103,66 @@ async function selftest() {
   r = await send(spendInstructions(program, vault, alice, first.record), [fees]);
   expect("the used signature is worthless: it can never be accepted again", !r.ok && (await balance(alice)) === START + 10_000_000n, r.error);
 
-  const rest = state.lamports - state.v.reserve, last = makeSpend(seed, vault.toBytes(), alice.toBytes(), rest, 1n, true);
-  r = await send(spendInstructions(program, vault, alice, makeSpend(seed, vault.toBytes(), alice.toBytes(), rest - 1n, 1n, true).record), [fees]);
+  // A token: the vault's token account answers to the same one-time key.
+  // Built from plain instructions and sent through send(), which is patient with a busy public node.
+  const held = async (k: PublicKey) => BigInt((await patiently(() => conn.getTokenAccountBalance(k, "confirmed"))).value.amount);
+  const coin = Keypair.generate(), mint = coin.publicKey, side = { mint, tokenProgram: TOKEN_PROGRAM_ID };
+  const mine = tokenAccountOf(payer.publicKey, mint, TOKEN_PROGRAM_ID), aliceTokens = tokenAccountOf(alice, mint, TOKEN_PROGRAM_ID), malloryTokens = tokenAccountOf(mallory, mint, TOKEN_PROGRAM_ID);
+  const minted = await send([
+    SystemProgram.createAccount({ fromPubkey: payer.publicKey, newAccountPubkey: mint, lamports: await patiently(() => conn.getMinimumBalanceForRentExemption(MINT_SIZE)), space: MINT_SIZE, programId: TOKEN_PROGRAM_ID }),
+    createInitializeMint2Instruction(mint, 6, payer.publicKey, null),
+    ...[payer.publicKey, alice, mallory].map((owner) => createTokenAccount(payer.publicKey, owner, mint, TOKEN_PROGRAM_ID)),
+    createMintToInstruction(mint, mine, payer.publicKey, 1_000_000_000n),
+  ], [payer, coin], false);
+  if (!minted.ok) throw new Error("could not make the test coin: " + minted.error);
+  const put = await send(depositTokenInstructions(program, vault, payer.publicKey, mint, TOKEN_PROGRAM_ID, 500_000_000n, 6), [payer], false);
+  const vaultTokens = vaultTokenAccount(program, vault, mint, TOKEN_PROGRAM_ID);
+  expect("a token is deposited into the vault's own token account", put.ok && (await held(vaultTokens)) === 500_000_000n, put.error);
+  const tokenSpend = makeSpend(seed, vault.toBytes(), aliceTokens.toBytes(), 200_000_000n, 1n, false, mint.toBytes());
+  r = await send(spendInstructions(program, vault, malloryTokens, tokenSpend.record, undefined, side), [fees]);
+  expect("a token spend cannot be redirected to another token account", !r.ok && (await held(vaultTokens)) === 500_000_000n, r.error);
+  const tokenPaid = await send(spendInstructions(program, vault, aliceTokens, tokenSpend.record, undefined, side), [fees]);
+  state = await readVault(vault);
+  expect("a one-time signature moves the token, and the vault moves to its next key", tokenPaid.ok && (await held(aliceTokens)) === 200_000_000n && (await held(vaultTokens)) === 300_000_000n && state.v.counter === 2n, tokenPaid.error + " " + tokenPaid.logs.join(" | "));
+
+  const rest = state.lamports - state.v.reserve, last = makeSpend(seed, vault.toBytes(), alice.toBytes(), rest, 2n, true);
+  r = await send(spendInstructions(program, vault, alice, makeSpend(seed, vault.toBytes(), alice.toBytes(), rest - 1n, 2n, true).record), [fees]);
   expect("a vault with money left in it cannot be left without a next key", !r.ok, r.error);
   const closed = await send(spendInstructions(program, vault, alice, last.record), [fees]);
   state = await readVault(vault);
   expect("the last spend empties the vault and ends it", closed.ok && state.v.state === "closed" && state.lamports === state.v.reserve && (await balance(alice)) === START + DEPOSIT, closed.error + " " + closed.logs.join(" | "));
-  console.log(JSON.stringify({ ok: problems.length === 0, problems, vault: vault.toBase58(), openUnits: opened.units, spendUnits: paid.units, hashSteps: first.work }, null, 1));
+
+  // A vault with a waiting time. Its phrase is "stolen": the thief signs a withdrawal, and the guard key answers.
+  const WAIT = 8, guardSeed = sha256(Keypair.generate().secretKey), fresh = sha256(Keypair.generate().secretKey);
+  const { vault: slow, sent: openedSlow } = await open(seed, DEPOSIT, WAIT, keyRoot(guardSeed, 0n));
+  const before = await balance(mallory);
+  const theft = await send(spendInstructions(program, slow, mallory, makeSpend(seed, slow.toBytes(), mallory.toBytes(), DEPOSIT, 0n).record, undefined, undefined, true), [fees]);
+  state = await readVault(slow);
+  expect("in a vault with a waiting time, a signed spend is recorded and nothing is paid yet", openedSlow.ok && theft.ok && state.v.delay === WAIT && state.v.pending?.amount === DEPOSIT && state.lamports - state.v.reserve === DEPOSIT && (await balance(mallory)) === before, theft.error + " " + theft.logs.join(" | "));
+  r = await send(finishInstructions(program, slow, mallory), [fees]);
+  expect("the recorded payment cannot be completed before its time", !r.ok, r.error);
+  const stop = makeCancel(guardSeed, slow.toBytes(), fresh, 1n, 0n);
+  r = await send(cancelInstructions(program, slow, makeCancel(seed, slow.toBytes(), sha256(mallory.toBytes()), 1n, 0n).record), [fees]);
+  expect("the vault's own phrase cannot cancel or re-key it", !r.ok, r.error);
+  const cancelled = await send(cancelInstructions(program, slow, stop.record), [fees]);
+  state = await readVault(slow);
+  expect("the guard key cancels the withdrawal and gives the vault a key from a new phrase", cancelled.ok && state.v.pending === null && Buffer.from(state.v.root).equals(Buffer.from(keyRoot(fresh, 1n))) && state.v.cancels === 1n, cancelled.error + " " + cancelled.logs.join(" | "));
+  await sleep((WAIT + 2) * 1000);
+  r = await send(finishInstructions(program, slow, mallory), [fees]);
+  expect("the thief's withdrawal can never be completed, even after the wait", !r.ok && (await balance(mallory)) === before, r.error);
+  r = await send(spendInstructions(program, slow, mallory, makeSpend(seed, slow.toBytes(), mallory.toBytes(), DEPOSIT, 1n).record, undefined, undefined, true), [fees]);
+  expect("and the stolen phrase signs nothing the vault accepts", !r.ok, r.error);
+  const aliceBefore = await balance(alice);
+  const mineNow = await send(spendInstructions(program, slow, alice, makeSpend(fresh, slow.toBytes(), alice.toBytes(), DEPOSIT, 1n).record, undefined, undefined, true), [fees]);
+  let finished: Sent = { ok: false, signature: null, logs: [], units: null, error: "never tried" };
+  for (let i = 0; i < 12 && !finished.ok; i++) { await sleep(i === 0 ? (WAIT + 1) * 1000 : 4000); finished = await send(finishInstructions(program, slow, alice), [fees]); }
+  expect("the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed", mineNow.ok && finished.ok && (await balance(alice)) === aliceBefore + DEPOSIT, finished.error + " " + finished.logs.join(" | "));
+
+  // Who can still replace this program? (Nobody, for the locked copy.)
+  const data = await patiently(() => conn.getAccountInfo(programDataAddress(program), "confirmed"));
+  const authority = data ? upgradeAuthority(Uint8Array.from(data.data)) : undefined;
+  console.log(JSON.stringify({ ok: problems.length === 0, problems, vault: vault.toBase58(), openUnits: opened.units, spendUnits: paid.units, tokenUnits: tokenPaid.units, cancelUnits: cancelled.units, finishUnits: finished.units, hashSteps: first.work,
+    upgradeAuthority: authority === undefined ? "unknown" : authority === null ? "none" : authority.toBase58() }, null, 1));
   process.exit(problems.length ? 1 : 0);
 }
 
