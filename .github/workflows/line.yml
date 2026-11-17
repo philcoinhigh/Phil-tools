@@ -112,6 +112,16 @@ jobs:
       - name: One whole match between two practice players
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: node out/line-run.js demo https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json line/demo.json 2> >(tee -a line/out/build.log >&2) || echo "the demo match failed" | tee -a line/out/build.log
+      - name: Start the next nightly workflow
+        # The on-chain workflows run one after another, so they never push at the same moment.
+        if: always() && (inputs.nightly || contains(github.event.head_commit.message, '[nightly]'))
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$(dirname line/out/build.log)"
+          gh workflow run qvault.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f nightly=true 2>&1 | tee -a line/out/build.log || echo "could not start qvault.yml" | tee -a line/out/build.log
+          echo "nightly chain: asked for qvault.yml" | tee -a line/out/build.log
       - name: Record
         if: always()
         run: |
