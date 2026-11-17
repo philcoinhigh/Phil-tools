@@ -72,10 +72,11 @@ export const finishData = (u: Upload = {}) => uploadData(OP_FINISH, utf8("QFIN1"
 export const NO_NEXT_KEY = new Uint8Array(32);
 
 /** Builds the whole spend for the vault's current key: the next key's fingerprint, a cheap salt, and the one-time signature. */
-export function makeSpend(seed: Uint8Array, vault: Uint8Array, recipient: Uint8Array, amount: bigint, counter: bigint, closing = false, mint: Uint8Array = SOL): { spend: Spend; signature: Uint8Array; record: Uint8Array; work: number } {
-  const nextRoot = closing ? NO_NEXT_KEY : keyRoot(seed, counter + 1n);
+export function makeSpend(seed: Uint8Array, vault: Uint8Array, recipient: Uint8Array, amount: bigint, counter: bigint, closing = false, mint: Uint8Array = SOL, keyIndex: bigint = counter): { spend: Spend; signature: Uint8Array; record: Uint8Array; work: number } {
+  // `keyIndex` is which of the seed's keys signs. It is the vault's counter unless the vault was re-keyed while its counter moved.
+  const nextRoot = closing ? NO_NEXT_KEY : keyRoot(seed, keyIndex + 1n);
   const base = { vault, recipient, mint, amount, nextRoot, counter };
-  const spend = { ...base, salt: bestSalt(base) }, digest = spendDigest(spend), signature = sign(seed, counter, digest);
+  const spend = { ...base, salt: bestSalt(base) }, digest = spendDigest(spend), signature = sign(seed, keyIndex, digest);
   return { spend, signature, record: spendRecord(amount, spend.salt, nextRoot, signature), work: work(digest) };
 }
 

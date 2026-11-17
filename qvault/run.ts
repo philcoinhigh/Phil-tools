@@ -8,9 +8,9 @@
 import * as fs from "fs";
 import { Connection, Keypair, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { readVerdict, sha256 } from "../site/src/draw";
-import { TOKEN_PROGRAM_ID, createMint, getOrCreateAssociatedTokenAccount, mintTo, getAccount } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMint2Instruction, createMintToInstruction } from "@solana/spl-token";
 import { keyRoot, makeSpend, makeCancel, decodeQVault, spendData, QVault, QVAULT_SIZE } from "../site/src/wots";
-import { openVaultInstructions, spendInstructions, finishInstructions, cancelInstructions, depositTokenInstructions, vaultTokenAccount, upgradeAuthority, programDataAddress } from "../site/src/qvault-tx";
+import { openVaultInstructions, spendInstructions, finishInstructions, cancelInstructions, depositTokenInstructions, createTokenAccount, tokenAccountOf, vaultTokenAccount, upgradeAuthority, programDataAddress } from "../site/src/qvault-tx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const [command, url, programText, payerFile, ...rest] = process.argv.slice(2);
@@ -104,13 +104,17 @@ async function selftest() {
   expect("the used signature is worthless: it can never be accepted again", !r.ok && (await balance(alice)) === START + 10_000_000n, r.error);
 
   // A token: the vault's token account answers to the same one-time key.
-  const held = async (k: PublicKey) => (await patiently(() => getAccount(conn, k, "confirmed"))).amount;
-  const mint = await patiently(() => createMint(conn, payer, payer.publicKey, null, 6, undefined, { commitment: "confirmed" }));
-  const side = { mint, tokenProgram: TOKEN_PROGRAM_ID };
-  const mine = await patiently(() => getOrCreateAssociatedTokenAccount(conn, payer, mint, payer.publicKey, false, "confirmed"));
-  await patiently(() => mintTo(conn, payer, mint, mine.address, payer, 1_000_000_000n, [], { commitment: "confirmed" }));
-  const aliceTokens = (await patiently(() => getOrCreateAssociatedTokenAccount(conn, payer, mint, alice, false, "confirmed"))).address;
-  const malloryTokens = (await patiently(() => getOrCreateAssociatedTokenAccount(conn, payer, mint, mallory, false, "confirmed"))).address;
+  // Built from plain instructions and sent through send(), which is patient with a busy public node.
+  const held = async (k: PublicKey) => BigInt((await patiently(() => conn.getTokenAccountBalance(k, "confirmed"))).value.amount);
+  const coin = Keypair.generate(), mint = coin.publicKey, side = { mint, tokenProgram: TOKEN_PROGRAM_ID };
+  const mine = tokenAccountOf(payer.publicKey, mint, TOKEN_PROGRAM_ID), aliceTokens = tokenAccountOf(alice, mint, TOKEN_PROGRAM_ID), malloryTokens = tokenAccountOf(mallory, mint, TOKEN_PROGRAM_ID);
+  const minted = await send([
+    SystemProgram.createAccount({ fromPubkey: payer.publicKey, newAccountPubkey: mint, lamports: await patiently(() => conn.getMinimumBalanceForRentExemption(MINT_SIZE)), space: MINT_SIZE, programId: TOKEN_PROGRAM_ID }),
+    createInitializeMint2Instruction(mint, 6, payer.publicKey, null),
+    ...[payer.publicKey, alice, mallory].map((owner) => createTokenAccount(payer.publicKey, owner, mint, TOKEN_PROGRAM_ID)),
+    createMintToInstruction(mint, mine, payer.publicKey, 1_000_000_000n),
+  ], [payer, coin], false);
+  if (!minted.ok) throw new Error("could not make the test coin: " + minted.error);
   const put = await send(depositTokenInstructions(program, vault, payer.publicKey, mint, TOKEN_PROGRAM_ID, 500_000_000n, 6), [payer], false);
   const vaultTokens = vaultTokenAccount(program, vault, mint, TOKEN_PROGRAM_ID);
   expect("a token is deposited into the vault's own token account", put.ok && (await held(vaultTokens)) === 500_000_000n, put.error);

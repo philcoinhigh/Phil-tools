@@ -633,7 +633,7 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p = load("docs/quantum/index.html", "https://example.test/quantum/");
   {
     const el = (id) => p.d.getElementById(id);
-    check("quantum: the page loads, and is plain about what it is and is not", /nobody independent has reviewed it/.test(el("limits").textContent) && /Do not put real money behind this/.test(el("limits").textContent) && /is not Phil and is not verified/.test(el("limits").textContent) && /Solana itself/.test(el("limits").textContent) && el("vault-view").hidden && !el("vault-none").hidden && el("sb-forge").disabled && p.errors.length === 0, p.errors.join("|"));
+    check("quantum: the page loads, and is plain about what it is and is not", /nobody independent has reviewed it/.test(el("limits").textContent) && /Do not put real money behind this/.test(el("limits").textContent) && /is not Phil and is not verified/.test(el("limits").textContent) && /Solana itself/.test(el("limits").textContent) && /guard phrase is the stronger one/.test(el("limits").textContent) && el("vault-view").hidden && !el("vault-none").hidden && el("sb-forge").disabled && el("ex-say").hidden && p.errors.length === 0, p.errors.join("|"));
     el("sb-sign").click();
     check("quantum: one signature is safe, and forging is not offered", /Safe/.test(el("sb-say").textContent) && el("sb-forge").disabled && el("sb-list").children.length === 1);
     for (let i = 0; i < 5; i++) el("sb-sign").click();
@@ -647,84 +647,177 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   }
   if (fs.existsSync("qvault/program.json") && JSON.parse(fs.readFileSync("qvault/program.json", "utf8")).programId) {
     // The stand-in node runs the real vault: Phil's emitted server and qvault/runtime.c, built natively.
+    // The token programs are modelled here for what a wallet sends, and by the harness for what the vault sends.
     const web3 = require("@solana/web3.js"), { execFileSync, execSync } = require("child_process");
     execSync("giveaway/native/build.sh out/phil-qvault-native qvault/runtime.c", { stdio: "inherit" });
-    const PROGRAM = JSON.parse(fs.readFileSync("qvault/program.json", "utf8")).programId, programKey = new web3.PublicKey(PROGRAM);
-    const hexOf = (b) => Buffer.from(b).toString("hex"), SYSTEM = "00".repeat(32);
-    const st = { data: {}, lamports: {}, sent: [], sims: [] };
+    const lockedList = fs.existsSync("qvault/locked.json") ? JSON.parse(fs.readFileSync("qvault/locked.json", "utf8")) : [];
+    const PROGRAM = lockedList[0]?.programId ?? JSON.parse(fs.readFileSync("qvault/program.json", "utf8")).programId, programKey = new web3.PublicKey(PROGRAM);
+    const TOKEN = new web3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), ATA = new web3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"), LOADER = new web3.PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+    const hexOf = (b) => Buffer.from(b).toString("hex"), SYSTEM = "00".repeat(32), RENT = 3118080n;
+    const st = { data: {}, owner: {}, lamports: {}, sent: [], sims: [] };
     const bal = (k) => st.lamports[k] ?? 0n;
+    const ataOf = (owner, mint) => web3.PublicKey.findProgramAddressSync([owner.toBuffer(), TOKEN.toBuffer(), mint.toBuffer()], ATA)[0];
+    const tokens = (k) => (st.data[k.toBase58()] ? st.data[k.toBase58()].readBigUInt64LE(64) : null);
+    const makeTokenAccount = (address, owner, mint, amount = 0n) => { const d = Buffer.alloc(165); mint.toBuffer().copy(d, 0); owner.toBuffer().copy(d, 32); d.writeBigUInt64LE(amount, 64); d[108] = 1; st.data[address.toBase58()] = d; st.owner[address.toBase58()] = TOKEN.toBase58(); st.lamports[address.toBase58()] = 2039280n; };
+    { const pd = web3.PublicKey.findProgramAddressSync([programKey.toBuffer()], LOADER)[0].toBase58(), d = Buffer.alloc(45); d[0] = 3; st.data[pd] = d; st.owner[pd] = LOADER.toBase58(); }   // its upgrade authority: none
     const runIx = (ix, keep) => {
-      const input = ["slot 7000", `time ${Math.floor(Date.now() / 1000)}`, `program ${hexOf(programKey.toBytes())}`,
-        ...ix.keys.map((k) => { const b = k.pubkey.toBase58(), a = st.data[b]; return `account ${hexOf(k.pubkey.toBytes())} ${a ? hexOf(programKey.toBytes()) : SYSTEM} ${k.isSigner ? 2 : k.isWritable ? 1 : 0} ${a ? hexOf(a) : "-"} ${bal(b)}`; }), `ix ${hexOf(ix.data)}`, ""].join("\n");
+      const input = ["slot 7000", `time ${Math.floor(Date.now() / 1000)}`, `program ${hexOf(ix.programId.toBytes())}`,
+        ...ix.keys.map((k) => { const b = k.pubkey.toBase58(), a = st.data[b]; return `account ${hexOf(k.pubkey.toBytes())} ${st.owner[b] ? hexOf(new web3.PublicKey(st.owner[b]).toBytes()) : SYSTEM} ${k.isSigner ? 2 : k.isWritable ? 1 : 0} ${a && a.length ? hexOf(a) : "-"} ${bal(b)}`; }), `ix ${hexOf(ix.data)}`, ""].join("\n");
       const out = execFileSync("out/phil-qvault-native", { input }).toString().split("\n");
       const ret = Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")))[1]), logs = out.filter((l) => l.startsWith("LOG ")).map((l) => "Program log: " + l.slice(4));
       if (ret === 0 && keep) {
-        st.data[ix.keys[0].pubkey.toBase58()] = Buffer.from(out.find((l) => l.startsWith("ACCOUNT 0 ")).split(" ")[2], "hex");
+        out.filter((l) => l.startsWith("ACCOUNT ")).forEach((l) => { const [, i, d] = l.split(" "), b = ix.keys[Number(i)].pubkey.toBase58(); if (st.data[b] && d) st.data[b] = Buffer.from(d, "hex"); });
         out.filter((l) => l.startsWith("LAMPORTS ")).forEach((l) => { const [, i, v] = l.split(" "); st.lamports[ix.keys[Number(i)].pubkey.toBase58()] = BigInt(v); });
       }
       return { ret, logs };
     };
     const node = async (url, init) => {
       const q = JSON.parse(init.body); let result = null, error = null;
-      if (q.method === "getAccountInfo") { const a = st.data[q.params[0]]; result = { value: a ? { data: [a.toString("base64"), "base64"], owner: PROGRAM, lamports: Number(bal(q.params[0])) } : null }; }
+      if (q.method === "getAccountInfo") { const a = st.data[q.params[0]]; result = { value: a ? { data: [a.toString("base64"), "base64"], owner: st.owner[q.params[0]], lamports: Number(bal(q.params[0])) } : null }; }
       else if (q.method === "getBalance") result = { value: Number(bal(q.params[0])) };
+      else if (q.method === "getTokenAccountsByOwner") result = { value: Object.keys(st.data).filter((k) => st.owner[k] === q.params[1].programId && st.data[k].length === 165 && new web3.PublicKey(st.data[k].subarray(32, 64)).toBase58() === q.params[0])
+        .map((k) => ({ pubkey: k, account: { data: { parsed: { info: { mint: new web3.PublicKey(st.data[k].subarray(0, 32)).toBase58(), tokenAmount: { amount: String(st.data[k].readBigUInt64LE(64)), decimals: 6, uiAmountString: String(Number(st.data[k].readBigUInt64LE(64)) / 1e6) } } } } } })) };
       else if (q.method === "getLatestBlockhash") result = { value: { blockhash: web3.Keypair.generate().publicKey.toBase58() } };
-      else if (q.method === "getMinimumBalanceForRentExemption") result = 2004480;
+      else if (q.method === "getMinimumBalanceForRentExemption") result = Number(RENT);
       else if (q.method === "getSignatureStatuses") result = { value: [{ confirmationStatus: "confirmed", err: null }] };
       else if (q.method === "sendTransaction" || q.method === "simulateTransaction") {
-        const tx = web3.Transaction.from(Buffer.from(q.params[0], "base64")), send = q.method === "sendTransaction"; let logs = [], failed = false;
+        const raw = Buffer.from(q.params[0], "base64"), tx = web3.Transaction.from(raw), send = q.method === "sendTransaction"; let logs = [], failed = false;
         if (send && !tx.verifySignatures()) error = { message: "signature verification failed" };
         else for (const ix of tx.instructions) {
           if (ix.programId.equals(web3.ComputeBudgetProgram.programId)) continue;
           if (ix.programId.equals(web3.SystemProgram.programId)) {
             if (!send) continue;
             const kind = web3.SystemInstruction.decodeInstructionType(ix);
-            if (kind === "Create") { const c = web3.SystemInstruction.decodeCreateAccount(ix); st.data[c.newAccountPubkey.toBase58()] = Buffer.alloc(c.space); st.lamports[c.newAccountPubkey.toBase58()] = BigInt(c.lamports); }
+            if (kind === "Create") { const c = web3.SystemInstruction.decodeCreateAccount(ix), b = c.newAccountPubkey.toBase58(); st.data[b] = Buffer.alloc(c.space); st.owner[b] = c.programId.toBase58(); st.lamports[b] = BigInt(c.lamports); }
             if (kind === "Transfer") { const t = web3.SystemInstruction.decodeTransfer(ix); st.lamports[t.toPubkey.toBase58()] = bal(t.toPubkey.toBase58()) + BigInt(t.lamports); }
+            continue;
+          }
+          if (ix.programId.equals(ATA)) { if (send && !st.data[ix.keys[1].pubkey.toBase58()]) makeTokenAccount(ix.keys[1].pubkey, ix.keys[2].pubkey, ix.keys[3].pubkey); continue; }
+          if (ix.programId.equals(TOKEN)) {                                  // a wallet's own TransferChecked
+            const from = st.data[ix.keys[0].pubkey.toBase58()], to = st.data[ix.keys[2].pubkey.toBase58()], amount = ix.data.readBigUInt64LE(1);
+            if (!from || !to || from.readBigUInt64LE(64) < amount || !ix.keys[3].isSigner) { failed = true; break; }
+            if (send) { from.writeBigUInt64LE(from.readBigUInt64LE(64) - amount, 64); to.writeBigUInt64LE(to.readBigUInt64LE(64) + amount, 64); }
             continue;
           }
           const r = runIx(ix, send); logs = logs.concat(r.logs);
           if (r.ret !== 0) { failed = true; break; }
         }
-        if (send) { st.sent.push({ tx, failed }); if (failed) error = { message: "Transaction simulation failed", data: { logs } }; else if (!error) result = "5".repeat(80) + String(st.sent.length).padStart(8, "1"); }
+        if (send) { st.sent.push({ tx, failed, bytes: raw.length }); if (failed) error = { message: "Transaction simulation failed", data: { logs } }; else if (!error) result = "5".repeat(80) + String(st.sent.length).padStart(8, "1"); }
         else { st.sims.push({ tx, failed }); result = { value: { err: failed ? { InstructionError: [1, "Custom"] } : null, logs } }; }
       }
       return { ok: true, status: 200, json: async () => (error ? { error } : { result }) };
     };
-    const loadWith = (url) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/quantum/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; w.crypto.getRandomValues = (a) => require("crypto").webcrypto.getRandomValues(a); } }); return { w: dom.window, d: dom.window.document, errors }; };
-    const me = web3.Keypair.generate(), friend = web3.Keypair.generate().publicKey;
+    const loadWith = (url) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/quantum/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; w.printed = 0; w.print = () => { w.printed++; }; w.crypto.getRandomValues = (a) => require("crypto").webcrypto.getRandomValues(a); } }); return { w: dom.window, d: dom.window.document, errors }; };
+    const me = web3.Keypair.generate(), friend = web3.Keypair.generate().publicKey, mint = web3.Keypair.generate().publicKey;
+    { const d = Buffer.alloc(82); d[44] = 6; d[45] = 1; st.data[mint.toBase58()] = d; st.owner[mint.toBase58()] = TOKEN.toBase58(); makeTokenAccount(ataOf(me.publicKey, mint), me.publicKey, mint, 1000_000000n); st.lamports[me.publicKey.toBase58()] = 1234500000n; }
     const g = loadWith("https://example.test/quantum/");
     const el = (id) => g.d.getElementById(id), until = async (f, ms = 15000) => { for (let t = 0; t < ms && !f(); t += 100) await wait(100); return f(); };
-    g.w.phantom = { solana: { connect: async () => ({ publicKey: me.publicKey }), signTransaction: async (tx) => { tx.partialSign(me); return tx; } } };
+    const connectAs = (win, kp) => { win.phantom = { solana: { connect: async () => ({ publicKey: kp.publicKey }), signTransaction: async (tx) => { tx.partialSign(kp); return tx; } } }; };
+    connectAs(g.w, me);
+
+    // Is a wallet exposed?
+    el("ex-address").value = me.publicKey.toBase58(); el("ex-check").click();
+    await until(() => /Exposed/.test(el("ex-say").textContent));
+    check("quantum exposure: a wallet address is its public key, and the page says what sits behind it", /Exposed, like every Solana wallet/.test(el("ex-say").textContent) && /1\.2345 SOL/.test(el("ex-say").textContent) && /1 coin/.test(el("ex-say").textContent) && /No such computer exists today/.test(el("ex-say").textContent), el("ex-say").textContent);
+    el("ex-address").value = web3.PublicKey.findProgramAddressSync([Buffer.from("qv"), me.publicKey.toBuffer()], programKey)[0].toBase58(); el("ex-check").click(); await wait(50);
+    check("quantum exposure: a program's address has no key to break", /No key to break/.test(el("ex-say").textContent), el("ex-say").textContent);
+    el("ex-address").value = "nonsense"; el("ex-check").click();
+    check("quantum exposure: a bad address is explained", /not a valid Solana address/.test(el("ex-say").textContent));
+    await until(() => /nobody can change it/.test(el("p-facts").textContent) || !lockedList.length, 3000);
+    check("quantum: who can change the program is read from Solana, not assumed", lockedList.length ? /locked: nobody can change it \(read from Solana just now\)/.test(el("p-facts").textContent) && /locked copy/.test(el("which-program").textContent) : /deploy key can still replace/.test(el("which-program").textContent), el("p-facts").textContent);
+
     el("make-seed").click();
     const phrase = el("seed").textContent.replace(/\s/g, "");
-    check("quantum vault: making a key shows a recovery phrase, and nothing can be created until it is saved", /^[0-9a-f]{64}$/.test(phrase) && el("create").disabled && !el("seed-wrap").hidden);
+    check("quantum vault: making a key shows a recovery phrase, and nothing can be created until it is saved", /^[0-9a-f]{64}$/.test(phrase) && el("create").disabled && !el("seed-wrap").hidden && el("guard-wrap").hidden);
+    el("print-new").click();
+    check("quantum vault: the backup sheet carries the phrase and the vault's address, and is only ever printed", g.w.printed === 1 && el("sheet").textContent.replace(/\s/g, "").includes(phrase) && /Vault address/.test(el("sheet").textContent) && el("sheet").querySelectorAll("section").length === 1);
     el("seed-ok").checked = true; el("seed-ok").dispatchEvent(new g.w.Event("change"));
     el("deposit").value = "0.5"; el("create").click();
     await until(() => !el("vault-view").hidden);
-    const open = st.sent[0].tx, address = g.w.location.search.slice(7);
-    check("quantum vault: one approval creates the vault, opens it under the hash key and deposits", st.sent.length === 1 && !st.sent[0].failed && open.instructions.length === 3 && open.instructions[1].programId.equals(programKey) && bal(address) === 2004480n + 500000000n && /0\.5/.test(el("kv").textContent) && /key number 1/.test(el("kv").textContent) && /holds the phrase/.test(el("kv").textContent), el("kv").textContent + el("create-note").textContent);
+    const open = st.sent[0].tx, address = g.w.location.search.slice(7), vaultKey = new web3.PublicKey(address);
+    check("quantum vault: one approval creates the vault, opens it under the hash key and deposits", st.sent.length === 1 && !st.sent[0].failed && open.instructions.length === 3 && open.instructions[1].programId.equals(programKey) && bal(address) === RENT + 500000000n && /0\.5/.test(el("kv").textContent) && /key number 1/.test(el("kv").textContent) && /holds the phrase/.test(el("kv").textContent) && /paid at once/.test(el("kv").textContent) && el("sheet").textContent.includes(address), el("kv").textContent + el("create-note").textContent);
     check("quantum vault: the phrase never left the browser: the chain holds only the key's fingerprint", !hexOf(open.serialize({ requireAllSignatures: false })).includes(phrase) && st.data[address].subarray(32, 64).some((x) => x !== 0));
+    await until(() => /nobody can change it/.test(el("kv").textContent), 3000);
+    check("quantum vault: the vault says who can change its program", /locked: nobody can change it/.test(el("kv").textContent), el("kv").textContent);
     el("amount").value = "0.2"; el("to").value = friend.toBase58(); el("sign").click();
     check("quantum vault: signing a spend uses the key on that one message, and saves it before anything is sent", !el("pending").hidden && el("spend-form").hidden && /0\.2 SOL/.test(el("pending-say").textContent) && /can only ever send this/.test(el("pending-say").textContent) && !!g.w.localStorage.getItem("philcoin.qvault.pending." + address) && st.sent.length === 1, el("sign-note").textContent);
     el("steal").click();
     await until(() => !el("steal-say").hidden);
-    check("quantum vault: three ways to misuse the signature are run against the real program and all refused", st.sims.length === 3 && st.sims.every((x) => x.failed) && el("steal-say").querySelectorAll("li").length === 3 && !/NOT refused/.test(el("steal-say").textContent) && st.sent.length === 1 && bal(address) === 2004480n + 500000000n, el("steal-say").textContent);
+    check("quantum vault: three ways to misuse the signature are run against the real program and all refused", st.sims.length === 3 && st.sims.every((x) => x.failed) && el("steal-say").querySelectorAll("li").length === 3 && !/NOT refused/.test(el("steal-say").textContent) && st.sent.length === 1 && bal(address) === RENT + 500000000n, el("steal-say").textContent);
     el("send").click();
     await until(() => !el("spend-done").hidden);
     const spend = st.sent[1].tx, ix = spend.instructions[spend.instructions.length - 1];
-    check("quantum vault: the spend lands with the wallet signing only as fee payer", st.sent.length === 2 && !st.sent[1].failed && spend.signatures.length === 1 && ix.keys.every((k) => !k.isSigner) && bal(friend.toBase58()) === 200000000n && bal(address) === 2004480n + 300000000n, el("send-note").textContent);
+    check("quantum vault: the spend lands with the wallet signing only as fee payer", st.sent.length === 2 && !st.sent[1].failed && spend.signatures.length === 1 && ix.keys.every((k) => !k.isSigner) && bal(friend.toBase58()) === 200000000n && bal(address) === RENT + 300000000n, el("send-note").textContent);
     check("quantum vault: the vault moved to its next key and the page says so", /key number 2/.test(el("kv").textContent) && /0\.3/.test(el("kv").textContent) && !el("spend-form").hidden && el("pending").hidden && !g.w.localStorage.getItem("philcoin.qvault.pending." + address) && g.errors.length === 0, el("kv").textContent + g.errors.join("|"));
-    const replay = new web3.Transaction().add(ix);
-    check("quantum vault: the used signature is refused if anyone sends it again", runIx(replay.instructions[0], false).ret !== 0);
+    check("quantum vault: the used signature is refused if anyone sends it again", runIx(new web3.Transaction().add(ix).instructions[0], false).ret !== 0);
+
+    // A coin in the vault.
+    const authority = web3.PublicKey.findProgramAddressSync([Buffer.from("qv"), vaultKey.toBuffer()], programKey)[0], vaultTokens = ataOf(authority, mint), friendTokens = ataOf(friend, mint);
+    el("add-coin").value = mint.toBase58(); el("add-amount").value = "250"; el("add-send").click();
+    await until(() => /Deposited/.test(el("add-note").textContent));
+    check("quantum vault: a coin is deposited into the vault's own token account and listed", !st.sent[2].failed && tokens(vaultTokens) === 250_000000n && tokens(ataOf(me.publicKey, mint)) === 750_000000n && /250/.test(el("kv").textContent) && el("coin").options.length === 2 && el("all-wrap").hidden, el("add-note").textContent + el("kv").textContent);
+    el("coin").value = mint.toBase58(); el("coin").dispatchEvent(new g.w.Event("change")); el("amount").value = "100"; el("to").value = friend.toBase58(); el("sign").click();
+    el("steal").click();
+    await until(() => !el("steal-say").hidden);
+    check("quantum vault: a signed coin spend cannot be redirected, raised or re-keyed either", st.sims.length === 6 && st.sims.every((x) => x.failed) && !/NOT refused/.test(el("steal-say").textContent) && tokens(vaultTokens) === 250_000000n, el("steal-say").textContent);
+    el("send").click();
+    await until(() => !el("spend-done").hidden && /Paid 100/.test(el("spend-done").textContent));
+    const coinSpend = st.sent[4];
+    check("quantum vault: the coin is paid to the recipient's token account, made first if it was missing", st.sent.length === 5 && !coinSpend.failed && st.sent[3].tx.instructions[0].programId.equals(ATA) && tokens(friendTokens) === 100_000000n && tokens(vaultTokens) === 150_000000n && /key number 3/.test(el("kv").textContent) && /150/.test(el("kv").textContent), el("send-note").textContent + el("spend-done").textContent);
+    check("quantum vault: a coin spend fits in one Solana transaction, signed by the fee payer alone", coinSpend.bytes <= 1232 && coinSpend.tx.signatures.length === 1 && coinSpend.tx.instructions[1].keys.every((k) => !k.isSigner), String(coinSpend.bytes));
+    el("coin").value = mint.toBase58(); el("amount").value = "150"; el("sign").click(); el("send").click();
+    await until(() => tokens(vaultTokens) === 0n);
+    await until(() => /key number 4/.test(el("kv").textContent));
+    check("quantum vault: with its coins gone, the vault can be emptied and closed", st.sent.length === 6 && tokens(friendTokens) === 250_000000n && el("coin").options.length === 1 && !el("all-wrap").hidden, el("kv").textContent);
     el("all").checked = true; el("all").dispatchEvent(new g.w.Event("change")); el("sign").click(); el("send").click();
     await until(() => /closed/.test(el("kv").textContent));
-    check("quantum vault: withdrawing everything closes the vault", st.sent.length === 3 && !st.sent[2].failed && bal(address) === 2004480n && bal(friend.toBase58()) === 500000000n && el("spend-wrap").hidden, el("kv").textContent + el("send-note").textContent);
+    check("quantum vault: withdrawing everything closes the vault", st.sent.length === 7 && !st.sent[6].failed && bal(address) === RENT && bal(friend.toBase58()) === 500000000n && el("spend-wrap").hidden && el("add").hidden && g.errors.length === 0, el("kv").textContent + el("send-note").textContent + g.errors.join("|"));
+
+    // A vault with a waiting time and a guard key.
+    const h = loadWith("https://example.test/quantum/"), hl = (id) => h.d.getElementById(id), sentBefore = st.sent.length;
+    connectAs(h.w, me);
+    hl("guarded").checked = true; hl("guarded").dispatchEvent(new h.w.Event("change"));
+    { const o = h.d.createElement("option"); o.value = "1"; o.textContent = "1 second"; hl("delay").appendChild(o); hl("delay").value = "1"; }
+    hl("make-seed").click();
+    const phrase1 = hl("seed").textContent.replace(/\s/g, ""), guardPhrase = hl("guard-seed").textContent.replace(/\s/g, "");
+    hl("print-new").click();
+    check("quantum guard: a guarded vault gets two phrases, printed on separate pages", !hl("delay-wrap").hidden && !hl("guard-wrap").hidden && /^[0-9a-f]{64}$/.test(guardPhrase) && guardPhrase !== phrase1 && hl("sheet").querySelectorAll("section").length === 2 && /both phrases/.test(hl("seed-ok-say").textContent));
+    hl("seed-ok").checked = true; hl("seed-ok").dispatchEvent(new h.w.Event("change")); hl("deposit").value = "0.5"; hl("create").click();
+    await until(() => !hl("vault-view").hidden);
+    const slow = h.w.location.search.slice(7);
+    check("quantum guard: the vault is opened with its waiting time, and the guard phrase is not kept by the page", /wait 1 second, and the guard key can cancel/.test(hl("kv").textContent) && !hl("rekey").hidden && !JSON.stringify(Object.assign({}, h.w.localStorage)).includes(guardPhrase) && hl("all-wrap").hidden, hl("kv").textContent + hl("create-note").textContent);
+    // Someone with the vault's phrase signs a withdrawal.
+    const thief = web3.Keypair.generate().publicKey;
+    hl("amount").value = "0.5"; hl("to").value = thief.toBase58(); hl("sign").click(); hl("send").click();
+    await until(() => !hl("waiting").hidden);
+    check("quantum guard: a signed withdrawal is recorded and waits; nothing is paid", /Signed and recorded/.test(hl("spend-done").textContent) && /A withdrawal is waiting/.test(hl("waiting").textContent) && /0\.5 SOL/.test(hl("waiting").textContent) && bal(thief.toBase58()) === 0n && bal(slow) === RENT + 500000000n && hl("spend-form").hidden && /One withdrawal at a time/.test(hl("spend-need").textContent), hl("waiting").textContent + hl("send-note").textContent);
+    hl("guard-in").value = phrase1; hl("rekey-make").click();
+    check("quantum guard: the vault's own phrase is not accepted as the guard phrase", /not this vault's guard phrase/.test(hl("rekey-note").textContent) && hl("rekey-ready").hidden);
+    hl("guard-in").value = guardPhrase; hl("rekey-make").click();
+    const phrase2 = hl("rekey-seed").textContent.replace(/\s/g, "");
+    check("quantum guard: the guard phrase prepares a cancel with a brand-new vault phrase, to be saved before it is sent", !hl("rekey-ready").hidden && /^[0-9a-f]{64}$/.test(phrase2) && phrase2 !== phrase1 && hl("rekey-send").disabled && hl("guard-in").value === "");
+    hl("rekey-ok").checked = true; hl("rekey-ok").dispatchEvent(new h.w.Event("change")); hl("rekey-send").click();
+    await until(() => /Re-keyed/.test(hl("view-note").textContent));
+    const cancelTx = st.sent[st.sent.length - 1];
+    check("quantum guard: the cancel lands: nothing is waiting, the stolen phrase is dead and the browser holds the new one", !cancelTx.failed && cancelTx.bytes <= 1232 && hl("waiting").hidden && /Re-keyed by the guard/.test(hl("kv").textContent) && /holds the phrase for the current key/.test(hl("kv").textContent) && h.w.localStorage.getItem("philcoin.qvault.seed." + slow) === phrase2 && bal(thief.toBase58()) === 0n && bal(slow) === RENT + 500000000n && !hl("spend-form").hidden, hl("kv").textContent + hl("rekey-send-note").textContent);
+    // The owner's own withdrawal, with the new phrase, through the waiting time.
+    hl("amount").value = "0.1"; hl("to").value = friend.toBase58(); hl("sign").click(); hl("send").click();
+    await until(() => !hl("waiting").hidden);
+    const friendBefore = bal(friend.toBase58());
+    await wait(2100); hl("refresh").click();
+    await until(() => !hl("finish").disabled, 5000);
+    hl("finish").click();
+    await until(() => hl("waiting").hidden);
+    check("quantum guard: after the wait, the withdrawal signed with the new phrase is completed", !st.sent[st.sent.length - 1].failed && bal(friend.toBase58()) === friendBefore + 100000000n && bal(slow) === RENT + 400000000n && /0\.4/.test(hl("kv").textContent) && st.sent.length === sentBefore + 5 && h.errors.length === 0, hl("finish-note").textContent + hl("kv").textContent + h.errors.join("|"));
+
     // Another browser: watching needs no phrase, spending does.
-    const v2 = web3.Keypair.generate(), seed2 = require("crypto").randomBytes(32);
     const w = loadWith("https://example.test/quantum/?vault=" + address);
     await until(() => !w.d.getElementById("vault-view").hidden, 5000);
-    check("quantum vault: anyone can watch a vault by its address, without the phrase", /closed/.test(w.d.getElementById("kv").textContent) && /can watch, not spend/.test(w.d.getElementById("kv").textContent) && w.errors.length === 0, w.errors.join("|"));
+    check("quantum vault: anyone can watch a vault by its address, without the phrase", /closed/.test(w.d.getElementById("kv").textContent) && /can watch, not spend/.test(w.d.getElementById("kv").textContent) && w.d.getElementById("print-view").hidden && w.errors.length === 0, w.errors.join("|"));
+    const back = loadWith("https://example.test/quantum/");
+    back.d.getElementById("open-address").value = slow; back.d.getElementById("open-seed").value = phrase2.replace(/(.{8})/g, "$1 "); back.d.getElementById("open").click();
+    await until(() => !back.d.getElementById("vault-view").hidden, 5000);
+    check("quantum vault: the printed phrase, typed with its spaces, opens the vault for spending elsewhere", /holds the phrase for the current key/.test(back.d.getElementById("kv").textContent) && !back.d.getElementById("spend-form").hidden && !back.d.getElementById("print-view").hidden, back.d.getElementById("kv").textContent + back.d.getElementById("open-note").textContent);
     const bad = loadWith("https://example.test/quantum/?vault=nonsense"); await wait(200);
     check("quantum vault: a bad address is explained", /not a valid/.test(bad.d.getElementById("open-note").textContent) && bad.d.getElementById("vault-view").hidden && bad.errors.length === 0, bad.d.getElementById("open-note").textContent);
   }
