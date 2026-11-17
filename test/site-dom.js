@@ -26,12 +26,12 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
   {
     const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
-    const pages = ["tour/", "learn/", "playground/", "hacks/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
     check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
     check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
@@ -820,6 +820,40 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     check("quantum vault: the printed phrase, typed with its spaces, opens the vault for spending elsewhere", /holds the phrase for the current key/.test(back.d.getElementById("kv").textContent) && !back.d.getElementById("spend-form").hidden && !back.d.getElementById("print-view").hidden, back.d.getElementById("kv").textContent + back.d.getElementById("open-note").textContent);
     const bad = loadWith("https://example.test/quantum/?vault=nonsense"); await wait(200);
     check("quantum vault: a bad address is explained", /not a valid/.test(bad.d.getElementById("open-note").textContent) && bad.d.getElementById("vault-view").hidden && bad.errors.length === 0, bad.d.getElementById("open-note").textContent);
+  }
+
+  // Same Phil, every chain
+  {
+    const { execFileSync, execSync } = require("child_process"), web3c = require("@solana/web3.js"), { AbiCoder, id: keccakId } = require("ethers");
+    execSync("giveaway/native/build.sh out/phil-chains-native chains/runtime.c", { stdio: "inherit" });
+    const deployments = fs.existsSync("chains/deployments.json") ? JSON.parse(fs.readFileSync("chains/deployments.json", "utf8")) : {};
+    const liveEvm = Object.values(deployments).filter((d) => d.address).length, hasSolana = fs.existsSync("chains/program.json");
+    const nativeRun = (ix) => { const out = execFileSync("out/phil-chains-native", { input: ["slot 1", "time 1", `program ${"11".repeat(32)}`, `ix ${Buffer.from(ix).toString("hex")}`, ""].join("\n") }).toString().split("\n"); return { code: Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")))[1]), logs: out.filter((l) => l.startsWith("LOG ")).map((l) => l.slice(4)) }; };
+    const asked = [];
+    // The stand-in nodes answer with the native build of the same program: Solana as a simulation, the EVM chains as the contract's return value.
+    const node = async (url, init) => {
+      const q = JSON.parse(init.body); let result = null;
+      if (q.method === "simulateTransaction") { const tx = web3c.Transaction.from(Buffer.from(q.params[0], "base64")), r = nativeRun(tx.instructions[0].data); asked.push("solana"); result = { value: { err: r.code ? { InstructionError: [0, { Custom: r.code }] } : null, logs: r.logs.map((l) => "Program log: " + l), unitsConsumed: 9000 } }; }
+      else if (q.method === "eth_call") {
+        const data = q.params[0].data; asked.push(url);
+        if (data.startsWith(keccakId("imageSha256()").slice(0, 10))) result = "0x" + require("crypto").createHash("sha256").update(fs.readFileSync("chains/phil_chains.bin")).digest("hex");
+        else { const [bytes] = AbiCoder.defaultAbiCoder().decode(["bytes"], "0x" + data.slice(10)), r = nativeRun(Buffer.from(bytes.slice(2), "hex")); result = AbiCoder.defaultAbiCoder().encode(["uint256", "uint256", "string"], [r.code, 1101, r.logs.join("\n")]); }
+      }
+      return { ok: true, status: 200, json: async () => ({ result }) };
+    };
+    const errors = [];
+    const dom = new JSDOM(fs.readFileSync("docs/chains/index.html", "utf8"), { runScripts: "dangerously", url: "https://example.test/chains/", pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; } });
+    const d = dom.window.document, el = (id) => d.getElementById(id), until = async (f, ms = 8000) => { for (let t = 0; t < ms && !f(); t += 50) await wait(50); return f(); };
+    const live = 1 + (hasSolana ? 1 : 0) + liveEvm;
+    check("chains: the page loads, lists every machine, and is plain about what it is", d.querySelectorAll(".machine").length === 4 && /interpreted, not native/.test(el("limits").textContent) && /not a launchpad/.test(el("limits").textContent) && /are ours, are not Phil/.test(el("limits").textContent) && /not affiliated with Phil, Solana, Robinhood or BNB Chain/.test(d.body.textContent) && /RISC-V image/.test(el("p-facts").textContent) && el("answer").hidden && errors.length === 0, errors.join("|"));
+    el("ask").click();
+    await until(() => !el("answer").hidden);
+    check("chains: an honest note is ACCEPTED by every live machine, and they are asked without a wallet", new RegExp(`${live} machines?, one answer: ACCEPTED`).test(el("answer").textContent) && el("v-browser").textContent === "ACCEPTED" && /RISC-V instructions/.test(el("s-browser").textContent) && /Phil: ACCEPTED/.test(el("log").textContent) && d.querySelectorAll(".verdict.yes").length === live && (!hasSolana || asked.includes("solana")), el("answer").textContent + " " + el("machines").textContent);
+    if (liveEvm) check("chains: each contract is asked which image it holds", /holds the same image as this page/.test(el("machines").textContent), el("machines").textContent);
+    else check("chains: a chain that is not deployed yet says so, and is not counted", /waiting for test coins/.test(el("s-robinhood").textContent) && el("v-robinhood").textContent === "not live yet");
+    el("tamper").checked = true; el("ask").click();
+    await until(() => /REJECTED/.test(el("answer").textContent));
+    check("chains: one changed byte is REJECTED by every live machine, with the same number", new RegExp(`${live} machines?, one answer: REJECTED`).test(el("answer").textContent) && el("v-browser").textContent === "refused · 1201" && d.querySelectorAll(".verdict.no").length === live && /do not match the declared digest/.test(el("log").textContent) && errors.length === 0, el("answer").textContent + errors.join("|"));
   }
 
   // Burn vault
