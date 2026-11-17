@@ -3,11 +3,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.poHERvf2PF/phil.ll -o /tmp/tmp.poHERvf2PF/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.rFPTg8c28A/phil.ll -o /tmp/tmp.rFPTg8c28A/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 21800 Nov 17 14:43 chains/out/phil_chains.so
+-rwxr-xr-x 1 runner runner 21800 Nov 17 14:46 chains/out/phil_chains.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -41,7 +41,5 @@ ok   Solana: the tampered note is REJECTED by Phil (1201)
 program 2ndkfAjfKEN5AWsBwNuExKw3aLrm6JNMYKWzu7nVrEwx is deployed and unchanged
 ok   Solana: the honest note is ACCEPTED 
 ok   Solana: the tampered note is REJECTED by Phil (1201) 
-Robinhood Chain testnet: deployed at 0x3cf79D42178E97DEB0Ff2cCeC150061715fFb951 for 3124896 gas
 ok   Robinhood Chain testnet: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built 
-Robinhood Chain testnet: a real upload was accepted for 669840 gas
-BNB Smart Chain testnet: insufficient funds for intrinsic transaction cost
+BNB Smart Chain testnet: waiting for test BNB: it holds 0.0005 and deploying needs about 0.0010013; send more to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63

@@ -6,7 +6,7 @@
   "deployer": "0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
   "checkedOn": "2026-11-17",
   "rpc": "https://rpc.testnet.chain.robinhood.com",
-  "balance": "0.01",
+  "balance": "0.00996205264",
   "status": "live",
   "address": "0x3cf79D42178E97DEB0Ff2cCeC150061715fFb951",
   "build": "6e816b25d69c814c-58493bb3efec3bc7",
@@ -29,7 +29,7 @@
   "checkedOn": "2026-11-17",
   "rpc": "https://bsc-testnet-rpc.publicnode.com",
   "balance": "0.0005",
-  "status": "waiting for test BNB: send some to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
-  "error": "insufficient funds for intrinsic transaction cost"
+  "status": "waiting for test BNB: it holds 0.0005 and deploying needs about 0.0010013; send more to 0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
+  "gasPrice": "294500000"
  }
 }
