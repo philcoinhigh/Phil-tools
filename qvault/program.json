@@ -8,11 +8,11 @@
   "selftest": {
     "ok": true,
     "openUnits": 4955,
-    "spendUnits": 610040,
-    "tokenUnits": 547362,
+    "spendUnits": 543740,
+    "tokenUnits": 547460,
     "cancelUnits": 543335,
     "finishUnits": 4467,
-    "hashSteps": 2295
+    "hashSteps": 2040
   },
   "deployedOn": "2026-11-17"
 }
