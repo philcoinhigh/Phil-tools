@@ -1,0 +1,15 @@
+{
+  "programId": "72oBGfeCf9YZLv3J4xicdskhPb9KjeHyAUvSCNx1JM6J",
+  "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+  "deployedSha256": "b521519788958cb2152f0b37b2b0f0f37f444bc48da16f1e521278efb80d8840",
+  "programBytes": 30568,
+  "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
+  "checkedOn": "2026-11-17",
+  "selftest": {
+    "ok": true,
+    "openUnits": 3975,
+    "spendUnits": 543553,
+    "hashSteps": 2040
+  },
+  "deployedOn": "2026-11-17"
+}

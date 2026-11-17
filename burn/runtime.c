@@ -30,7 +30,10 @@ extern u64 sol_get_clock_sysvar(struct sol_clock *out);
 struct sol_meta { const u8 *pubkey; bool is_writable; bool is_signer; };
 struct sol_instruction { const u8 *program_id; struct sol_meta *accounts; u64 account_len; u8 *data; u64 data_len; };
 struct sol_account_info { const u8 *key; u64 *lamports; u64 data_len; u8 *data; const u8 *owner; u64 rent_epoch; bool is_signer; bool is_writable; bool executable; };
-extern u64 sol_invoke_signed_c(const struct sol_instruction *instruction, const struct sol_account_info *infos, int info_count, const void *signer_seeds, int seed_count);
+struct sol_seed { const u8 *addr; u64 len; };
+struct sol_seeds { const struct sol_seed *addr; u64 len; };
+extern u64 sol_invoke_signed_c(const struct sol_instruction *instruction, const struct sol_account_info *infos, int info_count, const struct sol_seeds *signer_seeds, int seed_count);
+extern u64 sol_create_program_address(const struct sol_seed *seeds, int seed_count, const u8 *program_id, u8 *address_out);
 
 extern int UploadServer(void *policy_context, void *supported_versions, void *transport);
 
@@ -47,7 +50,7 @@ static u64 le64(const u8 *p) { u64 v = 0; for (int i = 7; i >= 0; i--) v = (v <<
 static void put64(u8 *p, u64 v) { for (int i = 0; i < 8; i++) { p[i] = (u8)v; v >>= 8; } }
 
 // ---- instructions, outcomes, limits ----
-enum { OP_OPEN = 1, OP_BURN = 2 };
+enum { OP_OPEN = 1, OP_BURN = 2, OP_ROLL = 3 };
 enum { NONE = 0, ACCEPTED = 1, REJECTED = 2, UNSUPPORTED = 3, POLICY_REJECTED = 4, CANCELLED = 5,
        RECOGNITION_FAILED = 6, HELLO_POLICY_FAILED = 7, STORAGE_FAILED = 8, EARLY_EOF = 9 };
 enum { POLICY_TOO_LONG = 1, POLICY_WRONG_KIND = 2, POLICY_ALREADY_OPEN = 3, POLICY_BAD_VAULT = 4, POLICY_NOT_OPEN = 5 };
@@ -78,6 +81,8 @@ enum { EMPTY = 0, OPEN = 1 };
 #define V_LAST_PAID 120
 #define V_RULE_DIGEST 128  /* what Phil's server validated at OPEN */
 #define V_LABEL 160        /* up to 32 bytes */
+#define V_ROLLED 192       /* u64: lamports of launchpad creator fees rolled into the pot */
+#define V_ROLLS 200         /* u64: how many times */
 
 // ---- working state, in the heap region ----
 struct transport { const u8 *bytes; u64 available; u64 cursor; };
@@ -86,7 +91,7 @@ struct hello { const u8 *versions; u16 count; };
 struct begin { u64 length; const u8 *kind; const u8 *digest; u8 kind_len; };
 struct payload { const u8 *bytes; u64 length; u8 held; };
 struct state {
-  struct sol_account_info accounts[6];
+  struct sol_account_info accounts[12];
   u64 account_count;
   const u8 *program_id;
   struct transport transport;
@@ -388,12 +393,85 @@ void phil_call_should_cancel_upload(void) {}
 bool phil_branch_condition(void) { return 0; }
 void phil_cleanup(void) {}
 
+
+// ================= ROLL: a launchpad's creator fees, rolled into the pot =================
+//
+// On Raydium LaunchLab (which higher.fun launches on) a coin's creator earns a share of every
+// trade, and the creator is named when the coin is made: it does not have to be a person. Each
+// vault has one address only this program can sign for, derived from the vault's own address. A
+// coin launched with that address as its creator pays its creator fees to nobody who can spend
+// them: the only thing that can be done with them is this instruction, which anyone may send. It
+// claims the fees and moves every lamport of them into the vault, where the vault's one rule
+// applies: whoever burns the coin takes the pot.
+//
+// This is not an upload and does not go through Phil's server: it takes no terms from anyone.
+// Accounts: the vault, its creator address, the LaunchLab program, LaunchLab's creator-fee
+// authority, the creator's fee vault, the creator address's wrapped-SOL account, the wrapped-SOL
+// mint, the token program, the system program, the associated-token program. Data: 3, bump.
+static const u8 LAUNCHLAB_MAINNET[32] = { 0x05, 0x04, 0x3b, 0x95, 0x4d, 0xca, 0x26, 0xe1, 0xef, 0x91, 0xb5, 0x2c, 0x4f, 0x8f, 0x89, 0xaf, 0x8a, 0x6f, 0x5a, 0xc8, 0xc6, 0x21, 0x56, 0xf1, 0x71, 0xcf, 0x0f, 0x21, 0xac, 0x51, 0xc9, 0x22 };   /* LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj */
+static const u8 LAUNCHLAB_DEVNET[32] = { 0xb8, 0x98, 0x96, 0xe0, 0xf0, 0x22, 0x82, 0x01, 0xd6, 0x63, 0x03, 0x3e, 0x0d, 0x9e, 0x9a, 0x31, 0x3b, 0x42, 0x9b, 0x1f, 0x4a, 0x77, 0x7d, 0x7c, 0x75, 0x95, 0x12, 0x7a, 0xa8, 0xa6, 0xb7, 0x71 };   /* DRay6fNdQ5J82H7xV6uq2aV3mNrUZ1J4PgSKsWgptcm6 */
+static const u8 WSOL_MINT[32] = { 0x06, 0x9b, 0x88, 0x57, 0xfe, 0xab, 0x81, 0x84, 0xfb, 0x68, 0x7f, 0x63, 0x46, 0x18, 0xc0, 0x35, 0xda, 0xc4, 0x39, 0xdc, 0x1a, 0xeb, 0x3b, 0x55, 0x98, 0xa0, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x01 };   /* So11111111111111111111111111111111111111112 */
+static const u8 ATA_PROGRAM[32] = { 0x8c, 0x97, 0x25, 0x8f, 0x4e, 0x24, 0x89, 0xf1, 0xbb, 0x3d, 0x10, 0x29, 0x14, 0x8e, 0x0d, 0x83, 0x0b, 0x5a, 0x13, 0x99, 0xda, 0xff, 0x10, 0x84, 0x04, 0x8e, 0x7b, 0xd8, 0xdb, 0xe9, 0xf8, 0x59 };   /* ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL */
+static const u8 SYSTEM_PROGRAM[32] = { 0 };
+static const u8 CLAIM_CREATOR_FEE[8] = { 26, 97, 138, 203, 132, 171, 141, 252 };   /* LaunchLab's claim_creator_fee */
+static u64 roll(const u8 *ix, u64 ix_len) {
+  struct sol_account_info *vault = &S->accounts[0], *creator = &S->accounts[1], *launchlab = &S->accounts[2], *fee_auth = &S->accounts[3],
+    *fee_vault = &S->accounts[4], *wsol = &S->accounts[5], *mint = &S->accounts[6], *token = &S->accounts[7], *system = &S->accounts[8], *ata = &S->accounts[9];
+  u8 bump, expected[32], data[12];
+  u64 before, gained;
+  u8 *d;
+  if (ix_len != 2 || S->account_count != 10) return 141;
+  if (vault->data_len < VAULT_SIZE || !vault->is_writable || !same(vault->owner, S->program_id, 32) || vault->data[V_STATE] != OPEN) return 142;
+  bump = ix[1];
+  { struct sol_seed seeds[3] = { { (const u8 *)"creator", 7 }, { vault->key, 32 }, { &bump, 1 } };
+    if (sol_create_program_address(seeds, 3, S->program_id, expected) != 0 || !same(creator->key, expected, 32)) return 143; }
+  // Only these programs are ever called with the creator address's signature.
+  if (!same(launchlab->key, LAUNCHLAB_MAINNET, 32) && !same(launchlab->key, LAUNCHLAB_DEVNET, 32)) return 144;
+  if (!same(mint->key, WSOL_MINT, 32) || !same(token->key, TOKEN_PROGRAM, 32) || !same(system->key, SYSTEM_PROGRAM, 32) || !same(ata->key, ATA_PROGRAM, 32)) return 145;
+  if (!creator->is_writable || !fee_vault->is_writable || !wsol->is_writable) return 146;
+  d = vault->data;
+  before = *creator->lamports;
+  {
+    struct sol_seed seeds[3] = { { (const u8 *)"creator", 7 }, { vault->key, 32 }, { &bump, 1 } };
+    struct sol_seeds signer = { seeds, 3 };
+    // 1. Claim: the creator fees arrive as wrapped SOL in the creator address's own token account.
+    struct sol_meta claim_metas[8] = { { creator->key, 1, 1 }, { fee_auth->key, 0, 0 }, { fee_vault->key, 1, 0 }, { wsol->key, 1, 0 },
+                                       { mint->key, 0, 0 }, { token->key, 0, 0 }, { system->key, 0, 0 }, { ata->key, 0, 0 } };
+    struct sol_instruction claim = { launchlab->key, claim_metas, 8, (u8 *)CLAIM_CREATOR_FEE, 8 };
+    // 2. Unwrap: closing that account turns it back into plain SOL at the creator address.
+    struct sol_meta close_metas[3] = { { wsol->key, 1, 0 }, { creator->key, 1, 0 }, { creator->key, 0, 1 } };
+    u8 close_data[1] = { 9 };
+    struct sol_instruction close = { token->key, close_metas, 3, close_data, 1 };
+    // 0. Make sure that token account exists. The creator address pays its rent and gets it back when it is closed.
+    struct sol_meta make_metas[6] = { { creator->key, 1, 1 }, { wsol->key, 1, 0 }, { creator->key, 0, 0 }, { mint->key, 0, 0 }, { system->key, 0, 0 }, { token->key, 0, 0 } };
+    u8 make_data[1] = { 1 };                                       /* the associated-token program's CreateIdempotent */
+    struct sol_instruction make = { ata->key, make_metas, 6, make_data, 1 };
+    if (sol_invoke_signed_c(&make, S->accounts, (int)S->account_count, &signer, 1) != 0) return 152;
+    if (sol_invoke_signed_c(&claim, S->accounts, (int)S->account_count, &signer, 1) != 0) return 147;
+    if (sol_invoke_signed_c(&close, S->accounts, (int)S->account_count, &signer, 1) != 0) return 148;
+    if (*creator->lamports < before) return 149;                 /* the claim may not cost the address anything */
+    gained = *creator->lamports - before;
+    if (gained == 0) { LOG("Phil burn: ROLL found no creator fees to claim"); return 150; }
+    // 3. Everything that was claimed goes into the vault. Nothing stays behind and nothing goes anywhere else.
+    {
+      struct sol_meta pay_metas[2] = { { creator->key, 1, 1 }, { vault->key, 1, 0 } };
+      struct sol_instruction pay = { system->key, pay_metas, 2, data, 12 };
+      data[0] = 2; data[1] = 0; data[2] = 0; data[3] = 0; put64(data + 4, gained);
+      if (sol_invoke_signed_c(&pay, S->accounts, (int)S->account_count, &signer, 1) != 0) return 151;
+    }
+  }
+  put64(d + V_ROLLED, le64(d + V_ROLLED) + gained); put64(d + V_ROLLS, le64(d + V_ROLLS) + 1);
+  LOG("Phil burn: ROLLED. Creator fees claimed and added to the pot, in lamports:");
+  sol_log_64_(0, 0, 0, 0, gained);
+  return 0;
+}
+
 // ================= Solana's entry point =================
 u64 entrypoint(const u8 *input) {
   const u8 *in = input;
   const u8 *ix; u64 ix_len;
   u64 n = le64(in); in += 8;
-  if (n > 6) return 101;
+  if (n > 12) return 101;
   S->account_count = n;
   for (u64 i = 0; i < n; i++) {
     struct sol_account_info *a = &S->accounts[i];
@@ -413,6 +491,7 @@ u64 entrypoint(const u8 *input) {
   S->program_id = in;
   if (ix_len < 1) return 102;
   S->op = ix[0];
+  if (S->op == OP_ROLL) return roll(ix, ix_len);
   if (S->op != OP_OPEN && S->op != OP_BURN) return 103;
 
   S->transport.bytes = ix + 1; S->transport.available = ix_len - 1; S->transport.cursor = 0;

@@ -100,6 +100,40 @@ check("there is no other instruction: nothing withdraws", r.ret === 103 && same(
 const second = run({ slot: 7200, accounts: [vault(b.lamports[0] + 5_000n, b.data[0]), { ...mintAcct(0n), data: b.data[1] }, { ...tokenAcct(0n), data: b.data[2] }, sender(), tokenProgram()], ix: burnData(1n) });
 check("a later burn takes only the fees that arrived since", second.ret === 0 && second.lamports[3] === 50_000_000n + 5_000n && decodeVault(second.data[0])!.burns === 2 && decodeVault(second.data[0])!.totalBurned === 2n * THRESHOLD && decodeVault(second.data[0])!.totalPaid === FEES + 5_000n);
 
+// ---- ROLL: a launchpad's creator fees can only ever reach the vault ----
+{
+  const LAB = "b89896e0f0228201d663033e0d9e9a313b429b1f4a777d7c7595127aa8a6b771", AUTH = "a1".repeat(32), FEES = "a2".repeat(32), WSOLACC = "a3".repeat(32), ATA = "8c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f859";
+  const WSOL = "069b8857feab8184fb687f634618c035dac439dc1aeb3b5598a0f00000000001";
+  const BUMP = 254;
+  // The harness derives a program address as SHA-256(seeds, program, "ProgramDerivedAddress"), as Solana does.
+  const creatorKey = hex(sha256(concat(new TextEncoder().encode("creator"), unhex(VAULT), Uint8Array.of(BUMP), unhex(PROGRAM), new TextEncoder().encode("ProgramDerivedAddress"))));
+  const acct = (key: string, lamports: bigint, flag: 0 | 1 = 1, data = new Uint8Array(0), owner = SYSTEM): Acct => ({ key, owner, flag, data, lamports });
+  const wsolAcct = (holder: string) => { const d = new Uint8Array(165); d.set(unhex(WSOL), 0); d.set(unhex(holder), 32); return acct(WSOLACC, 0n, 1, d, TOKEN); };   // on Solana the claim creates this account and closing it returns its rent
+  const openVault = vault(RENT + 1000n);
+  const accounts = (o: { creator?: string; lab?: string; fees?: bigint; holder?: string; system?: string } = {}): Acct[] => [openVault, acct(o.creator ?? creatorKey, 4_000_000n), acct(o.lab ?? LAB, 1n, 0), acct(AUTH, 1n, 0),
+    acct(FEES, 1n + (o.fees ?? 250_000n)), wsolAcct(o.holder ?? creatorKey), acct(WSOL, 1n, 0), acct(TOKEN, 1n, 0), acct(o.system ?? SYSTEM, 1n, 0), acct(ATA, 1n, 0)];
+  const ix = Uint8Array.of(3, BUMP);
+  let x = run({ accounts: accounts(), ix });
+  const v = decodeVault(x.data[0])!;
+  check("ROLL: anyone can claim a coin's creator fees, and every lamport of them lands in the vault", x.ret === 0 && x.lamports[0] === RENT + 1000n + 250_000n && v.rolled === 250_000n && v.rolls === 1 && x.lamports[4] === 1n, `${x.ret} ${x.lamports.join(",")} ${v?.rolled}`);
+  check("ROLL: the creator address ends with exactly what it started with", x.lamports[1] === 4_000_000n && x.lamports[5] === 0n, x.lamports.join(","));
+  check("ROLL: the rolled fees are part of the pot the next burner takes", potOf(x.lamports[0], v) === 1000n + 250_000n);
+  x = run({ accounts: accounts({ fees: 0n }), ix });
+  check("ROLL: with no fees to claim, nothing changes", x.ret === 150 && x.lamports[0] === RENT + 1000n, String(x.ret));
+  x = run({ accounts: accounts({ creator: OTHER, holder: OTHER }), ix });
+  check("ROLL: only the vault's own creator address will do", x.ret === 143 && x.lamports[0] === RENT + 1000n, String(x.ret));
+  x = run({ accounts: accounts(), ix: Uint8Array.of(3, BUMP - 1) });
+  check("ROLL: a wrong bump does not name the creator address", x.ret === 143, String(x.ret));
+  x = run({ accounts: accounts({ lab: "c1".repeat(32) }), ix });
+  check("ROLL: the creator address signs only for the real launchpad program", x.ret === 144 && x.lamports[0] === RENT + 1000n && x.lamports[1] === 4_000_000n, String(x.ret));
+  x = run({ accounts: accounts({ system: "c2".repeat(32) }), ix });
+  check("ROLL: and only with the real system and token programs", x.ret === 145, String(x.ret));
+  x = run({ accounts: [emptyVault(), ...accounts().slice(1)], ix });
+  check("ROLL: a vault that was never opened takes no fees", x.ret === 142, String(x.ret));
+  x = run({ accounts: accounts().slice(0, 9), ix });
+  check("ROLL: every account must be named", x.ret === 141, String(x.ret));
+}
+
 const checker = [process.env.PHIL_REPO, "../phil", "/home/claude/src/phil"].filter(Boolean).map((p) => `${p}/scripts/check_runtime_abi.py`).find((p) => fs.existsSync(p));
 if (checker) {
   execSync("$(command -v clang-18 || command -v clang) --target=x86_64-unknown-linux-gnu -std=c17 -ffreestanding -fno-builtin -DPHIL_DRAW_C_STRUCT_RETURN -S -emit-llvm burn/runtime.c -o out/phil-burn-runtime.ll");

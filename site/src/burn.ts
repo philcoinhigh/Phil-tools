@@ -3,6 +3,7 @@ import { concat, utf8, uploadData, Upload } from "./draw";
 
 export const OP_OPEN = 1, OP_BURN = 2;
 export const KIND_OPEN = "phil-burn/open", KIND_OFFER = "phil-burn/offer";
+export const OP_ROLL = 3;
 export const VAULT_SIZE = 256;
 const u64le = (v: bigint) => { const b = new Uint8Array(8); new DataView(b.buffer).setBigUint64(0, v, true); return b; };
 
@@ -23,6 +24,8 @@ export interface Vault {
   open: boolean; label: string; threshold: bigint; reserve: bigint; mint: Uint8Array;
   openedSlot: number; openedTime: number; burns: number; totalBurned: bigint; totalPaid: bigint;
   lastSlot: number; lastTime: number; lastPaid: bigint; ruleDigest: Uint8Array;
+  /** Launchpad creator fees rolled into the pot so far, in lamports, and how many times. */
+  rolled: bigint; rolls: number;
 }
 export function decodeVault(d: Uint8Array): Vault | null {
   if (d.length < VAULT_SIZE || new TextDecoder().decode(d.slice(0, 8)) !== "PHILBURN") return null;
@@ -30,7 +33,7 @@ export function decodeVault(d: Uint8Array): Vault | null {
   const u = (at: number) => v.getBigUint64(at, true);
   return { open: d[8] === 1, label: new TextDecoder().decode(d.slice(160, 160 + d[9])), threshold: u(16), reserve: u(24), mint: d.slice(32, 64),
     openedSlot: Number(u(64)), openedTime: Number(u(72)), burns: Number(u(80)), totalBurned: u(88), totalPaid: u(96),
-    lastSlot: Number(u(104)), lastTime: Number(u(112)), lastPaid: u(120), ruleDigest: d.slice(128, 160) };
+    lastSlot: Number(u(104)), lastTime: Number(u(112)), lastPaid: u(120), ruleDigest: d.slice(128, 160), rolled: u(192), rolls: Number(u(200)) };
 }
 /** What the vault would pay right now: everything above its reserve. */
 export const potOf = (lamports: bigint, v: Vault) => (lamports > v.reserve ? lamports - v.reserve : 0n);

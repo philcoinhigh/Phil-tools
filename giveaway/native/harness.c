@@ -96,6 +96,40 @@ static int signed_by(const struct sol_account_info *a, const struct sol_meta *m,
 // The token programs, for the two instructions these programs use: Burn (8) and TransferChecked (12).
 uint64_t sol_invoke_signed_c(const struct sol_instruction *ix, const struct sol_account_info *infos, int n, const struct sol_seeds *seeds, int seed_count) {
   uint64_t amount, held, other;
+  static const uint8_t SYSTEM[32] = { 0 };
+  // The system program's Transfer: lamports move if the sender signed and has them.
+  if (!memcmp(ix->program_id, SYSTEM, 32) && ix->data_len == 12 && ix->data[0] == 2 && ix->account_len == 2) {
+    const struct sol_account_info *from = find(infos, n, ix->accounts[0].pubkey), *to = find(infos, n, ix->accounts[1].pubkey);
+    if (!from || !to || !signed_by(from, &ix->accounts[0], seeds, seed_count) || !from->is_writable || !to->is_writable) return 6;
+    memcpy(&amount, ix->data + 4, 8);
+    if (*from->lamports < amount) return 8;
+    *from->lamports -= amount; *to->lamports += amount;
+    return 0;
+  }
+  // A stand-in for a launchpad's claim_creator_fee (any program whose address starts 0xb8 0x98 or 0x05 0x04, as Raydium
+  // LaunchLab's do): if the creator signed, everything in the fee vault moves to the creator's wrapped-SOL account.
+  if (((ix->program_id[0] == 0xb8 && ix->program_id[1] == 0x98) || (ix->program_id[0] == 0x05 && ix->program_id[1] == 0x04)) && ix->data_len == 8 && ix->account_len == 8) {
+    const struct sol_account_info *creator = find(infos, n, ix->accounts[0].pubkey), *fees = find(infos, n, ix->accounts[2].pubkey), *wsol = find(infos, n, ix->accounts[3].pubkey);
+    if (!creator || !fees || !wsol || !signed_by(creator, &ix->accounts[0], seeds, seed_count)) { printf("LOG (launchpad) the creator did not sign\n"); return 6; }
+    if (wsol->data_len < 72 || memcmp(wsol->data + 32, creator->key, 32)) return 5;                     /* the creator's own token account */
+    *wsol->lamports += *fees->lamports - 1; *fees->lamports = 1;
+    return 0;
+  }
+  // The associated-token program's CreateIdempotent (1): the funder pays the new account's rent.
+  if (ix->program_id[0] == 0x8c && ix->program_id[1] == 0x97 && ix->data_len == 1 && ix->data[0] == 1 && ix->account_len == 6) {
+    const struct sol_account_info *funder = find(infos, n, ix->accounts[0].pubkey), *acct = find(infos, n, ix->accounts[1].pubkey);
+    if (!funder || !acct || !signed_by(funder, &ix->accounts[0], seeds, seed_count)) return 6;
+    if (*acct->lamports == 0) { if (*funder->lamports < 2039280) return 8; *funder->lamports -= 2039280; *acct->lamports += 2039280; }
+    return 0;
+  }
+  // The token program's CloseAccount (9): the account's lamports go to the destination.
+  if (!memcmp(ix->program_id, TOKEN, 32) && ix->data_len == 1 && ix->data[0] == 9 && ix->account_len == 3) {
+    const struct sol_account_info *acct = find(infos, n, ix->accounts[0].pubkey), *dest = find(infos, n, ix->accounts[1].pubkey), *auth = find(infos, n, ix->accounts[2].pubkey);
+    if (!acct || !dest || !auth || acct->data_len < 72) return 2;
+    if (memcmp(acct->data + 32, auth->key, 32) || !signed_by(auth, &ix->accounts[2], seeds, seed_count)) return 6;
+    *dest->lamports += *acct->lamports; *acct->lamports = 0;
+    return 0;
+  }
   if (memcmp(ix->program_id, TOKEN, 32) && memcmp(ix->program_id, TOKEN_2022, 32)) { printf("LOG (harness) call to a program that is not modelled\n"); return 1; }
   if (ix->data_len == 9 && ix->data[0] == 8 && ix->account_len == 3) {
     const struct sol_account_info *acct = find(infos, n, ix->accounts[0].pubkey), *mint = find(infos, n, ix->accounts[1].pubkey), *auth = find(infos, n, ix->accounts[2].pubkey);
@@ -134,9 +168,9 @@ static size_t unhex(const char *s, uint8_t *out) { size_t n = 0; if (s[0] == '-'
 
 int main(void) {
   static char line[200000];
-  static uint8_t input[400000], ix[4096], tmp[100000];
+  static uint8_t input[600000], ix[4096], tmp[100000];
   uint8_t *program = program_id;
-  uint8_t *accounts[8]; uint8_t *lamports[8]; size_t lens[8]; int n = 0;
+  uint8_t *accounts[12]; uint8_t *lamports[12]; size_t lens[12]; int n = 0;
   uint8_t *p = input + 8;
   size_t ix_len = 0;
   if (mmap((void *)0x300000000UL, 32768, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) { perror("mmap"); return 2; }

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Quantum-safe vault: funds no wallet key can open</title>
+<meta name="description" content="A vault on Solana opened by a hash-based one-time signature instead of a wallet key, so a quantum computer that breaks wallet keys cannot open it. Phil's compiled code gates every spend. Devnet, unaudited.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.panel { border: 1px solid var(--ink); background: var(--sheet); border-radius: 18px; padding: 18px 18px 20px; margin-top: 18px; }
+.panel h2 { margin: 0 0 6px; font: 600 21px var(--font-mark); letter-spacing: -.02em; } .panel > p { margin: 0 0 12px; max-width: 64ch; }
+label.f { display: block; font: 600 13px var(--font-body); margin: 12px 0 4px; }
+input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-code); padding: 10px 12px; border-radius: 10px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .quick button { border: 1px solid var(--rule); background: none; border-radius: 999px; padding: 4px 11px; font: 600 12.5px var(--font-body); color: var(--ink); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.say { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; font-size: 15px; background: var(--code-bg); } .say b { font-family: var(--font-code); }
+.say.bad { border-color: var(--bad); color: var(--bad); } .say.good { border-color: var(--good); }
+.agree { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14.5px; } .agree input { margin-top: 3px; width: 18px; height: 18px; }
+.locks { display: grid; gap: 12px; margin-top: 14px; }
+.lock { border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); overflow: hidden; }
+.lock .hd { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+.lock .hd b { font: 600 20px var(--font-code); letter-spacing: -.02em; } .lock .hd span { font-size: 13px; color: var(--muted); }
+.lock .st { display: inline-block; font: 600 11.5px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); }
+.lock .st.locked { background: var(--ink); color: var(--paper); } .lock .st.ready { background: var(--gold, #e8b23a); color: #15171a; } .lock .st.released { color: var(--muted); border-color: var(--rule); }
+.lock dl { margin: 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 12px; padding: 12px 14px; font-size: 14px; } .lock dt { color: var(--muted); font-size: 13px; } .lock dd { margin: 0; overflow-wrap: anywhere; } .lock dd a, .lock dd code { font: 12.5px var(--font-code); background: none; padding: 0; }
+.lock .count { font: 600 15px var(--font-code); }
+.lock .act { padding: 0 14px 14px; }
+.bar { height: 8px; background: var(--rule); border-radius: 99px; overflow: hidden; margin-top: 6px; } .bar i { display: block; height: 100%; background: var(--accent); }
+.how { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+.how > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.how > li::before { content: "0" counter(s); font: 12px var(--font-code); color: var(--muted); padding-top: 3px; }
+.how h3 { margin: 0 0 4px; font-size: 17px; } .how p { margin: 0; max-width: 70ch; color: var(--muted); }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .facts li:first-child { border-top: 0; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0, 1fr); } .lock dl { grid-template-columns: minmax(0, 1fr); gap: 1px; } .lock dt { margin-top: 8px; } .facts li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+.fear { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.fear div { border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); padding: 14px; } .fear b { font: 600 14px var(--font-mark); display: block; margin-bottom: 6px; } .fear p { margin: 0; font-size: 14.5px; }
+.seed { font: 600 15px/1.7 var(--font-code); background: var(--code-bg); border: 1px dashed var(--bad); border-radius: 12px; padding: 12px 14px; overflow-wrap: anywhere; margin-top: 10px; user-select: all; }
+.kv { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } .kv li { display: flex; justify-content: space-between; gap: 14px; padding: 9px 14px; border-top: 1px solid var(--rule); font-size: 14.5px; } .kv li:first-child { border-top: 0; } .kv li span:last-child { font-family: var(--font-code); text-align: right; overflow-wrap: anywhere; } .kv b { font: 600 22px var(--font-code); }
+.meter { height: 16px; border: 1px solid var(--ink); border-radius: 999px; background: var(--paper); overflow: hidden; margin-top: 10px; } .meter i { display: block; height: 100%; width: 0; background: var(--bad); transition: width .5s ease; }
+.sigs { list-style: none; margin: 10px 0 0; padding: 0; font: 13.5px var(--font-code); } .sigs li { padding: 4px 0; border-top: 1px solid var(--rule); overflow-wrap: anywhere; } .sigs li:first-child { border-top: 0; }
+.demo pre.code { margin: 10px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; background: var(--code-bg); font: 13.5px/1.55 var(--font-code); overflow-x: auto; white-space: pre; }
+.demo .says { margin-top: 10px; padding: 10px 14px; border: 1px solid var(--bad); border-radius: 12px; font-size: 14.5px; } .demo .says.good { border-color: var(--good); } .demo .says b { display: block; font: 600 13.5px var(--font-mark); margin-bottom: 2px; }
+.errmark { background: color-mix(in srgb, var(--bad) 22%, transparent); border-bottom: 2px solid var(--bad); }
+.steps4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; } .steps4 div { border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); padding: 14px; } .steps4 b { font: 600 14px var(--font-mark); display: block; margin-bottom: 6px; } .steps4 p { margin: 0; font-size: 14px; } .steps4 .by { display: inline-block; margin-top: 8px; font: 600 11px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); } .steps4 .by.phil { background: var(--ink); color: var(--paper); }
+@media (max-width: 760px) { .fear { grid-template-columns: minmax(0, 1fr); } .steps4 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 460px) { .steps4 { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .meter i { transition: none; } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Solana devnet · unaudited</span>
+    <h1>A vault no wallet key can open.</h1>
+    <p>Wallets are protected by a kind of maths a large quantum computer could undo. This vault is protected by hashing alone, which is believed to survive one. Every spend goes through Phil's compiled code.</p>
+    <p class="muted" style="font-size:15px">No such computer exists today. This is a working demonstration on a test network, of the known way to be ready for one.</p>
+  </div>
+
+  <h2 class="sec">The fear, in plain words</h2>
+  <div class="fear">
+    <div><b>What a wallet shows</b><p>Every transaction you sign shows your public key. Today nobody can work your private key out from it.</p></div>
+    <div><b>What could change</b><p>A large enough quantum computer could. Whoever had one could sign as you, and nothing on chain would look wrong.</p></div>
+    <div><b>What still holds</b><p>Hashing. Running a hash backwards stays hard, so signatures built only from hashes stay safe. They have one strict rule, below.</p></div>
+  </div>
+
+  <section class="panel" aria-labelledby="one-h">
+    <h2 id="one-h">The one rule: a key signs once</h2>
+    <p>A hash-based key is 26 chains of hashes. A signature reveals a point part-way along each chain. Anyone can hash forward from a revealed point, so every extra signature from the same key gives a forger more of every chain. Try it here: this key is a throwaway and guards nothing.</p>
+    <div class="row"><button class="btn" id="sb-sign" type="button">Sign a payment</button><button class="btn ghost" id="sb-forge" type="button" disabled>Try to forge one</button><button class="btn ghost small" id="sb-reset" type="button">New key</button></div>
+    <div class="meter" aria-hidden="true"><i id="sb-bar"></i></div>
+    <div class="say" id="sb-say" role="status" aria-live="polite">Nothing signed yet. One signature is safe.</div>
+    <ul class="sigs" id="sb-list"></ul>
+    <h3 style="margin:18px 0 0;font:600 15px var(--font-mark)">Where Phil comes in</h3>
+    <p>“Use exactly once” is the rule Phil is built around. Written in Phil, a one-time key is a thing that signing uses up, so a second signature with it is refused before the program runs.</p>
+    <div class="demo" id="phil-demo"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="vault-h">
+    <h2 id="vault-h">The vault</h2>
+    <p>The vault holds one key's fingerprint. A spend is signed with that key and names the next key, and the vault moves to it in the same step. The used key is never accepted again, so the rule is kept on chain too.</p>
+    <div class="row"><button class="btn ghost" id="connect" type="button">Connect wallet</button><span class="muted" id="who" role="status">A wallet only pays the deposit and the network fee. It never controls the vault.</span></div>
+    <p class="hint" id="no-wallet" hidden></p>
+
+    <div id="vault-none">
+      <div class="two" style="margin-top:14px">
+        <div><label class="f" for="open-address">Open a vault by its address</label><input class="t" id="open-address" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Vault address"></div>
+        <div><label class="f" for="open-seed">Its recovery phrase (only if this browser does not have it)</label><input class="t" id="open-seed" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="64 characters"></div>
+      </div>
+      <div class="quick" id="demos"></div>
+      <div class="row"><button class="btn" id="open" type="button">Open</button><span class="muted" id="open-note" role="status"></span></div>
+      <details class="do" id="make" style="margin-top:14px;border:1px solid var(--ink);border-radius:14px;background:var(--paper)"><summary style="cursor:pointer;padding:12px 14px;font:600 15px var(--font-body)">Make a new vault</summary><div style="padding:0 14px 16px">
+        <label class="f" for="deposit">Deposit, in devnet SOL</label>
+        <input class="t" id="deposit" inputmode="decimal" autocomplete="off" value="0.05">
+        <div class="row"><button class="btn" id="make-seed" type="button">Make its key</button></div>
+        <div id="seed-wrap" hidden>
+          <p class="hint" style="color:var(--bad)"><b>This phrase is the vault.</b> Whoever has it can spend; without it the funds can never be moved, by anyone. It was made in this browser and is not sent anywhere.</p>
+          <div class="seed" id="seed"></div>
+          <label class="agree"><input type="checkbox" id="seed-ok"><span>I have saved this phrase somewhere that is not this browser.</span></label>
+          <div class="row"><button class="btn" id="create" type="button" disabled>Create the vault and deposit</button><span class="muted" id="create-note" role="status"></span></div>
+        </div>
+      </div></details>
+    </div>
+
+    <div id="vault-view" hidden>
+      <ul class="kv" id="kv"></ul>
+      <div class="row"><button class="btn ghost small" id="refresh" type="button">Read again</button><button class="btn ghost small" id="leave" type="button">Another vault</button><span class="muted" id="view-note" role="status"></span></div>
+      <div id="spend-wrap">
+        <h3 style="margin:18px 0 0;font:600 15px var(--font-mark)">Withdraw</h3>
+        <p class="hint" id="spend-need"></p>
+        <div id="spend-form">
+          <div class="two">
+            <div><label class="f" for="amount">Amount, in SOL</label><input class="t" id="amount" inputmode="decimal" autocomplete="off" placeholder="0.01"></div>
+            <div><label class="f" for="to">To</label><input class="t" id="to" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="A wallet address"></div>
+          </div>
+          <label class="agree" style="margin-top:10px"><input type="checkbox" id="all"><span>Everything, and close the vault</span></label>
+          <div class="row"><button class="btn" id="sign" type="button">Sign with the one-time key</button><span class="muted" id="sign-note" role="status"></span></div>
+        </div>
+        <div id="pending" hidden>
+          <div class="say" id="pending-say"></div>
+          <div class="row"><button class="btn" id="send" type="button">Send it</button><button class="btn ghost" id="steal" type="button">Try to steal it first (dry run)</button><span class="muted" id="send-note" role="status"></span></div>
+          <div class="say" id="steal-say" hidden></div>
+        </div>
+        <div class="say" id="spend-done" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="sec">How a spend is checked</h2>
+  <div class="steps4">
+    <div><b>1. Sign</b><p>Your browser signs one message with the current key: this vault, this recipient, this amount, the next key.</p><span class="by">your browser</span></div>
+    <div><b>2. Upload</b><p>Anyone can carry it to Solana. Phil's server checks the upload arrived whole: the handshake, the policy, the bytes against their declared hash.</p><span class="by phil">Phil's server</span></div>
+    <div><b>3. Verify</b><p>The program hashes each of the 26 chains forward to its end and compares the result with the fingerprint it holds.</p><span class="by">our code</span></div>
+    <div><b>4. Pay and rotate</b><p>The amount is paid and the vault takes the next key's fingerprint, in one step. The old key is finished.</p><span class="by">our code</span></div>
+  </div>
+
+  <h2 class="sec">Before you rely on it</h2>
+  <ul class="limits" id="limits">
+    <li><b>Do not put real money behind this.</b> It is on devnet, nobody independent has reviewed it, and the program can still be replaced by our deploy key. Cryptography is the last place to skip a review.</li>
+    <li><b>Lose the phrase, lose the funds.</b> There is no recovery and nobody to ask. This page keeps a copy in this browser's storage, which is convenient and is also a risk on a shared or infected computer.</li>
+    <li><b>It protects what is in the vault, and nothing else.</b> Your ordinary wallet, and anything paid out to it, is as exposed as before.</li>
+    <li><b>What Phil's code checks, and what it does not.</b> Phil's server checks each upload's handshake, its policy, and that the bytes match the hash they declare. The signature check, the payment and the key rotation are our C code, which is not Phil and is not verified.</li>
+    <li><b>The signature is trimmed to fit a Solana transaction.</b> Each hash is kept to 192 bits. Finding a preimage with a quantum computer is estimated at about 2<sup>96</sup> hash steps: far out of reach, but less margin than the 256-bit versions used where size is no object.</li>
+    <li><b>The fee payer still uses an ordinary wallet signature.</b> That is fine: the one-time signature fixes the recipient, the amount and the next key, so a forged fee signature can pay for a spend but cannot change it.</li>
+    <li><b>A signed spend can only ever be that spend.</b> If a transaction fails after you sign, this page sends the same one again. It will not sign something different with the same key.</li>
+    <li><b>Solana itself is not quantum-safe.</b> Validators and our deploy key use the same kind of signature as wallets. This vault removes one weak point, the key that guards your funds, and not the others.</li>
+    <li>For now it holds SOL only. Nobody knows when, or whether, a quantum computer able to break wallet keys will exist.</li>
+  </ul>
+
+  <h2 class="sec">Where this comes from</h2>
+  <p class="lead">Hash-based one-time signatures go back to Lamport and Winternitz in the 1970s. Putting one behind a Solana vault that rotates its key on every spend was shown by Dean Little's <a href="https://github.com/deanmlittle/solana-winternitz-vault">Solana Winternitz Vault</a> in January 2025, and this follows that design. What is ours: every spend is an upload through the server Phil's compiler emits, and the use-once rule is shown in Phil.</p>
+  <ul class="facts" id="p-facts"></ul>
+  <p class="lead">This is a community project and is not affiliated with Phil or Solana.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

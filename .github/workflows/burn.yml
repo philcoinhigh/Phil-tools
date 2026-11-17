@@ -130,6 +130,20 @@ jobs:
       - name: One cycle of the demonstration coin
         if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
         run: node out/burn-run.js demo https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json burn/demo.json burn/vaults.json 2> >(tee -a burn/out/build.log >&2) || echo "the demo cycle failed" | tee -a burn/out/build.log
+      - name: A coin on higher.fun's devnet setup whose creator is a vault
+        # Launches a coin on Raydium LaunchLab with higher.fun's devnet platform settings and the vault's
+        # own address as creator, trades it, rolls the creator fees into the vault and burns for the pot.
+        # Run when asked for ("[higher]" in the commit message), when never run, or once a week.
+        if: env.HAVE_KEY == '1' && steps.deploy.outcome == 'success'
+        timeout-minutes: 10
+        continue-on-error: true
+        run: |
+          last=$(jq -r '.day // "1970-01-01"' burn/higher.json 2>/dev/null || echo 1970-01-01)
+          age=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 86400 ))
+          if [ "$age" -lt 7 ] && ! git log -1 --format=%B | grep -q '\[higher\]'; then echo "higher.fun devnet proof: last run $last, skipping" | tee -a burn/out/build.log; exit 0; fi
+          npx esbuild burn/higher.ts --bundle --platform=node --packages=external --outfile=out/higher-run.js --log-level=error
+          echo "--- higher.fun devnet: a coin whose creator is a burn vault ---" | tee -a burn/out/build.log
+          node out/higher-run.js https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json burn/higher.json 2> >(tee -a burn/out/build.log >&2) | tee -a burn/out/build.log || echo "the higher.fun devnet proof failed" | tee -a burn/out/build.log
       - name: Start the next nightly workflow
         # The on-chain workflows run one after another, so they never push at the same moment.
         if: always() && (inputs.nightly || contains(github.event.head_commit.message, '[nightly]'))
@@ -161,7 +175,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for f in burn/program.json burn/phil_burn.so burn/build.tail.log burn/demo.json burn/vaults.json docs; do [ -e "$f" ] && git add "$f"; done
+          for f in burn/program.json burn/phil_burn.so burn/build.tail.log burn/demo.json burn/vaults.json burn/higher.json docs; do [ -e "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Burn vault: $(date -u +%F)"
           # Another run may have pushed first. Its generated pages are rebuilt by whoever lands last, so on a clash keep ours.

@@ -26,12 +26,12 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
   {
     const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
-    const pages = ["tour/", "learn/", "playground/", "hacks/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
     check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
     check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
@@ -627,6 +627,106 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     f.d.getElementById("again").click();
     const bad = loadWith("https://example.test/line/?match=nonsense"); await wait(150);
     check("the line on Solana: a bad match address is explained", /not a valid match address/.test(bad.d.getElementById("status").textContent) && bad.errors.length === 0);
+  }
+
+  // Quantum-safe vault
+  p = load("docs/quantum/index.html", "https://example.test/quantum/");
+  {
+    const el = (id) => p.d.getElementById(id);
+    check("quantum: the page loads, and is plain about what it is and is not", /nobody independent has reviewed it/.test(el("limits").textContent) && /Do not put real money behind this/.test(el("limits").textContent) && /is not Phil and is not verified/.test(el("limits").textContent) && /Solana itself/.test(el("limits").textContent) && el("vault-view").hidden && !el("vault-none").hidden && el("sb-forge").disabled && p.errors.length === 0, p.errors.join("|"));
+    el("sb-sign").click();
+    check("quantum: one signature is safe, and forging is not offered", /Safe/.test(el("sb-say").textContent) && el("sb-forge").disabled && el("sb-list").children.length === 1);
+    for (let i = 0; i < 5; i++) el("sb-sign").click();
+    el("sb-forge").click();
+    check("quantum: a key that signed six times is forged without its secret", /Forged, after [\d,]+ tries/.test(el("sb-say").textContent) && /checks against your key/.test(el("sb-say").textContent), el("sb-say").textContent);
+    el("sb-reset").click();
+    check("quantum: starting over makes a fresh key", el("sb-list").children.length === 0 && el("sb-forge").disabled);
+    check("quantum: Phil refuses to compile a key signed twice", /line 18/.test(el("phil-demo").querySelector(".says").textContent) && !el("phil-demo").querySelector(".says").classList.contains("good"), el("phil-demo").querySelector(".says").textContent);
+    p.d.getElementById("phil-flip").click();
+    check("quantum: with a second key the same program runs", /Ran to completion/.test(el("phil-demo").querySelector(".says").textContent) && p.errors.length === 0, el("phil-demo").querySelector(".says").textContent + p.errors.join("|"));
+  }
+  if (fs.existsSync("qvault/program.json") && JSON.parse(fs.readFileSync("qvault/program.json", "utf8")).programId) {
+    // The stand-in node runs the real vault: Phil's emitted server and qvault/runtime.c, built natively.
+    const web3 = require("@solana/web3.js"), { execFileSync, execSync } = require("child_process");
+    execSync("giveaway/native/build.sh out/phil-qvault-native qvault/runtime.c", { stdio: "inherit" });
+    const PROGRAM = JSON.parse(fs.readFileSync("qvault/program.json", "utf8")).programId, programKey = new web3.PublicKey(PROGRAM);
+    const hexOf = (b) => Buffer.from(b).toString("hex"), SYSTEM = "00".repeat(32);
+    const st = { data: {}, lamports: {}, sent: [], sims: [] };
+    const bal = (k) => st.lamports[k] ?? 0n;
+    const runIx = (ix, keep) => {
+      const input = ["slot 7000", `time ${Math.floor(Date.now() / 1000)}`, `program ${hexOf(programKey.toBytes())}`,
+        ...ix.keys.map((k) => { const b = k.pubkey.toBase58(), a = st.data[b]; return `account ${hexOf(k.pubkey.toBytes())} ${a ? hexOf(programKey.toBytes()) : SYSTEM} ${k.isSigner ? 2 : k.isWritable ? 1 : 0} ${a ? hexOf(a) : "-"} ${bal(b)}`; }), `ix ${hexOf(ix.data)}`, ""].join("\n");
+      const out = execFileSync("out/phil-qvault-native", { input }).toString().split("\n");
+      const ret = Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")))[1]), logs = out.filter((l) => l.startsWith("LOG ")).map((l) => "Program log: " + l.slice(4));
+      if (ret === 0 && keep) {
+        st.data[ix.keys[0].pubkey.toBase58()] = Buffer.from(out.find((l) => l.startsWith("ACCOUNT 0 ")).split(" ")[2], "hex");
+        out.filter((l) => l.startsWith("LAMPORTS ")).forEach((l) => { const [, i, v] = l.split(" "); st.lamports[ix.keys[Number(i)].pubkey.toBase58()] = BigInt(v); });
+      }
+      return { ret, logs };
+    };
+    const node = async (url, init) => {
+      const q = JSON.parse(init.body); let result = null, error = null;
+      if (q.method === "getAccountInfo") { const a = st.data[q.params[0]]; result = { value: a ? { data: [a.toString("base64"), "base64"], owner: PROGRAM, lamports: Number(bal(q.params[0])) } : null }; }
+      else if (q.method === "getBalance") result = { value: Number(bal(q.params[0])) };
+      else if (q.method === "getLatestBlockhash") result = { value: { blockhash: web3.Keypair.generate().publicKey.toBase58() } };
+      else if (q.method === "getMinimumBalanceForRentExemption") result = 2004480;
+      else if (q.method === "getSignatureStatuses") result = { value: [{ confirmationStatus: "confirmed", err: null }] };
+      else if (q.method === "sendTransaction" || q.method === "simulateTransaction") {
+        const tx = web3.Transaction.from(Buffer.from(q.params[0], "base64")), send = q.method === "sendTransaction"; let logs = [], failed = false;
+        if (send && !tx.verifySignatures()) error = { message: "signature verification failed" };
+        else for (const ix of tx.instructions) {
+          if (ix.programId.equals(web3.ComputeBudgetProgram.programId)) continue;
+          if (ix.programId.equals(web3.SystemProgram.programId)) {
+            if (!send) continue;
+            const kind = web3.SystemInstruction.decodeInstructionType(ix);
+            if (kind === "Create") { const c = web3.SystemInstruction.decodeCreateAccount(ix); st.data[c.newAccountPubkey.toBase58()] = Buffer.alloc(c.space); st.lamports[c.newAccountPubkey.toBase58()] = BigInt(c.lamports); }
+            if (kind === "Transfer") { const t = web3.SystemInstruction.decodeTransfer(ix); st.lamports[t.toPubkey.toBase58()] = bal(t.toPubkey.toBase58()) + BigInt(t.lamports); }
+            continue;
+          }
+          const r = runIx(ix, send); logs = logs.concat(r.logs);
+          if (r.ret !== 0) { failed = true; break; }
+        }
+        if (send) { st.sent.push({ tx, failed }); if (failed) error = { message: "Transaction simulation failed", data: { logs } }; else if (!error) result = "5".repeat(80) + String(st.sent.length).padStart(8, "1"); }
+        else { st.sims.push({ tx, failed }); result = { value: { err: failed ? { InstructionError: [1, "Custom"] } : null, logs } }; }
+      }
+      return { ok: true, status: 200, json: async () => (error ? { error } : { result }) };
+    };
+    const loadWith = (url) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/quantum/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; w.crypto.getRandomValues = (a) => require("crypto").webcrypto.getRandomValues(a); } }); return { w: dom.window, d: dom.window.document, errors }; };
+    const me = web3.Keypair.generate(), friend = web3.Keypair.generate().publicKey;
+    const g = loadWith("https://example.test/quantum/");
+    const el = (id) => g.d.getElementById(id), until = async (f, ms = 15000) => { for (let t = 0; t < ms && !f(); t += 100) await wait(100); return f(); };
+    g.w.phantom = { solana: { connect: async () => ({ publicKey: me.publicKey }), signTransaction: async (tx) => { tx.partialSign(me); return tx; } } };
+    el("make-seed").click();
+    const phrase = el("seed").textContent.replace(/\s/g, "");
+    check("quantum vault: making a key shows a recovery phrase, and nothing can be created until it is saved", /^[0-9a-f]{64}$/.test(phrase) && el("create").disabled && !el("seed-wrap").hidden);
+    el("seed-ok").checked = true; el("seed-ok").dispatchEvent(new g.w.Event("change"));
+    el("deposit").value = "0.5"; el("create").click();
+    await until(() => !el("vault-view").hidden);
+    const open = st.sent[0].tx, address = g.w.location.search.slice(7);
+    check("quantum vault: one approval creates the vault, opens it under the hash key and deposits", st.sent.length === 1 && !st.sent[0].failed && open.instructions.length === 3 && open.instructions[1].programId.equals(programKey) && bal(address) === 2004480n + 500000000n && /0\.5/.test(el("kv").textContent) && /key number 1/.test(el("kv").textContent) && /holds the phrase/.test(el("kv").textContent), el("kv").textContent + el("create-note").textContent);
+    check("quantum vault: the phrase never left the browser: the chain holds only the key's fingerprint", !hexOf(open.serialize({ requireAllSignatures: false })).includes(phrase) && st.data[address].subarray(32, 64).some((x) => x !== 0));
+    el("amount").value = "0.2"; el("to").value = friend.toBase58(); el("sign").click();
+    check("quantum vault: signing a spend uses the key on that one message, and saves it before anything is sent", !el("pending").hidden && el("spend-form").hidden && /0\.2 SOL/.test(el("pending-say").textContent) && /can only ever send this/.test(el("pending-say").textContent) && !!g.w.localStorage.getItem("philcoin.qvault.pending." + address) && st.sent.length === 1, el("sign-note").textContent);
+    el("steal").click();
+    await until(() => !el("steal-say").hidden);
+    check("quantum vault: three ways to misuse the signature are run against the real program and all refused", st.sims.length === 3 && st.sims.every((x) => x.failed) && el("steal-say").querySelectorAll("li").length === 3 && !/NOT refused/.test(el("steal-say").textContent) && st.sent.length === 1 && bal(address) === 2004480n + 500000000n, el("steal-say").textContent);
+    el("send").click();
+    await until(() => !el("spend-done").hidden);
+    const spend = st.sent[1].tx, ix = spend.instructions[spend.instructions.length - 1];
+    check("quantum vault: the spend lands with the wallet signing only as fee payer", st.sent.length === 2 && !st.sent[1].failed && spend.signatures.length === 1 && ix.keys.every((k) => !k.isSigner) && bal(friend.toBase58()) === 200000000n && bal(address) === 2004480n + 300000000n, el("send-note").textContent);
+    check("quantum vault: the vault moved to its next key and the page says so", /key number 2/.test(el("kv").textContent) && /0\.3/.test(el("kv").textContent) && !el("spend-form").hidden && el("pending").hidden && !g.w.localStorage.getItem("philcoin.qvault.pending." + address) && g.errors.length === 0, el("kv").textContent + g.errors.join("|"));
+    const replay = new web3.Transaction().add(ix);
+    check("quantum vault: the used signature is refused if anyone sends it again", runIx(replay.instructions[0], false).ret !== 0);
+    el("all").checked = true; el("all").dispatchEvent(new g.w.Event("change")); el("sign").click(); el("send").click();
+    await until(() => /closed/.test(el("kv").textContent));
+    check("quantum vault: withdrawing everything closes the vault", st.sent.length === 3 && !st.sent[2].failed && bal(address) === 2004480n && bal(friend.toBase58()) === 500000000n && el("spend-wrap").hidden, el("kv").textContent + el("send-note").textContent);
+    // Another browser: watching needs no phrase, spending does.
+    const v2 = web3.Keypair.generate(), seed2 = require("crypto").randomBytes(32);
+    const w = loadWith("https://example.test/quantum/?vault=" + address);
+    await until(() => !w.d.getElementById("vault-view").hidden, 5000);
+    check("quantum vault: anyone can watch a vault by its address, without the phrase", /closed/.test(w.d.getElementById("kv").textContent) && /can watch, not spend/.test(w.d.getElementById("kv").textContent) && w.errors.length === 0, w.errors.join("|"));
+    const bad = loadWith("https://example.test/quantum/?vault=nonsense"); await wait(200);
+    check("quantum vault: a bad address is explained", /not a valid/.test(bad.d.getElementById("open-note").textContent) && bad.d.getElementById("vault-view").hidden && bad.errors.length === 0, bad.d.getElementById("open-note").textContent);
   }
 
   // Burn vault
