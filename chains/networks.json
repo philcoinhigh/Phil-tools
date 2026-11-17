@@ -1,4 +1,4 @@
 [
  { "id": "robinhood", "name": "Robinhood Chain testnet", "chainId": 46630, "rpc": ["https://rpc.testnet.chain.robinhood.com"], "explorer": "https://explorer.testnet.chain.robinhood.com", "coin": "test ETH" },
- { "id": "bnb", "name": "BNB Smart Chain testnet", "chainId": 97, "rpc": ["https://bsc-testnet-rpc.publicnode.com", "https://data-seed-prebsc-1-s1.bnbchain.org:8545", "https://bsc-testnet.drpc.org"], "explorer": "https://testnet.bscscan.com", "coin": "test BNB" }
+ { "id": "bnb", "legacy": true, "name": "BNB Smart Chain testnet", "chainId": 97, "rpc": ["https://bsc-testnet-rpc.publicnode.com", "https://data-seed-prebsc-1-s1.bnbchain.org:8545", "https://bsc-testnet.drpc.org"], "explorer": "https://testnet.bscscan.com", "coin": "test BNB" }
 ]

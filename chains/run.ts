@@ -62,7 +62,7 @@ async function evm() {
   const good = noteData(NOTE), address = new Wallet(key).address;
   let failed = false;
   for (const n of networks) {
-    const was = all[n.id] ?? {}, rec: any = { ...was, name: n.name, chainId: n.chainId, explorer: n.explorer, deployer: address, checkedOn: today() };
+    const was = all[n.id] ?? {}, rec: any = { ...was, error: undefined, name: n.name, chainId: n.chainId, explorer: n.explorer, deployer: address, checkedOn: today() };
     try {
       let provider: JsonRpcProvider | null = null, rpc = "";
       for (const url of n.rpc) { try { const p = new JsonRpcProvider(url, n.chainId, { staticNetwork: true }); await p.getBlockNumber(); provider = p; rpc = url; break; } catch { /* try the next */ } }
@@ -72,8 +72,12 @@ async function evm() {
       rec.balance = formatEther(balance);
       const there = was.address && was.build === build && (await patiently(() => provider!.getCode(was.address))).length > 2;
       if (!there) {
+        // Pay the node's own going price and no more, so a faucet's small grant goes as far as it can.
+        const price = BigInt(await patiently(() => provider!.send("eth_gasPrice", []))), need = price * 3_400_000n;
+        rec.gasPrice = price.toString();
+        if (balance > 0n && balance < need) { rec.status = `waiting for ${n.coin}: it holds ${formatEther(balance)} and deploying needs about ${formatEther(need)}; send more to ${address}`; note(`${n.name}: ${rec.status}`); all[n.id] = rec; continue; }
         if (balance === 0n) { rec.status = `waiting for ${n.coin}: send some to ${address}`; note(`${n.name}: ${rec.status}`); all[n.id] = rec; continue; }
-        const made = await new ContractFactory(compiled.abi, compiled.bytecode, wallet).deploy("0x" + hex(image));
+        const made = await new ContractFactory(compiled.abi, compiled.bytecode, wallet).deploy("0x" + hex(image), n.legacy ? { type: 0, gasPrice: price, gasLimit: 3_400_000 } : {});
         const receipt = await made.deploymentTransaction()!.wait(1, 180_000);
         Object.assign(rec, { address: await made.getAddress(), build, deployTx: receipt!.hash, deployGas: Number(receipt!.gasUsed), deployedOn: today(), imageSha256: hex(sha256(image)) });
         note(`${n.name}: deployed at ${rec.address} for ${rec.deployGas} gas`);
@@ -85,7 +89,7 @@ async function evm() {
       note(ok ? "ok  " : "FAIL", `${n.name}: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built`, ok ? "" : `${yes[0]} ${no[0]} ${same}`);
       rec.ok = ok; rec.steps = Number(yes[1]); rec.status = ok ? "live" : "deployed, but its answers were wrong";
       if (ok && rec.submittedOn !== today() && balance > 0n) {
-        try { const tx = await c.submit("0x" + hex(good), { gasLimit: 1_500_000 }); const r = await tx.wait(1, 180_000); Object.assign(rec, { submitTx: r.hash, submitGas: Number(r.gasUsed), submittedOn: today(), accepted: Number(await c.accepted()) }); note(`${n.name}: a real upload was accepted for ${rec.submitGas} gas`); }
+        try { const tx = await c.submit("0x" + hex(good), n.legacy ? { type: 0, gasPrice: BigInt(await provider.send("eth_gasPrice", [])), gasLimit: 900_000 } : { gasLimit: 1_500_000 }); const r = await tx.wait(1, 180_000); Object.assign(rec, { submitTx: r.hash, submitGas: Number(r.gasUsed), submittedOn: today(), accepted: Number(await c.accepted()) }); note(`${n.name}: a real upload was accepted for ${rec.submitGas} gas`); }
         catch (e: any) { note(`${n.name}: the real upload was not sent: ${String(e?.shortMessage ?? e?.message ?? e).split("\n")[0]}`); }
       }
       if (!ok) failed = true;
