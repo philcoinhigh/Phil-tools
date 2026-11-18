@@ -51,7 +51,11 @@ async function send(ixs: TransactionInstruction[], signers: Keypair[], wantLogs 
   }
 }
 const balance = async (k: PublicKey) => BigInt(await patiently(() => conn.getBalance(k, "confirmed")));
-const chainTime = async () => { for (;;) { const t = await patiently(async () => conn.getBlockTime(await conn.getSlot("confirmed"))); if (t) return t; await sleep(800); } };
+// Solana's own clock, read from the account every program reads it from.
+const CLOCK = new PublicKey("SysvarC1ock11111111111111111111111111111111");
+const chainTime = async () => { const info = await patiently(() => conn.getAccountInfo(CLOCK, "confirmed")); if (!info) throw new Error("the clock could not be read"); return Number(Buffer.from(info.data).readBigInt64LE(32)); };
+// Nothing here should ever take long. If something hangs, say so and stop, rather than hold the workflow.
+setTimeout(() => { note("FAIL the run took more than 14 minutes and was stopped"); process.exit(1); }, 14 * 60 * 1000).unref();
 async function readBounty(k: PublicKey): Promise<{ b: Bounty; lamports: bigint }> {
   const info = await patiently(() => conn.getAccountInfo(k, "confirmed")); const b = info && decodeBounty(Uint8Array.from(info.data));
   if (!b) throw new Error("the bounty is missing"); return { b, lamports: BigInt(info!.lamports) };

@@ -22,7 +22,7 @@ concurrency:
 jobs:
   bounty:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,6 +75,7 @@ jobs:
           npx esbuild bounty/run.ts --bundle --platform=node --packages=external --outfile=out/bounty-run.js --log-level=error
           giveaway/build.sh bounty/out/phil_bounty.so bounty/runtime.c 2>&1 | tee -a bounty/out/build.log
       - name: Prove it on a local test validator
+        timeout-minutes: 18
         run: |
           set -o pipefail
           solana-keygen new --no-bip39-passphrase --silent -o "$RUNNER_TEMP/payer.json"

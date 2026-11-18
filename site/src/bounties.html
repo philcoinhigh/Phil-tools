@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Clip Bounties: a prize locked on Solana for the best clip</title>
+<meta name="description" content="Post a challenge with the prize locked on chain. Players enter with a link to their clip. The sponsor picks a winner, or a block hash draws one, and the prize is paid exactly once. Solana devnet, unaudited.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 38px 0 8px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.06 var(--font-mark); letter-spacing: -.04em; margin: 0 0 14px; text-wrap: balance; }
+.top p { margin: 0 0 10px; max-width: 66ch; font-size: 17px; }
+.net { display: inline-block; font: 600 11.5px var(--font-mark); border: 1px solid var(--ink); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 70ch; font-size: 15px; }
+.panel { border: 1px solid var(--ink); background: var(--sheet); border-radius: 18px; padding: 18px 18px 20px; margin-top: 18px; }
+.panel h2 { margin: 0 0 6px; font: 600 21px var(--font-mark); letter-spacing: -.02em; } .panel > p { margin: 0 0 12px; max-width: 64ch; }
+label.f { display: block; font: 600 13px var(--font-body); margin: 12px 0 4px; }
+input.t, select.t { width: 100%; box-sizing: border-box; border: 1px solid var(--ink); background: var(--code-bg); color: var(--ink); font: 15px var(--font-code); padding: 10px 12px; border-radius: 10px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.hint { font-size: 13px; color: var(--muted); margin: 4px 0 0; }
+.say { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 12px; font-size: 15px; background: var(--code-bg); } .say b { font-family: var(--font-code); }
+.say.bad { border-color: var(--bad); color: var(--bad); } .say.good { border-color: var(--good); }
+.agree { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; font-size: 14.5px; } .agree input { margin-top: 3px; width: 18px; height: 18px; }
+.limits { margin: 12px 0 0; padding-left: 20px; max-width: 72ch; } .limits li { margin: 7px 0; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); }
+.facts li { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 9px 16px; border-top: 1px solid var(--rule); font-size: 14.5px; } .facts li:first-child { border-top: 0; }
+.facts li > span:first-child { font-size: 13.5px; color: var(--muted); } .facts a, .facts code { font: 13px var(--font-code); overflow-wrap: anywhere; background: none; padding: 0; }
+.flash { animation: flash 1s ease-out; }
+
+.kv { list-style: none; margin: 12px 0 0; padding: 0; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } .kv li { display: flex; justify-content: space-between; gap: 14px; padding: 9px 14px; border-top: 1px solid var(--rule); font-size: 14.5px; } .kv li:first-child { border-top: 0; } .kv li span:last-child { font-family: var(--font-code); text-align: right; overflow-wrap: anywhere; } .kv b { font: 600 22px var(--font-code); }
+.steps4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; } .steps4 div { border: 1px solid var(--ink); border-radius: 14px; background: var(--sheet); padding: 14px; } .steps4 b { font: 600 14px var(--font-mark); display: block; margin-bottom: 6px; } .steps4 p { margin: 0; font-size: 14px; } .steps4 .by { display: inline-block; margin-top: 8px; font: 600 11px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--ink); } .steps4 .by.phil { background: var(--ink); color: var(--paper); }
+@media (max-width: 460px) { .steps4 { grid-template-columns: minmax(0, 1fr); } }
+}
+
+
+.board { display: grid; gap: 10px; margin-top: 14px; }
+.bounty { text-align: left; width: 100%; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); padding: 13px 14px; cursor: pointer; font: inherit; color: inherit; display: grid; gap: 6px; }
+.bounty:hover { box-shadow: 3px 4px 0 var(--ink); } .bounty b { font: 600 15.5px/1.35 var(--font-body); overflow-wrap: anywhere; }
+.bounty span { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; color: var(--muted); font-size: 13.5px; }
+.tag { font: 600 11.5px var(--font-mark); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); white-space: nowrap; }
+.tag.open { border-color: var(--good); color: var(--good); } .tag.prize { border-color: var(--ink); color: var(--ink); }
+.challenge { font: 600 19px/1.35 var(--font-body); margin: 4px 0 10px; overflow-wrap: anywhere; }
+.entries { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.entries li { border: 1px solid var(--rule); border-radius: 12px; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 14.5px; }
+.entries li.won { border-color: var(--good); } .entries li a, .entries li .plain { overflow-wrap: anywhere; font: 13.5px var(--font-code); } .entries li small { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+.box { margin-top: 14px; border: 1px solid var(--ink); border-radius: 14px; background: var(--paper); } .box > summary { cursor: pointer; padding: 12px 14px; font: 600 15px var(--font-body); } .box > div { padding: 0 14px 16px; }
+.sub { margin: 20px 0 0; font: 600 15px var(--font-mark); }
+.demo pre.code { margin: 0; padding: 14px; border: 1px solid var(--ink); border-radius: 12px; background: var(--code-bg); font: 13px/1.6 var(--font-code); overflow-x: auto; }
+.demo .says { margin-top: 10px; border: 1px solid var(--bad); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; } .demo .says.good { border-color: var(--good); } .demo .says b { display: block; font: 600 13px var(--font-mark); margin-bottom: 3px; }
+.errmark { background: color-mix(in srgb, var(--bad) 22%, transparent); border-radius: 3px; }
+.steps4.three { grid-template-columns: repeat(3, minmax(0, 1fr)); } @media (max-width: 760px) { .steps4.three { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <span class="net" id="net">Solana devnet · test coins · unaudited</span>
+    <h1>Clip Bounties.</h1>
+    <p>Post a challenge with the prize locked on chain. Players enter with a link to their clip. The best one gets paid, and the prize can't be pulled back.</p>
+    <div class="row"><button class="btn" id="connect" type="button">Connect a wallet</button><span class="muted" id="who" style="font-size:14px">Looking is free. A wallet is only needed to post, enter or pay out.</span></div>
+    <div class="say" id="no-wallet" hidden></div>
+  </div>
+
+  <section class="panel" id="board-panel" aria-labelledby="board-h">
+    <h2 id="board-h">Challenges</h2>
+    <p class="hint" id="board-note">Reading the board from Solana…</p>
+    <div class="board" id="board"></div>
+    <div class="row"><button class="btn ghost small" id="reload" type="button">Read again</button></div>
+
+    <details class="box" id="post"><summary>Post a challenge</summary><div>
+      <label class="f" for="p-text">The challenge (up to 280 characters)</label>
+      <input class="t" id="p-text" autocomplete="off" maxlength="280" placeholder="First clip of a five-star escape that ends in the sea">
+      <div class="two">
+        <div><label class="f" for="p-prize">Prize</label><input class="t" id="p-prize" inputmode="decimal" autocomplete="off" value="0.05"></div>
+        <div><label class="f" for="p-coin">Coin address (empty for SOL)</label><input class="t" id="p-coin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="SOL"></div>
+      </div>
+      <div class="two">
+        <div><label class="f" for="p-deadline">Entries close in</label><select class="t" id="p-deadline"><option value="600">10 minutes (to try it)</option><option value="86400" selected>1 day</option><option value="259200">3 days</option><option value="604800">7 days</option></select></div>
+        <div><label class="f" for="p-grace">Then you have this long to pick</label><select class="t" id="p-grace"><option value="300">5 minutes (to try it)</option><option value="86400" selected>1 day</option><option value="259200">3 days</option></select></div>
+      </div>
+      <p class="hint">The prize leaves your wallet now and is locked. You pick the winner. If you don't pick in time, anyone can start a draw and a block hash picks an entry. You only get it back if nobody enters.</p>
+      <div class="row"><button class="btn" id="p-send" type="button">Lock the prize and post</button><span class="muted" id="p-note" role="status"></span></div>
+    </div></details>
+  </section>
+
+  <section class="panel" id="view" aria-labelledby="view-h" hidden>
+    <div class="row" style="margin-top:0"><button class="btn ghost small" id="back" type="button">All challenges</button><button class="btn ghost small" id="refresh" type="button">Read again</button><span class="muted" id="view-note" role="status"></span></div>
+    <h2 id="view-h" class="sub" style="margin-top:14px">Challenge</h2>
+    <p class="challenge" id="v-text"></p>
+    <ul class="kv" id="kv"></ul>
+    <div class="say" id="v-status" role="status" aria-live="polite"></div>
+    <div class="row" id="v-actions"></div>
+    <p class="hint" id="v-action-note" role="status"></p>
+
+    <h3 class="sub">Entries</h3>
+    <ul class="entries" id="entries"></ul>
+    <div id="enter-wrap">
+      <label class="f" for="e-link">Your clip's link</label>
+      <input class="t" id="e-link" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="220" placeholder="https://x.com/you/status/…">
+      <p class="hint">Post the clip on X, YouTube, TikTok, Twitch or similar, then paste its link. Your entry is timed and numbered on chain. Storing it costs a small amount of test SOL.</p>
+      <div class="row"><button class="btn" id="e-send" type="button">Enter</button><span class="muted" id="e-note" role="status"></span></div>
+    </div>
+  </section>
+
+  <h2 class="sec">How a prize moves</h2>
+  <div class="steps4 three">
+    <div><b>1. Locked when posted</b><p>Phil's upload server seals the challenge, and the program refuses it unless the prize is already inside. No prize, no challenge.</p><span class="by phil">Phil + ours</span></div>
+    <div><b>2. Entries are sealed</b><p>Each link goes through Phil's server too, and gets a number, a time and its wallet. Nobody can enter as someone else or edit an entry.</p><span class="by phil">Phil + ours</span></div>
+    <div><b>3. Paid exactly once</b><p>The sponsor picks, or after the deadline a block hash nobody chose draws. Either way the prize goes to an entrant's own wallet, once.</p><span class="by">ours</span></div>
+  </div>
+
+  <h2 class="sec">The same rule, in Phil</h2>
+  <p class="lead">A prize is something that must be paid once: not twice, and not zero times. Phil can say that in the type, and then refuses to compile a program that pays it twice.</p>
+  <div class="demo" id="phil-demo"></div>
+
+  <h2 class="sec">Before you rely on it</h2>
+  <ul class="limits" id="limits">
+    <li><b>Test coins only.</b> This is on Solana devnet and nobody independent has reviewed it. Do not lock anything of value.</li>
+    <li><b>The lock is not a judge.</b> It guarantees the prize leaves for an entrant. It cannot tell whether a clip is real, whose it is, or whether the sponsor picked fairly. A sponsor could even enter from a second wallet and pick themselves.</li>
+    <li><b>The draw can be crowded.</b> Anyone can enter more than once from different wallets, which raises their odds if it comes to a draw. The sponsor's pick is the main path; the draw only exists so a prize can't be withheld.</li>
+    <li><b>Whoever produces the drawing block has a little influence</b> over its hash, as with any block-hash draw.</li>
+    <li><b>What is Phil, and what is ours.</b> Phil's compiled server checks that each challenge and entry arrived exactly as it was sealed. Locking, picking, drawing and paying are our code, are not Phil, and are not verified.</li>
+    <li><b>Links only.</b> Clips stay wherever you posted them, under that site's rules and the game's own rules for sharing footage. Entries are public and permanent.</li>
+    <li>Entry is free apart from network costs. Prize contests have rules that differ by country; whoever sponsors one is responsible for following them.</li>
+  </ul>
+
+  <h2 class="sec">The program</h2>
+  <ul class="facts" id="p-facts"></ul>
+  <p class="lead">This is a community project. It is not affiliated with Phil, with Solana, or with any game or its publisher.</p>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>

@@ -26,12 +26,12 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
   p.d.getElementById("demo-flip").click();
   check("home: fixed demo runs", /hands back 10/.test(p.d.getElementById("demo-says").textContent), p.d.getElementById("demo-says").textContent);
   const hrefs = [...p.d.querySelectorAll("main a")].map((a) => a.getAttribute("href"));
-  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
+  check("home: every page is linked from the body", ["tour/", "learn/", "hacks/", "playground/", "onchain/", "bounties/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "mutation/", "otc/", "otc/#book", "changelog/", "conformance/", "fuzz/"].every((h) => hrefs.includes(h)), hrefs.join(" "));
   check("home: every utility has its own link", ["locker", "hooks", "launchhooks", "stockrewards", "vesting", "multisig", "auction", "launch"].every((id) => hrefs.includes("library/#" + id)) && p.d.querySelectorAll("#made a").length === 10);
   check("home: daily figures are filled in from the data", /^\d/.test(p.d.getElementById("s-changes").textContent) && p.d.getElementById("s-grammar").textContent.startsWith("64 of 64") && /^[\d,]+$/.test(p.d.getElementById("s-fuzz").textContent) && /MB, built from commit/.test(p.d.getElementById("s-philc-l").textContent), [p.d.getElementById("s-changes").textContent, p.d.getElementById("s-grammar").textContent, p.d.getElementById("s-fuzz").textContent].join(" | "));
   {
     const menu = [...p.d.querySelectorAll(".site .menu nav a")].map((a) => a.getAttribute("href"));
-    const pages = ["tour/", "learn/", "playground/", "hacks/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
+    const pages = ["tour/", "learn/", "playground/", "hacks/", "bounties/", "chains/", "quantum/", "line/", "coin/", "session/", "giveaway/", "locker/", "burn/", "onchain/", "library/", "otc/", "mutation/", "fuzz/", "conformance/", "changelog/"];
     check("home: the menu lists every page, in four groups", pages.every((h) => menu.includes(h)) && p.d.querySelectorAll(".site .menu h4").length === 5 && [...p.d.querySelectorAll(".site nav.full a")].map((a) => a.getAttribute("href")).join() === "./#start,./#chain,./#build,./#lab");
     check("home: the footer lists every page too", pages.every((h) => [...p.d.querySelectorAll(".foot-nav a")].some((a) => a.getAttribute("href") === h)));
     check("home: each section the header points at exists", ["start", "chain", "build", "lab", "coin"].every((id) => p.d.getElementById(id)));
@@ -854,6 +854,127 @@ const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event("input",
     el("tamper").checked = true; el("ask").click();
     await until(() => /REJECTED/.test(el("answer").textContent));
     check("chains: one changed byte is REJECTED by every live machine, with the same number", new RegExp(`${live} machines?, one answer: REJECTED`).test(el("answer").textContent) && el("v-browser").textContent === "refused · 1201" && d.querySelectorAll(".verdict.no").length === live && /do not match the declared digest/.test(el("log").textContent) && errors.length === 0, el("answer").textContent + errors.join("|"));
+  }
+
+  // Clip Bounties
+  p = load("docs/bounties/index.html", "https://example.test/bounties/");
+  {
+    const el = (id) => p.d.getElementById(id);
+    check("bounties: the page loads and is plain about what the lock does not do", /Test coins only/.test(el("limits").textContent) && /The lock is not a judge/.test(el("limits").textContent) && /are our code, are not Phil/.test(el("limits").textContent) && /not affiliated with Phil, with Solana, or with any game or its publisher/.test(p.d.body.textContent) && el("view").hidden && p.errors.length === 0, p.errors.join("|"));
+    check("bounties: Phil refuses to compile a prize paid twice", /line 18/.test(el("phil-demo").querySelector(".says").textContent) && !el("phil-demo").querySelector(".says").classList.contains("good"), el("phil-demo").querySelector(".says").textContent);
+    p.d.getElementById("phil-flip").click();
+    check("bounties: paid once, the same program runs", /Ran to completion/.test(el("phil-demo").querySelector(".says").textContent) && /500/.test(el("phil-demo").querySelector(".says").textContent) && p.errors.length === 0, el("phil-demo").querySelector(".says").textContent);
+  }
+  if (fs.existsSync("bounty/program.json") && JSON.parse(fs.readFileSync("bounty/program.json", "utf8")).programId) {
+    // The stand-in node runs the real program: Phil's emitted server and bounty/runtime.c, built natively.
+    const web3 = require("@solana/web3.js"), { execFileSync, execSync } = require("child_process");
+    execSync("giveaway/native/build.sh out/phil-bounty-native bounty/runtime.c", { stdio: "inherit" });
+    const PROGRAM = JSON.parse(fs.readFileSync("bounty/program.json", "utf8")).programId, programKey = new web3.PublicKey(PROGRAM);
+    const SLOT_HASHES = "SysvarS1otHashes111111111111111111111111111", hexOf = (b) => Buffer.from(b).toString("hex"), SYSTEM = "00".repeat(32);
+    const st = { data: {}, owner: {}, lamports: {}, sent: [], skew: 0, slot: 5000 };
+    const bal = (k) => st.lamports[k] ?? 0n, chainNow = () => Math.floor(Date.now() / 1000) + st.skew;
+    const slotHashes = () => { const d = Buffer.alloc(8 + 40 * 60); d.writeBigUInt64LE(60n, 0); for (let i = 0; i < 60; i++) { const s = st.slot - 1 - i; d.writeBigUInt64LE(BigInt(s), 8 + 40 * i); require("crypto").createHash("sha256").update("block " + s).digest().copy(d, 16 + 40 * i); } return d; };
+    const runIx = (ix) => {
+      const input = [`slot ${st.slot}`, `time ${chainNow()}`, `program ${hexOf(programKey.toBytes())}`,
+        ...ix.keys.map((k) => { const b = k.pubkey.toBase58(), a = b === SLOT_HASHES ? slotHashes() : st.data[b]; return `account ${hexOf(k.pubkey.toBytes())} ${st.owner[b] ? hexOf(new web3.PublicKey(st.owner[b]).toBytes()) : SYSTEM} ${k.isSigner ? 2 : k.isWritable ? 1 : 0} ${a && a.length ? hexOf(a) : "-"} ${bal(b)}`; }), `ix ${hexOf(ix.data)}`, ""].join("\n");
+      const out = execFileSync("out/phil-bounty-native", { input }).toString().split("\n");
+      const ret = Number(/RET (\d+)/.exec(out.find((l) => l.startsWith("RET ")))[1]), logs = out.filter((l) => l.startsWith("LOG ")).map((l) => "Program log: " + l.slice(4));
+      if (ret === 0) {
+        out.filter((l) => l.startsWith("ACCOUNT ")).forEach((l) => { const [, i, d] = l.split(" "), b = ix.keys[Number(i)].pubkey.toBase58(); if (st.data[b] && d && b !== SLOT_HASHES) st.data[b] = Buffer.from(d, "hex"); });
+        out.filter((l) => l.startsWith("LAMPORTS ")).forEach((l) => { const [, i, v] = l.split(" "); st.lamports[ix.keys[Number(i)].pubkey.toBase58()] = BigInt(v); });
+      }
+      return { ret, logs };
+    };
+    const node = async (url, init) => {
+      const q = JSON.parse(init.body); let result = null, error = null;
+      if (q.method === "getAccountInfo") { const a = st.data[q.params[0]]; result = { value: a ? { data: [a.toString("base64"), "base64"], owner: st.owner[q.params[0]], lamports: Number(bal(q.params[0])) } : null }; }
+      else if (q.method === "getProgramAccounts") { const f = q.params[1].filters, size = f.find((x) => x.dataSize).dataSize, m = f.find((x) => x.memcmp)?.memcmp;
+        result = Object.keys(st.data).filter((k) => st.owner[k] === q.params[0] && st.data[k].length === size && (!m || new web3.PublicKey(st.data[k].subarray(m.offset, m.offset + 32)).toBase58() === m.bytes)).map((k) => ({ pubkey: k, account: { data: [st.data[k].toString("base64"), "base64"], lamports: Number(bal(k)) } })); }
+      else if (q.method === "getLatestBlockhash") result = { value: { blockhash: web3.Keypair.generate().publicKey.toBase58() } };
+      else if (q.method === "getMinimumBalanceForRentExemption") result = 4000000;
+      else if (q.method === "getSignatureStatuses") result = { value: [{ confirmationStatus: "confirmed", err: null }] };
+      else if (q.method === "sendTransaction") {
+        const tx = web3.Transaction.from(Buffer.from(q.params[0], "base64")); let logs = [], code = 0; st.slot += 3;
+        if (!tx.verifySignatures()) error = { message: "signature verification failed" };
+        else {
+          const before = JSON.stringify([Object.fromEntries(Object.entries(st.data).map(([k, v]) => [k, v.toString("hex")])), Object.fromEntries(Object.entries(st.lamports).map(([k, v]) => [k, String(v)])), st.owner]);
+          for (const ix of tx.instructions) {
+            if (ix.programId.equals(web3.SystemProgram.programId)) { const c = web3.SystemInstruction.decodeCreateAccount(ix), b = c.newAccountPubkey.toBase58(); st.data[b] = Buffer.alloc(c.space); st.owner[b] = c.programId.toBase58(); st.lamports[b] = BigInt(c.lamports); continue; }
+            const r = runIx(ix); logs = logs.concat(r.logs);
+            if (r.ret !== 0) { code = r.ret; break; }
+          }
+          if (code) { const [d, l, o] = JSON.parse(before); st.data = Object.fromEntries(Object.entries(d).map(([k, v]) => [k, Buffer.from(v, "hex")])); st.lamports = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, BigInt(v)])); st.owner = o; }   // a failed transaction changes nothing
+          st.sent.push({ tx, code });
+          if (code) error = { message: `Transaction simulation failed: custom program error: 0x${code.toString(16)}`, data: { logs } }; else result = "5".repeat(80) + String(st.sent.length).padStart(8, "1");
+        }
+      }
+      return { ok: true, status: 200, json: async () => (error ? { error } : { result }) };
+    };
+    const loadWith = (url, kp) => { const errors = []; const dom = new JSDOM(fs.readFileSync("docs/bounties/index.html", "utf8"), { runScripts: "dangerously", url, pretendToBeVisual: true, beforeParse(w) { w.addEventListener("error", (e) => errors.push(e.message)); w.scrollTo = () => {}; w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} }); w.fetch = node; const real = w.Date.now.bind(w.Date); w.Date.now = () => real() + st.skew * 1000; w.crypto.getRandomValues = (a) => require("crypto").webcrypto.getRandomValues(a);
+      w.phantom = { solana: { connect: async () => ({ publicKey: kp.publicKey }), signTransaction: async (tx) => { tx.partialSign(kp); return tx; } } }; } }); const d = dom.window.document; return { w: dom.window, d, errors, el: (id) => d.getElementById(id) }; };
+    const until = async (f, ms = 15000) => { for (let t = 0; t < ms && !f(); t += 100) await wait(100); return f(); };
+    const sponsor = web3.Keypair.generate(), alice = web3.Keypair.generate(), bob = web3.Keypair.generate(), passerby = web3.Keypair.generate();
+
+    // The sponsor posts.
+    const s = loadWith("https://example.test/bounties/", sponsor);
+    await until(() => /No challenges yet/.test(s.el("board-note").textContent), 4000);
+    s.el("post").open = true; s.el("p-text").value = "First clip of a five-star escape that ends in the sea"; s.el("p-prize").value = "0.5"; s.el("p-deadline").value = "600"; s.el("p-grace").value = "300"; s.el("p-send").click();
+    await until(() => !s.el("view").hidden);
+    const address = s.w.location.search.slice(3), posted = st.sent[0];
+    check("bounties: posting locks the prize in the same transaction and opens the challenge", st.sent.length === 1 && !posted.code && posted.tx.instructions.length === 2 && bal(address) === 4000000n + 500000000n && /five-star escape/.test(s.el("v-text").textContent) && /0\.5 SOL/.test(s.el("kv").textContent) && /\(you\)/.test(s.el("kv").textContent) && /Open for entries/.test(s.el("v-status").textContent) && /No entries yet/.test(s.el("entries").textContent) && s.errors.length === 0, s.el("p-note").textContent + s.errors.join("|"));
+
+    // Two players enter.
+    const a = loadWith("https://example.test/bounties/?b=" + address, alice);
+    await until(() => !a.el("view").hidden);
+    a.el("e-link").value = "https://evil.example/clip"; a.el("e-send").click(); await wait(100);
+    check("bounties: a link that is not to a clip site is not accepted as an entry", /does not look like a link to a clip/.test(a.el("e-note").textContent) && st.sent.length === 1);
+    a.el("e-link").value = "https://x.com/alice/status/1234567890"; a.el("e-send").click();
+    await until(() => /You are in/.test(a.el("view-note").textContent));
+    const b = loadWith("https://example.test/bounties/?b=" + address, bob);
+    await until(() => !b.el("view").hidden);
+    b.el("e-link").value = "https://www.youtube.com/watch?v=abcdefghijk"; b.el("e-send").click();
+    await until(() => /You are in/.test(b.el("view-note").textContent));
+    check("bounties: entries are numbered and listed with their links, and an entrant sees no way to pick", st.sent.length === 3 && b.el("entries").children.length === 2 && /Entry 2/.test(b.el("entries").textContent) && b.el("entries").querySelector("a").getAttribute("href") === "https://x.com/alice/status/1234567890" && /nofollow/.test(b.el("entries").querySelector("a").rel) && !b.el("entries").querySelector("[data-pick]") && b.el("v-actions").children.length === 0 && b.errors.length === 0, b.el("entries").textContent + b.errors.join("|"));
+    // The board, for someone just looking.
+    const look = loadWith("https://example.test/bounties/", passerby);
+    await until(() => look.d.querySelectorAll("#board .bounty").length === 1, 4000);
+    check("bounties: the board lists the challenge with its prize and entries, with no wallet connected", /five-star escape/.test(look.el("board").textContent) && /0\.5 SOL/.test(look.el("board").textContent) && /2 entries/.test(look.el("board").textContent) && /open/.test(look.el("board").textContent), look.el("board").textContent);
+
+    // The sponsor picks.
+    s.el("refresh").click();
+    await until(() => s.el("entries").querySelectorAll("[data-pick]").length === 2);
+    s.el("entries").querySelector('[data-pick="1"]').click();
+    await until(() => /Paid\. Entry 2 won/.test(s.el("view-note").textContent));
+    check("bounties: the sponsor picks an entry and its wallet is paid the whole prize", bal(bob.publicKey.toBase58()) === 500000000n && bal(address) === 4000000n && /Paid\. The sponsor picked/.test(s.el("v-status").textContent) && /winner/.test(s.el("entries").children[1].textContent) && s.el("enter-wrap").hidden && !s.el("entries").querySelector("[data-pick]"), s.el("v-action-note").textContent + s.el("v-status").textContent);
+
+    // A second challenge whose sponsor goes quiet: anyone starts the draw, draws, and pays.
+    s.el("back").click(); s.el("post").open = true; s.el("p-text").value = "Funniest launch-night bug"; s.el("p-prize").value = "0.2"; s.el("p-deadline").value = "600"; s.el("p-grace").value = "300"; s.el("p-send").click();
+    await until(() => /Funniest/.test(s.el("v-text").textContent) && !s.el("view").hidden);
+    const second = s.w.location.search.slice(3);
+    for (const [kp, link] of [[alice, "https://www.tiktok.com/@alice/video/1"], [bob, "https://x.com/bob/status/2"], [passerby, "https://www.twitch.tv/videos/3"]]) { const w = loadWith("https://example.test/bounties/?b=" + second, kp); await until(() => !w.el("view").hidden); w.el("e-link").value = link; w.el("e-send").click(); await until(() => /You are in/.test(w.el("view-note").textContent)); }
+    const sentBefore = st.sent.length;
+    st.skew = 601;
+    const late = loadWith("https://example.test/bounties/?b=" + second, passerby);
+    await until(() => !late.el("view").hidden);
+    check("bounties: after the deadline entries close, and the sponsor still has the grace time to pick", late.el("enter-wrap").hidden && /Entries are closed/.test(late.el("v-status").textContent) && late.el("v-actions").children.length === 0);
+    st.skew = 905;
+    late.el("refresh").click();
+    await until(() => !!late.el("v-actions").querySelector('[data-act="arm"]'));
+    late.el("v-actions").querySelector('[data-act="arm"]').click();
+    await until(() => !!late.el("v-actions").querySelector('[data-act="draw"]'));
+    late.el("v-actions").querySelector('[data-act="draw"]').click();
+    await until(() => /not passed yet/.test(late.el("v-action-note").textContent) || !!late.el("v-actions").querySelector('[data-act="claim"]'));
+    check("bounties: a draw cannot happen before its block, and the page says to wait", /The draw's block has not passed yet/.test(late.el("v-action-note").textContent), late.el("v-action-note").textContent);
+    st.slot += 40;
+    late.el("v-actions").querySelector('[data-act="draw"]').click();
+    await until(() => !!late.el("v-actions").querySelector('[data-act="claim"]'));
+    const drawnIndex = st.data[second].readUInt32LE(136), wallets = [alice, bob, passerby].map((k) => k.publicKey.toBase58()), winnerBefore = bal(wallets[drawnIndex]);
+    late.el("v-actions").querySelector('[data-act="claim"]').click();
+    await until(() => /Paid to the entry that was drawn/.test(late.el("view-note").textContent));
+    check("bounties: when the sponsor goes quiet, anyone starts the draw and the drawn entry is paid", bal(wallets[drawnIndex]) === winnerBefore + 200000000n && bal(second) === 4000000n && /a block hash drew the winner/.test(late.el("v-status").textContent) && /the hash of block/.test(late.el("kv").textContent) && /winner/.test(late.el("entries").children[drawnIndex].textContent) && late.el("v-actions").children.length === 0 && late.errors.length === 0, late.el("v-status").textContent + late.el("v-action-note").textContent + late.errors.join("|"));
+    check("bounties: every one of those steps was sent by a passer-by, not the sponsor", st.sent.slice(sentBefore).every((x) => x.tx.feePayer.equals(passerby.publicKey)) && st.sent.length - sentBefore === 4);
+    const bad = loadWith("https://example.test/bounties/?b=nonsense", passerby); await wait(300);
+    check("bounties: a bad address is explained", /not a valid/.test(bad.el("board-note").textContent) && bad.el("view").hidden && bad.errors.length === 0, bad.el("board-note").textContent);
   }
 
   // Burn vault
