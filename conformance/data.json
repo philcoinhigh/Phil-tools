@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "2d0320625e",
-  "date": "2026-11-17",
-  "subject": "FSEM-02: dual-head and resource-shape three-stage refusal/retry ladder (#1872)"
+  "commit": "b9d053b095",
+  "date": "2026-11-18",
+  "subject": "Merge pull request #1888 from abiggerhammer/hamster/rocq-refinement/tagged-admission-replay"
  },
  "files": 384,
  "grammar": {
