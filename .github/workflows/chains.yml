@@ -134,6 +134,12 @@ jobs:
         if: env.HAVE_EVM_KEY == '1'
         continue-on-error: true
         run: node out/chains-run.js evm ~/.phil-evm/key chains/deployments.json 2> >(tee -a chains/out/build.log >&2)
+      - name: Start the next nightly workflow
+        if: always() && (inputs.nightly || contains(github.event.head_commit.message, '[nightly]'))
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run bounty.yml --repo "$GITHUB_REPOSITORY" --ref onchain -f nightly=true 2>&1 | tee -a chains/out/build.log || echo "could not start bounty.yml" | tee -a chains/out/build.log
       - name: Record
         if: always()
         run: |
