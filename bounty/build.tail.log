@@ -1,0 +1,54 @@
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.2D2fgDeFLr/phil.ll -o /tmp/tmp.2D2fgDeFLr/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 42032 Nov 18 11:09 bounty/out/phil_bounty.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
+    34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+    56: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_invoke_signed_c
+ok   a challenge is posted with its prize locked in the same transaction 
+ok   a challenge cannot be posted without its prize 
+ok   entries are numbered in order and can be listed from the chain 
+ok   nobody can enter in another wallet's name 
+ok   only the sponsor can pick the winner 
+ok   the sponsor cannot send the prize to themselves instead of the winner 
+ok   with entries in, the sponsor cannot take the prize back 
+ok   nobody can start a draw while the sponsor still has time to pick 
+ok   the sponsor picks an entry and its wallet is paid the whole prize 
+ok   the prize is paid once: a second award is refused 
+ok   a token prize is locked where only the program can sign, and paid to the winner's token account 
+ok   when the sponsor goes quiet, a block hash nobody chose picks an entry and it is paid 
+ok   an unclaimed prize cannot be refunded to anyone but the sponsor 
+ok   when nobody entered before the deadline, the prize goes back to the sponsor 
+{"ok":true,"postUnits":5981,"enterUnits":6461,"awardUnits":2935,"drawUnits":1720}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.87852656 SOL
+deploying because the program changed
+Program Id: 3NLYHCQ3EVoA12xedXFdRQkfjDtxQULfRgQCyPXt9G6K
+
+Signature: qaedu7NBdDdewv1Uv4gcnb6AsiDrafxJ73qbVjykuBP2TA3TFagMDsHWZrmZh3S2mrJBZbPhP2HYsaguv2HEKaS
+
+ok   a challenge is posted with its prize locked in the same transaction 
+ok   a challenge cannot be posted without its prize 
+ok   entries are numbered in order and can be listed from the chain 
+ok   nobody can enter in another wallet's name 
+ok   only the sponsor can pick the winner 
+ok   the sponsor cannot send the prize to themselves instead of the winner 
+ok   with entries in, the sponsor cannot take the prize back 
+ok   nobody can start a draw while the sponsor still has time to pick 
+ok   the sponsor picks an entry and its wallet is paid the whole prize 
+ok   the prize is paid once: a second award is refused 
+ok   a token prize is locked where only the program can sign, and paid to the winner's token account 
+ok   when the sponsor goes quiet, a block hash nobody chose picks an entry and it is paid 
+ok   an unclaimed prize cannot be refunded to anyone but the sponsor 
+ok   when nobody entered before the deadline, the prize goes back to the sponsor 
+{"ok":true,"postUnits":5981,"enterUnits":6461,"awardUnits":2935,"drawUnits":1993}
+demo: a practice challenge was posted: FJ54CQ5up7KjBE7Kvg3f4UQTkrsbBtY4LpQ4putCqPZh

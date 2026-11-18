@@ -1,0 +1,16 @@
+{
+  "programId": "3NLYHCQ3EVoA12xedXFdRQkfjDtxQULfRgQCyPXt9G6K",
+  "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
+  "deployedSha256": "bc8fd6e11b09e95dbdd0c05b6e16a629bfaf05ab14dc6c606ef822aa72717504",
+  "programBytes": 42032,
+  "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
+  "checkedOn": "2026-11-18",
+  "selftest": {
+    "ok": true,
+    "postUnits": 5981,
+    "enterUnits": 6461,
+    "awardUnits": 2935,
+    "drawUnits": 1720
+  },
+  "deployedOn": "2026-11-18"
+}
