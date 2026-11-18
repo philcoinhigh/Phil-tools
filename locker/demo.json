@@ -48,6 +48,14 @@
    "released": "57dfnjSaqwii95MgjPvLSRwkquB2A8wcubW2QcZAJ1t98R3eBzmjCbyT4UBpUZXuSfF2w5bTZoKWjzU4xeVGRCaF",
    "lockUnits": 31890,
    "releaseUnits": 15531
+  },
+  {
+   "day": "2026-11-18",
+   "lock": "4DF3rS5PGe8AXRvQsy4YMrcrBdaPJ1v8TcMLJHG77DrE",
+   "locked": "4ddyz2MDz4nnwX2FVJxdHcYsr5DgGAhxZNwxhqBB9tw9guBhXZs2dg8ppZTaP8W7cPrb6RSeJ4ZA79Zn95uXRWDR",
+   "released": "2Q4eAvqjo2Ct1kDpjDfUn6VQiXekyQ4tovBz9497dksyaGDB6F6kcc3gZwt9iFYhhoPrsZfmY48vie2iy8JecaAw",
+   "lockUnits": 25890,
+   "releaseUnits": 15531
   }
  ]
 }
