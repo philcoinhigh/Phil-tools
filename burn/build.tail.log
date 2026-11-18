@@ -3,11 +3,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.ToAxHTqIXN/phil.ll -o /tmp/tmp.ToAxHTqIXN/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.QBMoL8Pubk/phil.ll -o /tmp/tmp.QBMoL8Pubk/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 28984 Nov 17 07:45 burn/out/phil_burn.so
+-rwxr-xr-x 1 runner runner 34192 Nov 18 07:44 burn/out/phil_burn.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -15,6 +15,7 @@ undefined symbols (these must all be Solana's own calls):
     33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
     34: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_invoke_signed_c
     35: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
+    57: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_create_program_address
 ok   a rule altered after its digest was declared is rejected by Phil on chain 
 ok   Phil accepts the rule and the vault opens 
 ok   an open vault's rule cannot be replaced 
@@ -28,9 +29,83 @@ ok   the coin's supply fell by exactly the threshold
 ok   the sender was paid the pot, less the network fee 
 ok   the vault kept only its reserve and counted the burn 
 ok   the pot cannot be taken twice 
-{"ok":true,"openUnits":4483,"burnUnits":8392}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 18.84477032 SOL
-program HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq is deployed and unchanged
-demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 13
-https://github.com/philcoinhigh/Phil-tools/actions/runs/44041230499
+{"ok":true,"openUnits":4508,"burnUnits":8417}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 17.85417504 SOL
+deploying because the program changed
+Program Id: HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq
+
+Signature: 5K9iwCQjCuCEGjJkXCFM3gqTHVDJ4iTQGBLRA7932p3VhHuKtqy1iXHfLmgZhaFkEKjkX33Jyt27QSNnSSUyLPSr
+
+ok   a rule altered after its digest was declared is rejected by Phil on chain 
+ok   Phil accepts the rule and the vault opens 
+ok   an open vault's rule cannot be replaced 
+ok   an empty vault pays nothing and burns nothing 
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 4000ms delay...
+ok   fees sent to the vault are its pot 
+ok   burning a different coin does not take the pot 
+ok   a stand-in for the token program is refused 
+ok   an offer asking for more than the pot is not carried out 
+ok   Phil accepts the offer and the real token program burns the coins 
+ok   the coin's supply fell by exactly the threshold 
+ok   the sender was paid the pot, less the network fee 
+ok   the vault kept only its reserve and counted the burn 
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+ok   the pot cannot be taken twice 
+{"ok":true,"openUnits":4508,"burnUnits":8417}
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+ws error: Unexpected server response: 429
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 2000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 1000ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+Server responded with 429 Too Many Requests.  Retrying after 500ms delay...
+demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 15
+--- higher.fun devnet: a coin whose creator is a burn vault ---
+higher.fun devnet proof: starting
+ok   Raydium's SDK is loaded
+ok   open the vault and fund its creator address: 2EzhhjJmuR5dPdbenKJrYHZ5cv8RzU6MmRnVm9iCXszaN8smCXY7sxmyj82R7yJd1Nvrk8WvuUgCSzfLPBkerVSU
+ok   launch the coin with the vault's address as creator: 5UsB2Z5oUoqzsU1LA13GmoJYhrqmphMRzKBS7kcBe2MkATUXnMCVTAgGqudEe98gLpY14oXhhEcPK8jprDroUiEW
+ok   LaunchLab records the vault's address as the coin's creator: 6JVfGCc2s2p86a43j3wJ7vak2BJnqC9zxCAcy2hXwJ5x
+ok   buy 0.15 SOL of the coin: 66NQv1WQdoiq8E733wN4mWLk4vwBt3gA6FgnkVhLSrLgwbvadUnfaMNEPYnbPxgYSTYU72FYrjUNDJm3RmfbuxFX
+ok   creator fees waiting in LaunchLab's vault for that address: 375000 lamports
+ok   fund a stranger: 4iAKPtMfe7aLF61qHgAEKE16AMKKPxSTNs4ZD8TTN1YwxKypKQm3YkcaXzsVSFkUChFsGMr6mwVrqp3m7MLkNk67
+ok   roll the creator fees into the vault, sent by a stranger: 3VqEwzWt6FEhSmDKyL9rCJHxayi4VAinsxiDQYNo7gDsSHAnvcEkSZT2SQWe9CtJx2PEKhYeyudqdpyr57M9PWmJ
+ok   every lamport of the creator fees is in the vault: 375000
+ok   burn a million coins and take the pot: 587qweFxcBFbRVtZGGcsGnJ3HAUsB6Xpsmvv5t4L51rd8bVa8VnjAHjYGZ2wGcGFSA7PBRigguqYcES6b3t5xuVf
+ok   1000000 coins burned for a pot of 375000 lamports, all of it creator fees
+{
+ "ok": true,
+ "day": "2026-11-18",
+ "network": "devnet",
+ "program": "HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq",
+ "launchlab": "DRay6fNdQ5J82H7xV6uq2aV3mNrUZ1J4PgSKsWgptcm6",
+ "platform": "5YMKfjGk6sigE6baKyGGCHDQjJTEHHVLSF3cXNvLKKfJ",
+ "vault": "xUsDMwuvXuuGiyFd9ZtY5tP1ig2hw2UyZ26Yq94i71y",
+ "creator": "6JVfGCc2s2p86a43j3wJ7vak2BJnqC9zxCAcy2hXwJ5x",
+ "mint": "EwkURrwycJf71XpkwVCQLVjpKqqR85Qrm9uy4CWbw4CK",
+ "pool": "9uFEEngDLo6GJZFW5rnti2rQPvwQt1NZ7FsQhCeNGqfT",
+ "boughtLamports": "150000000",
+ "feeLamports": "375000",
+ "potLamports": "375000",
+ "burnedUnits": "1000000000000",
+ "signatures": {
+  "opened": "2EzhhjJmuR5dPdbenKJrYHZ5cv8RzU6MmRnVm9iCXszaN8smCXY7sxmyj82R7yJd1Nvrk8WvuUgCSzfLPBkerVSU",
+  "launched": "5UsB2Z5oUoqzsU1LA13GmoJYhrqmphMRzKBS7kcBe2MkATUXnMCVTAgGqudEe98gLpY14oXhhEcPK8jprDroUiEW",
+  "bought": "66NQv1WQdoiq8E733wN4mWLk4vwBt3gA6FgnkVhLSrLgwbvadUnfaMNEPYnbPxgYSTYU72FYrjUNDJm3RmfbuxFX",
+  "rolled": "3VqEwzWt6FEhSmDKyL9rCJHxayi4VAinsxiDQYNo7gDsSHAnvcEkSZT2SQWe9CtJx2PEKhYeyudqdpyr57M9PWmJ",
+  "burned": "587qweFxcBFbRVtZGGcsGnJ3HAUsB6Xpsmvv5t4L51rd8bVa8VnjAHjYGZ2wGcGFSA7PBRigguqYcES6b3t5xuVf"
+ }
+}
+https://github.com/philcoinhigh/Phil-tools/actions/runs/44261366672
 nightly chain: asked for giveaway.yml

@@ -1,14 +1,14 @@
 {
   "programId": "HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq",
   "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
-  "deployedSha256": "1a0b5d6d896acba33802980b31369878b0263931ef86f2e2f1aa84d7f3fa82a1",
-  "programBytes": 28984,
+  "deployedSha256": "7a5924fa649a2762c7ec080be17e167e1792d4a2a7402ea2b20624757c9dac70",
+  "programBytes": 34192,
   "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
-  "checkedOn": "2026-11-17",
+  "checkedOn": "2026-11-18",
   "selftest": {
     "ok": true,
-    "openUnits": 4483,
-    "burnUnits": 8392
+    "openUnits": 4508,
+    "burnUnits": 8417
   },
-  "deployedOn": "2026-11-13"
+  "deployedOn": "2026-11-18"
 }
