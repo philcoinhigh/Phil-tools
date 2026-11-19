@@ -25,6 +25,7 @@ Open-source community tools for [Phil](https://github.com/abiggerhammer/phil), a
 | **Token locker** | Lock any coin until a date, on Solana devnet, from your own wallet. No cancel, no early unlock; anyone can check a coin's locks without a wallet | [`locker/`](locker) |
 | **Burn vault** | Point any coin's fees at a vault on Solana devnet; whoever burns a set amount of the coin takes them. No withdraw, no owner; every step gated by the upload server Phil's backend emits | [`burn/`](burn) |
 | **Token utilities** | A token locker (cliff, streaming, cancel), transfer hooks, launchpad hooks modelled on higher.fun's published rules, a hook that pays holders in tokenized stock, vesting, a 2-of-3 treasury, an auction and a bonding-curve launch. Written in Phil and meant to be forked. Simulation only | [`contracts/`](contracts) |
+| **Every bit** | One honest upload to the Phil program on Solana devnet, then all 999 versions of it with one bit flipped or cut short: what the program answers to each, and a button to put any of them to the chain | [`everybit/`](everybit) |
 | **What changed in Phil** | A day-by-day record of what landed in the Phil repository, counted from its git history and refreshed daily | [`changelog/`](changelog) |
 | **Compiler fuzzer** | Generates programs and runs Phil's own compiler on them daily, looking for crashes, hangs and wrong answers | [`fuzz/`](fuzz) |
 | **Conformance report** | Every test program in the Phil repository, run through these tools once a day | [`conformance/`](conformance) |
