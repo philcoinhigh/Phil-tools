@@ -13,7 +13,7 @@ const GROUPS = [
   ["start", "Learn", [["tour", "tour/", "The tour, runnable"], ["learn", "learn/", "Learn Phil"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Famous hacks"]]],
   ["chain", "On chain", [["chains", "chains/", "Same Phil, every chain"], ["quantum", "quantum/", "Quantum-safe vault"], ["theline", "line/", "The Line"], ["mycoin", "coin/", "My coin"], ["session", "session/", "Phil at both ends"], ["giveaway", "giveaway/", "Giveaways"], ["locker", "locker/", "Token locker"], ["burnvault", "burn/", "Burn vault"], ["onchain", "onchain/", "Phil on Solana"]]],
   ["build", "Build", [["library", "library/", "Token utilities"], ["otc", "otc/", "OTC desk"]]],
-  ["lab", "Lab", [["mutation", "mutation/", "Mutation analysis"], ["fuzz", "fuzz/", "Compiler fuzzer"], ["conformance", "conformance/", "Conformance report"], ["changelog", "changelog/", "What changed in Phil"]]],
+  ["lab", "Lab", [["mutation", "mutation/", "Mutation analysis"], ["fuzz", "fuzz/", "Compiler fuzzer"], ["conformance", "conformance/", "Conformance report"], ["changelog", "changelog/", "What changed in Phil"], ["proofs", "proofs/", "The proof ledger"]]],
 ];
 function header(root, active) {
   const groups = GROUPS.map(([id, label, pages]) => `<a href="${root || "./"}#${id}"${pages.some(([p]) => p === active) ? ' aria-current="true"' : ""}>${label}</a>`).join("");
@@ -55,6 +55,7 @@ page("conformance", "docs/conformance/index.html", "../", "conformance");
 page("library", "docs/library/index.html", "../", "library");
 page("hacks", "docs/hacks/index.html", "../", "hacks");
 page("changelog", "docs/changelog/index.html", "../", "changelog");
+page("proofs", "docs/proofs/index.html", "../", "proofs");
 page("fuzz", "docs/fuzz/index.html", "../", "fuzz");
 page("mutation", "docs/mutation/index.html", "../", "mutation");
 page("onchain", "docs/onchain/index.html", "../", "onchain");

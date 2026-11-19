@@ -1,0 +1,620 @@
+{
+ "generated": "2026-11-19T15:28:25.551Z",
+ "commit": "bcc081f7220a14384f7764c9284d956f06441805",
+ "commitDate": "2026-11-19",
+ "now": {
+  "files": 1123,
+  "lines": 245839,
+  "statements": 6474,
+  "qed": 7463,
+  "unfinished": 0,
+  "axioms": 3
+ },
+ "areas": [
+  {
+   "name": "Core",
+   "files": 391,
+   "lines": 62978,
+   "statements": 2671
+  },
+  {
+   "name": "Surface",
+   "files": 589,
+   "lines": 146378,
+   "statements": 2338
+  },
+  {
+   "name": "Verification",
+   "files": 30,
+   "lines": 11769,
+   "statements": 486
+  },
+  {
+   "name": "Assurance",
+   "files": 48,
+   "lines": 10082,
+   "statements": 391
+  },
+  {
+   "name": "LLVM",
+   "files": 40,
+   "lines": 8370,
+   "statements": 360
+  },
+  {
+   "name": "Systems",
+   "files": 25,
+   "lines": 6262,
+   "statements": 228
+  }
+ ],
+ "week": {
+  "since": "2026-11-12",
+  "statements": 682,
+  "lines": 18606,
+  "files": 122
+ },
+ "series": [
+  {
+   "date": "2026-11-05",
+   "files": 935,
+   "lines": 212439,
+   "statements": 5188
+  },
+  {
+   "date": "2026-11-06",
+   "files": 935,
+   "lines": 213170,
+   "statements": 5222
+  },
+  {
+   "date": "2026-11-07",
+   "files": 946,
+   "lines": 216852,
+   "statements": 5380
+  },
+  {
+   "date": "2026-11-08",
+   "files": 958,
+   "lines": 219887,
+   "statements": 5543
+  },
+  {
+   "date": "2026-11-09",
+   "files": 970,
+   "lines": 222462,
+   "statements": 5654
+  },
+  {
+   "date": "2026-11-10",
+   "files": 978,
+   "lines": 223385,
+   "statements": 5696
+  },
+  {
+   "date": "2026-11-11",
+   "files": 984,
+   "lines": 224130,
+   "statements": 5724
+  },
+  {
+   "date": "2026-11-12",
+   "files": 1001,
+   "lines": 227233,
+   "statements": 5792
+  },
+  {
+   "date": "2026-11-13",
+   "files": 1014,
+   "lines": 228735,
+   "statements": 5843
+  },
+  {
+   "date": "2026-11-14",
+   "files": 1027,
+   "lines": 230562,
+   "statements": 5938
+  },
+  {
+   "date": "2026-11-15",
+   "files": 1042,
+   "lines": 233022,
+   "statements": 6047
+  },
+  {
+   "date": "2026-11-16",
+   "files": 1067,
+   "lines": 237474,
+   "statements": 6213
+  },
+  {
+   "date": "2026-11-17",
+   "files": 1083,
+   "lines": 240323,
+   "statements": 6254
+  },
+  {
+   "date": "2026-11-18",
+   "files": 1104,
+   "lines": 243687,
+   "statements": 6384
+  },
+  {
+   "date": "2026-11-19",
+   "files": 1123,
+   "lines": 245839,
+   "statements": 6474
+  }
+ ],
+ "freshSince": "2026-11-18",
+ "freshCount": 90,
+ "fresh": [
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOrderExactObservedEvents"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOrderAcceptedPrefix"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOrderRefusedSuffix"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOrderTwoFiniteConvergences"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOrderNoFiniteReplayCommit"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationModel.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOwnerOrderCommutes"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationModel.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOwnerFrame"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CloseOrderObservationModel.v",
+   "kind": "Theorem",
+   "name": "fsem02CloseOwnerNoReplay"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsBadSourcePreemptsModeAndCollision"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsBadAuthorityPreemptsModeAndCollision"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsAffineSenderWrongModeBeforeAnyDestination"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsUnrestrictedSenderWrongModeBeforeAnyDestination"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsReceiverRepairDoesNotExcuseAffineSender"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsReceiverRepairDoesNotExcuseUnrestrictedSender"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsSenderRepairExposesReceiverDuplicate"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsIndependentRepairsAllowFramedTransfer"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02CrossModeSenderPayload.v",
+   "kind": "Theorem",
+   "name": "cmsWrongModeNoPartialSuccessor"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrSourceRefusalPreempts"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrOwnerIndexRefusalPreempts"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrAbsentSenderPrecedesAnyReceiver"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrReceiverRepairDoesNotRestoreSender"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrSenderRepairExposesCollision"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrBothRepairsAllowFramedTransfer"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrNoPartialSuccessorFromAbsentSender"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02MissingSenderResource.v",
+   "kind": "Theorem",
+   "name": "msrFramedSuccessRequiresEveryGate"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpSenderSourceFirst"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpReceiverSourcePreemptsAllNativeFaults"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpExternalAuthorityIsIndependent"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpBorrowedSenderBeforeDestination"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpMissingSenderBeforeDestination"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpWrongModeBeforeDestination"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpSenderOnlyRepairExposesDuplicate"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpFullRepairFramedTransfer"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpSuccessRequiresAllGates"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpDualStaleSourceRepairDiamond"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpDualSourceRepairPreservesNativeFaults"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02ReceiverClosePriority.v",
+   "kind": "Theorem",
+   "name": "rcpDualSourceAndNativeRepairFramedTransfer"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02RestrictedSourceObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02ObservedExactVerdicts"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02RestrictedSourceObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02ObservedEveryRefusalHasNoCommittedEvent"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02RestrictedSourceObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02ObservedSourceErrorPriority"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02RestrictedSourceObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02ObservedNoSecondTransfer"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02TerminalObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02TerminalObservedExactOrder"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02TerminalObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02TerminalObservedOneClose"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02TerminalObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02TerminalObservedRefusalSequence"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02TerminalObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02TerminalNoSecondClose"
+  },
+  {
+   "file": "proof/Phil/Core/FSEM02TerminalObservationChecks.v",
+   "kind": "Theorem",
+   "name": "fsem02TerminalRetainsSinglePriorPayloadTransfer"
+  },
+  {
+   "file": "proof/Phil/Surface/GrammarAstRecordDataRecursiveGroupingAcceptedKeyExtensionality.v",
+   "kind": "Theorem",
+   "name": "phase1_surface_successful_record_data_admission_key_extensionality"
+  },
+  {
+   "file": "proof/Phil/Surface/GrammarAstRecordDataRecursiveGroupingAcceptedKeyExtensionality.v",
+   "kind": "Theorem",
+   "name": "phase1_surface_successful_record_data_admission_reencode_stable"
+  },
+  {
+   "file": "proof/Phil/Surface/GrammarAstRecordDataRecursiveGroupingCertifiedFiberEquality.v",
+   "kind": "Theorem",
+   "name": "phase1_surface_certified_record_root_fiber_equality_iff"
+  },
+  {
+   "file": "proof/Phil/Surface/GrammarAstRecordDataRecursiveGroupingCertifiedFiberEquality.v",
+   "kind": "Theorem",
+   "name": "phase1_surface_certified_data_root_fiber_equality_iff"
+  },
+  {
+   "file": "proof/Phil/Surface/GrammarAstRecordDataRecursiveGroupingCertifiedRootKeyEquality.v",
+   "kind": "Theorem",
+   "name": "phase1_surface_certified_record_data_root_admission_key_equality_iff"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_accepted_record_binds_every_linear_field"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_missing_linear_field_rejects"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_duplicated_record_field_disposition_rejects"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_consuming_linear_record_forgets_original_owner"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_bound_linear_record_field_restores_exact_destination"
+  },
+  {
+   "file": "proof/Phil/Surface/SourceRecordFieldDispositionREC01.v",
+   "kind": "Theorem",
+   "name": "rec01_restored_linear_record_destination_is_one_shot"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_checked_three_stage_plan_replays"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_missing_outer_has_no_successor"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_missing_middle_has_no_later_successor"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_missing_deep_has_no_terminal_successor"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_successful_three_stage_exact_arity"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceNestedProductSourceD05D.v",
+   "kind": "Theorem",
+   "name": "data05d_successful_terminal_preserves_exact_leaf"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_accepted_finite_tree_replays"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_failed_root_never_replays"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_failed_left_subtree_never_replays"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_failed_right_subtree_never_replays"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_successful_replay_has_exact_stage_count"
+  },
+  {
+   "file": "proof/Phil/Surface/SurfaceRecursiveProductSourceD05E.v",
+   "kind": "Theorem",
+   "name": "data05e_replayed_fork_preserves_exact_root_element"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_common_prefix"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_proper_prefix"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_pairwise_implies_adjacent_members"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_pairwise_implies_adjacent_keys"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_reflexive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_eq_iff"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_reversal"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_bytes_lt_transitive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_key_less_transitive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_key_less_all_transitive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_adjacent_implies_pairwise_keys"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_adjacent_iff_pairwise_keys"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_compare_form_lt_rank_le"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_member_less_transitive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Lemma",
+   "name": "p8_h9_member_less_all_transitive"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_adjacent_implies_pairwise_members"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_adjacent_iff_pairwise_members"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_compare_form_trichotomy"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_compare_forms_trichotomy"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_compare_fields_trichotomy"
+  },
+  {
+   "file": "proof/Phil/Verification/P8H9StructuralOrderCoherence.v",
+   "kind": "Theorem",
+   "name": "p8_h9_unicode_atom_order_iff"
+  }
+ ],
+ "assumed": [
+  {
+   "file": "proof/Phil/Core/FileSystem.v",
+   "line": 48,
+   "name": "replace_binding_is_process_observable"
+  },
+  {
+   "file": "proof/Phil/Core/ProviderRelativePathImplementation.v",
+   "line": 186,
+   "name": "clean_described_segment_is_valid"
+  },
+  {
+   "file": "proof/Phil/Core/RuntimeBytes.v",
+   "line": 43,
+   "name": "accepted_bytes_length_evidence_sound"
+  }
+ ]
+}
