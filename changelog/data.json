@@ -1,24 +1,143 @@
 {
  "phil": {
-  "commit": "b9d053b095",
-  "date": "2026-11-18"
+  "commit": "099a851499",
+  "date": "2026-11-19"
  },
- "since": "2026-10-28",
+ "since": "2026-10-29",
  "days": [
   {
-   "date": "2026-11-18",
+   "date": "2026-11-19",
    "commits": 4,
    "merges": 2,
    "streams": [
     {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 1
+    },
+    {
+     "name": "Docs",
+     "about": "documentation",
+     "n": 1
+    },
+    {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 4
+     "n": 1
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem01-data05d-three-level-v1",
+     "accepted": 1,
+     "rejected": 10
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-nested-product-data05d-fsem01-v1.md",
+     "title": "FSEM-01 DATA-04/05D — bounded three-level source-owned product elimination"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-missing-sender-resource-fsem02-v1.md",
+     "title": "FSEM-02: valid owner ledger does not manufacture missing sender bytes"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-fsem01-closeout-2026-11-19.md",
+     "title": "FSEM-01 resource/local typing closeout reconciliation (2026-11-19)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-cross-mode-sender-payload-fsem02-v1.md",
+     "title": "FSEM-02: same-type sender in wrong structural mode refuses restricted transfer"
+    }
+   ],
+   "proofsAdded": 5,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "faeb899f61",
+     "subject": "FSEM-01 DATA-04/05D: source-owned three-level nested product Surface adapter"
+    },
+    {
+     "sha": "4cf5177241",
+     "subject": "docs(fsem-01): reconcile bounded evidence and closeout gaps through DATA-05C"
+    },
+    {
+     "sha": "b6154389d2",
+     "subject": "FSEM-02: reject same-type wrong-mode sender before receiver collisions"
+    },
+    {
+     "sha": "099a851499",
+     "subject": "Merged: rocq refinement / certified root key equality"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-18",
+   "commits": 14,
+   "merges": 7,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 11
+    },
+    {
+     "name": "FSEM-01",
+     "about": "formal semantics: values, ownership and loops",
+     "n": 1
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-loaned-occupied-receiver-fsem02-v1.md",
+     "title": "FSEM-02: loaned occupied receiver refuses restricted Linear transfer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-borrowed-endpoint-prefix-fsem02-v1.md",
+     "title": "FSEM-02: exact borrowed endpoint-prefix refusal before restricted payload transfer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-borrowed-sender-transfer-fsem02-v1.md",
+     "title": "FSEM-02: outstanding shared loan blocks restricted sender payload transfer"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-cross-mode-receiver-collision-fsem02-v1.md",
+     "title": "FSEM-02: cross-mode receiver name exclusivity in restricted transfer"
+    },
+    {
+     "path": "docs/phase-1/p8-h8-scalar-order-v1.md",
+     "title": "P8-H8 — pure Unicode scalar canonicality and lexicographic order"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-typed-sender-resource-priority-fsem02-v1.md",
+     "title": "FSEM-02: typed sender resource before receiver-slot collision"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-binder-resource-atomicity-fsem02-v1.md",
+     "title": "FSEM-02: protocol binder versus restricted resource atomicity"
+    },
+    {
+     "path": "docs/phase-1/p8-h7-typed-application-inverse-v1.md",
+     "title": "P8-H7 — pure typed application inversion, not native or release authority"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-projected-head-binder-priority-fsem02-v1.md",
+     "title": "FSEM-02: projected session-head diagnostics before external protocol binder"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-dual-authority-error-priority-fsem02-v1.md",
+     "title": "FSEM-02: simultaneous source, activation-owner and protocol-binder diagnostic priority"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-nested-product-data05c-fsem01-v1.md",
+     "title": "FSEM-01 DATA-05C — source-owned two-level nested product admission"
+    },
     {
      "path": "docs/phase-1/formal-semantics-dual-binder-disjoint-authority-fsem02-v1.md",
      "title": "FSEM-02: joint sender/receiver semantic-identity separation"
@@ -36,26 +155,28 @@
      "title": "FSEM-02 — partial four-site observation-mask reversibility"
     }
    ],
-   "proofsAdded": 6,
+   "proofsAdded": 21,
    "proofsChanged": 0,
-   "modules": [],
+   "modules": [
+    "Phil.Surface.GrammarV1.SourceNestedProductElimination"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "1fbb796613",
-     "subject": "FSEM-02: keep colliding source display binders semantically disjoint"
+     "sha": "e9e33acca4",
+     "subject": "FSEM-02: active loan cannot hide occupied receiver name"
     },
     {
-     "sha": "b9d053b095",
-     "subject": "Merged: rocq refinement / tagged admission replay"
+     "sha": "4d0e08bad6",
+     "subject": "FSEM-01 DATA-05C: source-owned bounded nested product Surface adapter"
     },
     {
-     "sha": "c339fcde7e",
-     "subject": "FSEM-02: source sender to activation owner identity correspondence"
+     "sha": "76cad152be",
+     "subject": "Merged: rocq refinement / certified admission fibers"
     },
     {
-     "sha": "dad89eb1f8",
-     "subject": "Merged: rocq refinement / tagged admission injectivity"
+     "sha": "2f577e9651",
+     "subject": "FSEM-02: borrowed endpoint prefix gates precede payload transfer"
     }
    ]
   },
@@ -1585,6 +1706,18 @@
    "accepted": 63,
    "caught": 150,
    "rejected": 257,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-19",
+   "commit": "099a851499",
+   "files": 395,
+   "grammar": "64/64",
+   "ranClean": 52,
+   "accepted": 64,
+   "caught": 157,
+   "rejected": 267,
    "philcAccepts": 3,
    "philcTried": 11
   }
