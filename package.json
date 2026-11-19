@@ -42,6 +42,7 @@
     "test:session": "esbuild test/session.ts --bundle --platform=node --outfile=out/session-test.js --log-level=error && node out/session-test.js",
     "test:tour": "esbuild test/tour.ts --bundle --platform=node --outfile=out/tour-test.js --log-level=error && node out/tour-test.js",
     "test:qvault": "esbuild test/qvault.ts --bundle --platform=node --outfile=out/qvault-test.js --log-level=error && node out/qvault-test.js",
+    "everybit": "esbuild everybit/run.ts --bundle --platform=node --packages=external --outfile=out/everybit-run.js --log-level=error && node out/everybit-run.js",
     "test:chains": "esbuild test/chains.ts --bundle --platform=node --packages=external --outfile=out/chains-test.js --log-level=error && node out/chains-test.js",
     "test:line": "esbuild test/line.ts --bundle --platform=node --outfile=out/line-test.js --log-level=error && node out/line-test.js",
     "test:locker": "esbuild test/locker.ts --bundle --platform=node --outfile=out/locker-test.js --log-level=error && node out/locker-test.js"
