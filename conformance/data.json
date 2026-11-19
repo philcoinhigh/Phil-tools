@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "b9d053b095",
-  "date": "2026-11-18",
-  "subject": "Merge pull request #1888 from abiggerhammer/hamster/rocq-refinement/tagged-admission-replay"
+  "commit": "099a851499",
+  "date": "2026-11-19",
+  "subject": "Merge pull request #1916 from abiggerhammer/hamster/rocq-refinement/certified-root-key-equality"
  },
- "files": 384,
+ "files": 395,
  "grammar": {
   "accept": {
    "files": 28,
@@ -17,15 +17,15 @@
  },
  "behaviour": {
   "accept": {
-   "files": 63,
-   "ran": 51,
+   "files": 64,
+   "ran": 52,
    "parsedOnly": 8,
    "review": 4
   },
   "reject": {
-   "files": 257,
-   "caught": 150,
-   "missed": 107
+   "files": 267,
+   "caught": 157,
+   "missed": 110
   }
  },
  "suites": [
@@ -118,6 +118,24 @@
    "agree": 9,
    "parsedOnly": 0,
    "missed": 2
+  },
+  {
+   "name": "fsem01-data05d-three-level-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-data05d-three-level-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 10,
+   "agree": 7,
+   "parsedOnly": 0,
+   "missed": 3
   },
   {
    "name": "fsem01-j6-two-affine-source-v1",
@@ -648,6 +666,18 @@
   {
    "file": "test/fixtures/fsem01-data05a-nested-product-v1/wrong-leaf-width.phil",
    "suite": "fsem01-data05a-nested-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05d-three-level-v1/extra-statement.phil",
+   "suite": "fsem01-data05d-three-level-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05d-three-level-v1/shadow-packet.phil",
+   "suite": "fsem01-data05d-three-level-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05d-three-level-v1/wrong-width.phil",
+   "suite": "fsem01-data05d-three-level-v1"
   },
   {
    "file": "test/fixtures/fsem01-j6-two-affine-source-v1/missing-invariant.phil",

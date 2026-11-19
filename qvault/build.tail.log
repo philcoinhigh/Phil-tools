@@ -1,13 +1,17 @@
+warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
+Downloading platform-tools v1.57
+Installed platform-tools v1.57 at /home/runner/.cache/solana/v1.57/platform-tools
+warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
 clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
 Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.iQGnTsgv9e/phil.ll -o /tmp/tmp.iQGnTsgv9e/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.iUDFHSqynt/phil.ll -o /tmp/tmp.iUDFHSqynt/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 39944 Nov 18 07:54 qvault/out/phil_qvault.so
+-rwxr-xr-x 1 runner runner 39944 Nov 19 07:57 qvault/out/phil_qvault.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -36,9 +40,9 @@ ok   the guard key cancels the withdrawal and gives the vault a key from a new p
 ok   the thief's withdrawal can never be completed, even after the wait 
 ok   and the stolen phrase signs nothing the vault accepts 
 ok   the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed 
-{"ok":true,"openUnits":4955,"spendUnits":543642,"tokenUnits":613760,"cancelUnits":609635,"finishUnits":4467,"hashSteps":2040}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 17.65827408 SOL
+{"ok":true,"openUnits":4955,"spendUnits":543642,"tokenUnits":547460,"cancelUnits":543335,"finishUnits":4467,"hashSteps":2040}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.32861024 SOL
 program 72oBGfeCf9YZLv3J4xicdskhPb9KjeHyAUvSCNx1JM6J is deployed and unchanged
 locked copy: keeping the one there is
-demo: a vault opened, paid out twice under two one-time keys (543740, 610119 compute units) and closed
-https://github.com/philcoinhigh/Phil-tools/actions/runs/44262753097
+demo: a vault opened, paid out twice under two one-time keys (543740, 543819 compute units) and closed
+https://github.com/philcoinhigh/Phil-tools/actions/runs/44483670517
