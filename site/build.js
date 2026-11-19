@@ -11,7 +11,7 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link 
 // Every page, grouped the way the home page groups them. The same list feeds the header, the menu and the footer.
 const GROUPS = [
   ["start", "Learn", [["tour", "tour/", "The tour, runnable"], ["learn", "learn/", "Learn Phil"], ["playground", "playground/", "Playground"], ["hacks", "hacks/", "Famous hacks"]]],
-  ["chain", "On chain", [["chains", "chains/", "Same Phil, every chain"], ["quantum", "quantum/", "Quantum-safe vault"], ["theline", "line/", "The Line"], ["mycoin", "coin/", "My coin"], ["session", "session/", "Phil at both ends"], ["giveaway", "giveaway/", "Giveaways"], ["locker", "locker/", "Token locker"], ["burnvault", "burn/", "Burn vault"], ["onchain", "onchain/", "Phil on Solana"]]],
+  ["chain", "On chain", [["chains", "chains/", "Same Phil, every chain"], ["everybit", "everybit/", "Every bit"], ["quantum", "quantum/", "Quantum-safe vault"], ["theline", "line/", "The Line"], ["mycoin", "coin/", "My coin"], ["session", "session/", "Phil at both ends"], ["giveaway", "giveaway/", "Giveaways"], ["locker", "locker/", "Token locker"], ["burnvault", "burn/", "Burn vault"], ["onchain", "onchain/", "Phil on Solana"]]],
   ["build", "Build", [["library", "library/", "Token utilities"], ["otc", "otc/", "OTC desk"]]],
   ["lab", "Lab", [["mutation", "mutation/", "Mutation analysis"], ["fuzz", "fuzz/", "Compiler fuzzer"], ["conformance", "conformance/", "Conformance report"], ["changelog", "changelog/", "What changed in Phil"]]],
 ];
@@ -66,3 +66,4 @@ page("mycoin", "docs/coin/index.html", "../", "mycoin");
 page("theline", "docs/line/index.html", "../", "theline");
 page("quantum", "docs/quantum/index.html", "../", "quantum");
 page("everychain", "docs/chains/index.html", "../", "chains");
+page("everybit", "docs/everybit/index.html", "../", "everybit");

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Every bit: 999 attacks on a Phil program, one for every bit</title>
+<meta name="description" content="One honest upload to a Phil program that runs on Solana devnet, then every version of it with a single bit flipped or cut short. See what the program answers to each of the 999, and put any of them to the chain yourself.">
+__FONTS__
+<style>
+/*__CSS__*/
+.top { padding: 34px 0 6px; }
+.top h1 { font: 600 clamp(28px, 5vw, 44px)/1.05 var(--font-mark); letter-spacing: -.04em; margin: 0 0 12px; }
+.top p { margin: 0 0 10px; max-width: 70ch; }
+h2.sec { font: 600 13px var(--font-mark); letter-spacing: .02em; text-transform: uppercase; margin: 40px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+.lead { margin: 12px 0 0; color: var(--muted); max-width: 72ch; font-size: 15px; }
+.tally { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ink); background: var(--sheet); margin-top: 18px; }
+.tally div { padding: 16px 16px 14px; } .tally div + div { border-left: 1px solid var(--rule); }
+.tally b { display: block; font: 600 clamp(28px, 5vw, 44px)/1 var(--font-code); letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.tally span { display: block; margin-top: 8px; font-size: 13.5px; color: var(--muted); }
+.tally .zero b { color: var(--good); }
+.state { margin-top: 12px; padding: 11px 14px; border-left: 3px solid var(--ink); background: var(--sheet); font-size: 14.5px; max-width: 78ch; overflow-wrap: anywhere; }
+.state.warn { border-left-color: var(--bad); }
+
+/* The upload, bit by bit. One square is one transaction. */
+.map { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 14px 16px; }
+.field { min-width: 0; }
+.field > span { display: block; font: 11.5px/1.2 var(--font-code); color: var(--muted); margin-bottom: 5px; white-space: nowrap; }
+.bytes { display: flex; flex-wrap: wrap; gap: 4px; }
+.byte { display: grid; grid-template-columns: repeat(4, 9px); grid-auto-rows: 9px; gap: 1px; }
+.bit, .cut { all: unset; display: block; width: 9px; height: 9px; cursor: pointer; background: var(--c); }
+.bit:hover, .cut:hover, .bit.on, .cut.on { outline: 2px solid var(--ink); outline-offset: 1px; position: relative; z-index: 1; }
+.bit:focus-visible, .cut:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cuts { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 1px; }
+.cuts .cut { width: 7px; height: 22px; }
+.r-digest { --c: #c9962b; } .r-policy { --c: #3d6fd6; } .r-frame { --c: #8a56c7; } .r-version { --c: #1f9a8a; } .r-end { --c: #d2622a; } .r-cancel { --c: #7a808a; } .r-instr { --c: #c0262d; } .r-yes { --c: var(--good); } .r-none { --c: var(--rule); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 16px; font-size: 13.5px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; } .legend i { width: 11px; height: 11px; background: var(--c); display: inline-block; }
+.legend b { font: 600 13px var(--font-code); }
+
+.detail { margin-top: 16px; border: 1px solid var(--ink); background: var(--sheet); padding: 16px 18px; min-height: 148px; }
+.detail h3 { font: 600 16px var(--font-mark); margin: 0 0 6px; letter-spacing: -.01em; }
+.detail p { margin: 0 0 8px; font-size: 15px; max-width: 76ch; }
+.detail .answer { font: 600 15px var(--font-code); }
+.detail .diff { font: 12.5px/1.5 var(--font-code); color: var(--muted); overflow-wrap: anywhere; }
+.detail .diff mark { background: var(--ink); color: var(--paper); padding: 0 2px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.acts button, .acts a, .all button { font: 600 13.5px var(--font-mark); padding: 9px 14px; border: 1px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; text-decoration: none; }
+.acts button:hover, .acts a:hover, .all button:hover { background: var(--ink); color: var(--paper); }
+.acts .said { font: 13.5px var(--font-code); align-self: center; }
+.all { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; } .all span { font: 14px var(--font-code); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; margin-top: 14px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 600 11.5px var(--font-mark); color: var(--muted); border-bottom-color: var(--ink); }
+td:first-child { font: 600 14px var(--font-code); white-space: nowrap; } td:last-child, th:last-child { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+td i { width: 10px; height: 10px; background: var(--c); display: inline-block; margin-right: 8px; }
+.notes { margin: 14px 0 0; padding-left: 20px; max-width: 76ch; } .notes li { margin: 0 0 8px; font-size: 15px; }
+@media (max-width: 720px) { .tally { grid-template-columns: 1fr 1fr; } .tally div:nth-child(3) { border-left: 0; } .tally div:nth-child(n+3) { border-top: 1px solid var(--rule); } }
+</style>
+</head>
+<body>
+__HEADER__
+<main class="wrap">
+  <div class="top">
+    <h1>Every bit</h1>
+    <p>Take one honest upload to a program compiled from Phil, the one that runs on Solana's devnet. Then attack it the plainest way there is: send it again with one bit flipped, for every bit it has, and again cut short, at every length. <span id="how"></span></p>
+  </div>
+  <div class="tally" id="tally"></div>
+  <div class="state" id="state"></div>
+
+  <h2 class="sec">The upload, one square per attack</h2>
+  <p class="lead">Each square is one bit of the upload, and one attack: the upload with just that bit flipped. Its colour is the reason the program gave for refusing it. Tap any square.</p>
+  <div class="map" id="map"></div>
+  <p class="lead">And the same upload cut short. Each bar is one attack carrying only the first bytes, from none of them up to all but one.</p>
+  <div class="cuts" id="cuts"></div>
+  <div class="legend" id="legend"></div>
+  <div class="detail" id="detail" aria-live="polite"></div>
+  <div class="all"><button id="all">Run all 1,000 in this browser</button><span id="all-said"></span></div>
+
+  <h2 class="sec">Every reason it gave</h2>
+  <p class="lead">The program does not just fail. It says which rule the upload broke, as a number that is the same on every chain.</p>
+  <table id="reasons"></table>
+
+  <h2 class="sec">What this shows, and what it does not</h2>
+  <ul class="notes">
+    <li><b>It is complete for what it tries.</b> Every one-bit change and every shortening of this one upload is here. None was skipped and none was picked for looking good.</li>
+    <li><b>It is not every possible attack.</b> Changing two bits at once, or building a hostile upload from nothing, is a far larger space. The <a href="__ROOT__mutation/">mutation analysis</a> and the <a href="__ROOT__fuzz/">fuzzer</a> go at the same code from other sides.</li>
+    <li><b>What ran is Phil's own compiled code</b> for its upload protocol, unchanged, with a small runtime of ours underneath it to meet Solana. The refusals come from Phil's code. Ours has not been audited.</li>
+    <li><b>The digest is what catches most of them.</b> An upload declares the SHA-256 of its bytes before sending them, so a flipped bit in either no longer matches. The rest are caught earlier: by the framing, the version check, the server's policy, or the count of bytes.</li>
+    <li><b>Devnet is Solana's public test network.</b> It is reset from time to time; when it is, the links here go stale until the next run.</li>
+    <li>This page is independent of the Phil project. The code that made it is in <a href="__REPO__/tree/main/everybit">everybit/</a>.</li>
+  </ul>
+</main>
+__FOOTER__
+<script>/*__BUNDLE__*/</script>
+</body>
+</html>
