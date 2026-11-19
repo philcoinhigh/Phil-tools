@@ -1,0 +1,53 @@
+name: Every bit
+# Sends one honest upload to Phil's program on Solana devnet, then every version of it with one bit
+# flipped and every version cut short: 1,000 transactions. Records what the chain answered to each.
+#
+# Like chains.yml, this must run on the `onchain` branch to read the devnet wallet.
+on:
+  push:
+    branches: [onchain]
+    paths: ["everybit/run.ts", "site/src/everybit-core.ts", ".github/workflows/everybit.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: phil-everybit
+jobs:
+  everybit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install the compiler
+        run: command -v ld.lld-18 >/dev/null || command -v ld.lld >/dev/null || sudo apt-get install -y -qq lld-18 clang-18 llvm-18
+      - name: Restore the devnet wallet
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.phil-devnet
+          key: phil-devnet-wallet-v1
+      - name: Every upload, on two machines here first
+        run: |
+          set -o pipefail
+          mkdir -p out
+          giveaway/native/build.sh out/phil-chains-native chains/runtime.c 2>&1 | tail -3
+          npm run -s everybit -- local chains/phil_chains.bin out/everybit-expected.json 2>&1 | tee everybit/run.log
+      - name: Every upload, on Solana devnet
+        run: |
+          set -o pipefail
+          if [ ! -s ~/.phil-devnet/payer.json ]; then echo "The devnet wallet is not readable from this run (ref $GITHUB_REF)." | tee -a everybit/run.log; exit 0; fi
+          PROGRAM=$(jq -r .programId chains/program.json)
+          node out/everybit-run.js solana https://api.devnet.solana.com "$PROGRAM" ~/.phil-devnet/payer.json out/everybit-expected.json everybit/data.json 2>&1 | tee -a everybit/run.log
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in everybit/data.json everybit/run.log; do [ -e "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Every bit: $(date -u +%F)"
+          for i in 1 2 3 4 5; do git push && exit 0; git pull --rebase; done; exit 1
