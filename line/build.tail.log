@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.pycb5cJ5qL/phil.ll -o /tmp/tmp.pycb5cJ5qL/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.RKiqbOoMVc/phil.ll -o /tmp/tmp.RKiqbOoMVc/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 32712 Nov 19 07:52 line/out/phil_line.so
+-rwxr-xr-x 1 runner runner 32712 Nov 20 07:50 line/out/phil_line.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -34,8 +34,8 @@ ok   a whole match: the program agrees with the page's rules after every round, 
 ok   a finished match takes no more moves 
 ok   a side that committed and did not reveal in time forfeits, on anyone's call 
 {"ok":true,"commitUnits":3316,"revealUnits":4247}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.33122108 SOL
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.29296 SOL
 program 68iQj4dhcyTvag2kAPutv2rZKg28165B2hRJ5kwXXshX is deployed and unchanged
 demo: a 15-round match. Drawn: the node ended in the middle after 15 rounds.
-https://github.com/philcoinhigh/Phil-tools/actions/runs/44483390804
+https://github.com/philcoinhigh/Phil-tools/actions/runs/44698239401
 nightly chain: asked for qvault.yml
