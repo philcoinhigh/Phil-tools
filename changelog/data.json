@@ -1,40 +1,165 @@
 {
  "phil": {
-  "commit": "099a851499",
-  "date": "2026-11-19"
+  "commit": "d9d1f7cd73",
+  "date": "2026-11-20"
  },
- "since": "2026-10-29",
+ "since": "2026-10-30",
  "days": [
   {
-   "date": "2026-11-19",
-   "commits": 4,
-   "merges": 2,
+   "date": "2026-11-20",
+   "commits": 2,
+   "merges": 7,
    "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 2
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-2/mhb-atc-w3-negative-commissioning.md",
+     "title": "MHB-ATC W3 — bounded live negative commissioning: reviewed plan only"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-choice-dual-spectator-frame-fsem02-v1.md",
+     "title": "FSEM-02 — two-sided borrowed spectator frame on paired Choice (bounded v1)"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-live-authority-audit.md",
+     "title": "MHB-ATC owner-local read-only authority audit"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-privileged-pr-ci.md",
+     "title": "MHB-ATC G2 — no privileged execution of admitted worker PR code"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-paired-choice-joint-bridge-fsem02-v1.md",
+     "title": "FSEM-02 — paired local Choice versus joint rendezvous (bounded v1)"
+    }
+   ],
+   "proofsAdded": 3,
+   "proofsChanged": 1,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "8587abc82f",
+     "subject": "FSEM-02: frame both borrowed Choice spectators in local/joint source replay"
+    },
+    {
+     "sha": "d9d1f7cd73",
+     "subject": "Merged: rocq refinement / derived observation disjointness"
+    },
+    {
+     "sha": "14eaa52d57",
+     "subject": "Merged: mhb / atc w3 negative readiness 20261120"
+    },
+    {
+     "sha": "74d652b1d4",
+     "subject": "Merged: mhb / atc w1id authenticated app 20261120"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-19",
+   "commits": 14,
+   "merges": 9,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 8
+    },
     {
      "name": "FSEM-01",
      "about": "formal semantics: values, ownership and loops",
-     "n": 1
+     "n": 4
     },
     {
      "name": "Docs",
      "about": "documentation",
      "n": 1
-    },
-    {
-     "name": "FSEM-02",
-     "about": "formal semantics: protocols and transfer",
-     "n": 1
     }
    ],
    "programs": [
     {
+     "suite": "fsem01-rec01-source-record-v1",
+     "accepted": 5,
+     "rejected": 14
+    },
+    {
+     "suite": "fsem01-data05e-recursive-product-v1",
+     "accepted": 0,
+     "rejected": 18
+    },
+    {
      "suite": "fsem01-data05d-three-level-v1",
      "accepted": 1,
      "rejected": 10
+    },
+    {
+     "suite": "fsem02-restricted-source-transfer-v1",
+     "accepted": 0,
+     "rejected": 2
     }
    ],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-2/mhb-atc-worker-broker.md",
+     "title": "MHB-ATC W2: trusted fork-to-staged worker broker (source-only first gate)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-paired-local-joint-bridge-fsem02-v1.md",
+     "title": "FSEM-02 paired local progression / joint Ping bridge (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-nominal-record-rec02a-fsem01-v1.md",
+     "title": "FSEM-01 REC-02A nominal record origin and elimination"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-worker-app.md",
+     "title": "MHB-ATC W1 — shared Phase 2 worker App and credential preflight"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-half-close-observation-wire-fsem02-v1.md",
+     "title": "FSEM-02 half-Close OBS-V1 — stale intermediate retry and live-peer suffix"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-close-order-observation-wire-fsem02-v1.md",
+     "title": "FSEM-02 Close-order OBS-V1 — source/Core two-order terminal confluence"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-terminal-observation-wire-fsem02-v1.md",
+     "title": "FSEM-02 Terminal OBS-V1 — terminal close and stale retry source/Core wire"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-restricted-observation-wire-fsem02-v1.md",
+     "title": "FSEM-02 OBS-V1 — checked restricted source/Core observation wire"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-source-record-rec01-fsem01-v1.md",
+     "title": "FSEM-01 REC-01: checked closed source-record fields, dispositions and native Core bridge"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-dual-source-close-repair-fsem02-v1.md",
+     "title": "FSEM-02: independently repairing two stale source Close operands"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-recursive-product-data05e-fsem01-v1.md",
+     "title": "FSEM-01 DATA-04/05E — source-owned recursive binary product trees"
+    },
+    {
+     "path": "docs/phase-1/p8-h9-structural-order-coherence-v1.md",
+     "title": "P8-H9 — D2 structural order coherence (isolated Rocq preflight)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-receiver-close-native-priority-fsem02-v1.md",
+     "title": "FSEM-02: stale receiver Close preempts Core resource errors"
+    },
     {
      "path": "docs/phase-1/formal-semantics-nested-product-data05d-fsem01-v1.md",
      "title": "FSEM-01 DATA-04/05D — bounded three-level source-owned product elimination"
@@ -52,26 +177,31 @@
      "title": "FSEM-02: same-type sender in wrong structural mode refuses restricted transfer"
     }
    ],
-   "proofsAdded": 5,
-   "proofsChanged": 0,
-   "modules": [],
+   "proofsAdded": 27,
+   "proofsChanged": 1,
+   "modules": [
+    "Phil.Core.IdentityKeys",
+    "Phil.Surface.GrammarV1.RecordSourceIdentity",
+    "Phil.Surface.GrammarV1.SourceRecordFieldDisposition",
+    "Phil.Surface.GrammarV1.SourceRecursiveProductElimination"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "faeb899f61",
-     "subject": "FSEM-01 DATA-04/05D: source-owned three-level nested product Surface adapter"
+     "sha": "50df2582cb",
+     "subject": "FSEM-02: pair local Ping progression with joint Core rendezvous evidence"
+    },
+    {
+     "sha": "14bcb450cb",
+     "subject": "FSEM-01 REC-02A: nominal Core record identity and checked owner elimination"
     },
     {
      "sha": "4cf5177241",
      "subject": "docs(fsem-01): reconcile bounded evidence and closeout gaps through DATA-05C"
     },
     {
-     "sha": "b6154389d2",
-     "subject": "FSEM-02: reject same-type wrong-mode sender before receiver collisions"
-    },
-    {
-     "sha": "099a851499",
-     "subject": "Merged: rocq refinement / certified root key equality"
+     "sha": "62a1529f95",
+     "subject": "Merged: rocq refinement / record data derived observables"
     }
    ]
   },
@@ -1718,6 +1848,18 @@
    "accepted": 64,
    "caught": 157,
    "rejected": 267,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-20",
+   "commit": "d9d1f7cd73",
+   "files": 434,
+   "grammar": "64/64",
+   "ranClean": 57,
+   "accepted": 69,
+   "caught": 171,
+   "rejected": 301,
    "philcAccepts": 3,
    "philcTried": 11
   }

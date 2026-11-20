@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "099a851499",
-  "date": "2026-11-19",
-  "subject": "Merge pull request #1916 from abiggerhammer/hamster/rocq-refinement/certified-root-key-equality"
+  "commit": "d9d1f7cd73",
+  "date": "2026-11-20",
+  "subject": "Merge pull request #1945 from abiggerhammer/hamster/rocq-refinement/derived-observation-disjointness"
  },
- "files": 395,
+ "files": 434,
  "grammar": {
   "accept": {
    "files": 28,
@@ -17,15 +17,15 @@
  },
  "behaviour": {
   "accept": {
-   "files": 64,
-   "ran": 52,
+   "files": 69,
+   "ran": 57,
    "parsedOnly": 8,
    "review": 4
   },
   "reject": {
-   "files": 267,
-   "caught": 157,
-   "missed": 110
+   "files": 301,
+   "caught": 171,
+   "missed": 130
   }
  },
  "suites": [
@@ -138,6 +138,15 @@
    "missed": 3
   },
   {
+   "name": "fsem01-data05e-recursive-product-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 18,
+   "agree": 6,
+   "parsedOnly": 0,
+   "missed": 12
+  },
+  {
    "name": "fsem01-j6-two-affine-source-v1",
    "expect": "accept",
    "grammar": false,
@@ -244,6 +253,24 @@
    "agree": 1,
    "parsedOnly": 0,
    "missed": 0
+  },
+  {
+   "name": "fsem01-rec01-source-record-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 5,
+   "agree": 5,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem01-rec01-source-record-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 14,
+   "agree": 6,
+   "parsedOnly": 0,
+   "missed": 8
   },
   {
    "name": "fsem01-scoped-borrow-join-v1",
@@ -447,8 +474,8 @@
    "name": "fsem02-restricted-source-transfer-v1",
    "expect": "reject",
    "grammar": false,
-   "files": 1,
-   "agree": 1,
+   "files": 3,
+   "agree": 3,
    "parsedOnly": 0,
    "missed": 0
   },
@@ -680,6 +707,54 @@
    "suite": "fsem01-data05d-three-level-v1"
   },
   {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/balanced.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/both-nested.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/extra-statement.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/flat-arity-three.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/flat-one.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/left-three.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/named-alias.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/right-three.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/right-two.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/shadow-packet.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/six-deep.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-data05e-recursive-product-v1/wrong-width.phil",
+   "suite": "fsem01-data05e-recursive-product-v1"
+  },
+  {
    "file": "test/fixtures/fsem01-j6-two-affine-source-v1/missing-invariant.phil",
    "suite": "fsem01-j6-two-affine-source-v1"
   },
@@ -778,6 +853,38 @@
   {
    "file": "test/fixtures/fsem01-observation-v1/escape.phil",
    "suite": "fsem01-observation-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/duplicate-binder.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/duplicate-field.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/extra-body.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/no-linear.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/shadow-parameter.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/weakened-record-mode.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/wrong-named-type.phil",
+   "suite": "fsem01-rec01-source-record-v1"
+  },
+  {
+   "file": "test/fixtures/fsem01-rec01-source-record-v1/wrong-return-width.phil",
+   "suite": "fsem01-rec01-source-record-v1"
   },
   {
    "file": "test/fixtures/fsem01-scoped-borrow-join-v1/borrow-unrestricted.phil",
