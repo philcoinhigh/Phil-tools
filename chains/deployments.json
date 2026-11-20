@@ -4,9 +4,9 @@
   "chainId": 46630,
   "explorer": "https://explorer.testnet.chain.robinhood.com",
   "deployer": "0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
-  "checkedOn": "2026-11-18",
+  "checkedOn": "2026-11-20",
   "rpc": "https://rpc.testnet.chain.robinhood.com",
-  "balance": "0.00996205264",
+  "balance": "0.00994899784",
   "status": "live",
   "address": "0x3cf79D42178E97DEB0Ff2cCeC150061715fFb951",
   "build": "6e816b25d69c814c-58493bb3efec3bc7",
@@ -16,19 +16,19 @@
   "imageSha256": "58493bb3efec3bc7a4d31ae81bd57cad13821043a28a7ef2a108f155329b3155",
   "ok": true,
   "steps": 1095,
-  "submitTx": "0xa94ce3f48c404d351d1592ea24bea36c56d898b96da9468bf98b1db3e8a0f86a",
+  "submitTx": "0xf1cb5903e85bf74e2cad3abe90eca4a0df7b3eb5056f76506715fa40d05519e2",
   "submitGas": 652740,
-  "submittedOn": "2026-11-18",
-  "accepted": 2
+  "submittedOn": "2026-11-20",
+  "accepted": 4
  },
  "bnb": {
   "name": "BNB Smart Chain testnet",
   "chainId": 97,
   "explorer": "https://testnet.bscscan.com",
   "deployer": "0xe57397bdcA7D0Cc9828C82792c71DDE71b265D63",
-  "checkedOn": "2026-11-18",
+  "checkedOn": "2026-11-20",
   "rpc": "https://bsc-testnet-rpc.publicnode.com",
-  "balance": "0.0005",
+  "balance": "0.0001205264",
   "status": "live",
   "gasPrice": "100000000",
   "address": "0x3cf79D42178E97DEB0Ff2cCeC150061715fFb951",
@@ -39,9 +39,9 @@
   "imageSha256": "58493bb3efec3bc7a4d31ae81bd57cad13821043a28a7ef2a108f155329b3155",
   "ok": true,
   "steps": 1095,
-  "submitTx": "0xc4329e6b2075a86d7adeaeb5fee55c793bf6166e20349b028f127f533e337773",
-  "submitGas": 669840,
-  "submittedOn": "2026-11-18",
-  "accepted": 1
+  "submitTx": "0xb1a9c1c0514d37b5b324f44145b3b715e4223c0879efb79a7300dd54205343ba",
+  "submitGas": 652740,
+  "submittedOn": "2026-11-20",
+  "accepted": 2
  }
 }
