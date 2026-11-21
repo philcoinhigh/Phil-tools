@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.R6b5jT0JGe/phil.ll -o /tmp/tmp.R6b5jT0JGe/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.djrz73x4Hm/phil.ll -o /tmp/tmp.djrz73x4Hm/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 21800 Nov 20 07:56 chains/out/phil_chains.so
+-rwxr-xr-x 1 runner runner 21800 Nov 21 07:51 chains/out/phil_chains.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -48,5 +48,5 @@ ok   Solana: the tampered note is REJECTED by Phil (1201)
 ok   Robinhood Chain testnet: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built 
 Robinhood Chain testnet: a real upload was accepted for 652740 gas
 ok   BNB Smart Chain testnet: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built 
-BNB Smart Chain testnet: a real upload was accepted for 652740 gas
-https://github.com/philcoinhigh/Phil-tools/actions/runs/44698672417
+BNB Smart Chain testnet: the real upload was not sent: insufficient funds for intrinsic transaction cost
+https://github.com/philcoinhigh/Phil-tools/actions/runs/44882214470
