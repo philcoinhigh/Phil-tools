@@ -5,7 +5,7 @@ Downloading the latest package lists from:
 - hackage.haskell.org
 - phil-ci-hackage-direct
 Package list of hackage.haskell.org is up to date.
-The index-state is set to 2026-11-20T04:51:57Z.
+The index-state is set to 2026-11-21T04:51:41Z.
 Configuration is affected by the following files:
 - cabal.project
 Resolving dependencies...
@@ -31,32 +31,32 @@ Downloading  primitive-0.9.1.0
 Starting     cryptohash-sha256-0.11.102.1 (lib)
 Downloaded   primitive-0.9.1.0
 Downloading  integer-logarithms-1.0.5
+Building     cryptohash-sha256-0.11.102.1 (lib)
+Building     parser-combinators-1.3.1 (lib)
 Downloaded   integer-logarithms-1.0.5
 Downloading  hashable-1.5.1.0
 Starting     integer-logarithms-1.0.5 (lib)
+Building     integer-logarithms-1.0.5 (lib)
 Downloaded   hashable-1.5.1.0
 Downloading  case-insensitive-1.2.2.0
-Starting     hashable-1.5.1.0 (lib)
-Downloaded   case-insensitive-1.2.2.0
-Downloading  scientific-0.3.10.0
-Downloaded   scientific-0.3.10.0
-Downloading  megaparsec-9.8.3
-Downloaded   megaparsec-9.8.3
-Building     integer-logarithms-1.0.5 (lib)
-Building     cryptohash-sha256-0.11.102.1 (lib)
-Building     parser-combinators-1.3.1 (lib)
-Building     hashable-1.5.1.0 (lib)
 Installing   cryptohash-sha256-0.11.102.1 (lib)
-Installing   integer-logarithms-1.0.5 (lib)
+Starting     hashable-1.5.1.0 (lib)
 Completed    cryptohash-sha256-0.11.102.1 (lib)
 Configuring library 'architecture-revision-construction-kernel' for phil-core-0.0.1.0...
-Completed    integer-logarithms-1.0.5 (lib)
-Starting     primitive-0.9.1.0 (lib)
+Building     hashable-1.5.1.0 (lib)
+Downloaded   case-insensitive-1.2.2.0
+Downloading  scientific-0.3.10.0
 Installing   parser-combinators-1.3.1 (lib)
-Completed    parser-combinators-1.3.1 (lib)
 Preprocessing library 'architecture-revision-construction-kernel' for phil-core-0.0.1.0...
 Building library 'architecture-revision-construction-kernel' for phil-core-0.0.1.0...
+Completed    parser-combinators-1.3.1 (lib)
+Starting     primitive-0.9.1.0 (lib)
+Downloaded   scientific-0.3.10.0
+Downloading  megaparsec-9.8.3
 [1 of 1] Compiling ArchitectureRevisionConstructionKernel ( generated/ArchitectureRevisionConstructionKernel.hs, dist-newstyle/build/wasm32-wasi/ghc-9.10.3.20260731/phil-core-0.0.1.0/l/architecture-revision-construction-kernel/build/architecture-revision-construction-kernel/ArchitectureRevisionConstructionKernel.o, dist-newstyle/build/wasm32-wasi/ghc-9.10.3.20260731/phil-core-0.0.1.0/l/architecture-revision-construction-kernel/build/architecture-revision-construction-kernel/ArchitectureRevisionConstructionKernel.dyn_o )
+Installing   integer-logarithms-1.0.5 (lib)
+Downloaded   megaparsec-9.8.3
+Completed    integer-logarithms-1.0.5 (lib)
 Building     primitive-0.9.1.0 (lib)
 Installing   hashable-1.5.1.0 (lib)
 Completed    hashable-1.5.1.0 (lib)
