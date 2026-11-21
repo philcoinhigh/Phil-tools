@@ -4,15 +4,15 @@
   "deployedSha256": "53900faaf13b8f472b5ac2c29d03da51c1a0f8a393d49419c593379d6da408b6",
   "programBytes": 39944,
   "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
-  "checkedOn": "2026-11-20",
+  "checkedOn": "2026-11-21",
   "selftest": {
     "ok": true,
     "openUnits": 4955,
-    "spendUnits": 610040,
+    "spendUnits": 543642,
     "tokenUnits": 613760,
-    "cancelUnits": 543237,
+    "cancelUnits": 609635,
     "finishUnits": 4467,
-    "hashSteps": 2295
+    "hashSteps": 2040
   },
   "deployedOn": "2026-11-17"
 }
