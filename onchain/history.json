@@ -88,5 +88,15 @@
   "units": 217,
   "signature": "3yqGc88JA3JUi9YJ3hN4PS5wPjLYu4JLkj9xtRacy1iMW5pWQcur3Qgxwnwsy6PA2kV2DGasimfdhn7L7WQmD8DN",
   "redeployed": false
+ },
+ {
+  "day": "2026-11-21",
+  "phil": "ca040cce08",
+  "ok": true,
+  "local": true,
+  "returned": 42,
+  "units": 217,
+  "signature": "5EZKV467uPH58EewgK6WtBEfHRfF3tHTd1yJZFxzs5gDEabdAvjav3Ka1f2MgkR8nGXFtbQyfeY4rki8txoFuXNL",
+  "redeployed": false
  }
 ]
