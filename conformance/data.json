@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "d9d1f7cd73",
-  "date": "2026-11-20",
-  "subject": "Merge pull request #1945 from abiggerhammer/hamster/rocq-refinement/derived-observation-disjointness"
+  "commit": "338a128496",
+  "date": "2026-11-21",
+  "subject": "Merge pull request #1974 from abiggerhammer/hamster/rocq-refinement/observation-classifier-certificates"
  },
  "files": 434,
  "grammar": {

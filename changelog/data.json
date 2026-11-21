@@ -1,24 +1,131 @@
 {
  "phil": {
-  "commit": "d9d1f7cd73",
-  "date": "2026-11-20"
+  "commit": "338a128496",
+  "date": "2026-11-21"
  },
- "since": "2026-10-30",
+ "since": "2026-10-31",
  "days": [
   {
-   "date": "2026-11-20",
-   "commits": 2,
-   "merges": 7,
+   "date": "2026-11-21",
+   "commits": 3,
+   "merges": 2,
    "streams": [
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 2
+     "n": 3
     }
    ],
    "programs": [],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-successor-occupied-native-frame-fsem02-v1.md",
+     "title": "FSEM-02: native two-step occupied-successor rejection frame"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-native-spectator-loan-frame-fsem02-v1.md",
+     "title": "FSEM-02: native two-step spectator / borrowed-loan frame"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-native-core-trace-fsem02-v1.md",
+     "title": "FSEM-02: native Core two-step protocol trace and conditional model frame"
+    }
+   ],
+   "proofsAdded": 5,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "ca040cce08",
+     "subject": "FSEM-02: refuse occupied native two-step successor names without clobbering frame"
+    },
+    {
+     "sha": "338a128496",
+     "subject": "Merged: rocq refinement / observation classifier certificates"
+    },
+    {
+     "sha": "515ff5dbe8",
+     "subject": "FSEM-02: check native two-step spectator and borrowed-loan frames"
+    },
+    {
+     "sha": "dda6a76738",
+     "subject": "Merged: rocq refinement / observation classifier"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-20",
+   "commits": 8,
+   "merges": 25,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 7
+    },
+    {
+     "name": "Proofs",
+     "about": "machine-checked proofs",
+     "n": 1
+    }
+   ],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-successor-chain-fsem02-v1.md",
+     "title": "FSEM-02: two-step successor chaining and independent admission gates (non-normative)"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-fanout-activation-packet-20261120.md",
+     "title": "W3 publisher-App canary: nonce-specific activation-readiness packet"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-fanout-nonce-ledger.md",
+     "title": "W3 publisher-App fanout: one-use nonce reservation ledger"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-fanout-probe-review.md",
+     "title": "W3 publisher fanout — dormant mutation/recovery review record"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-publisher-fanout.md",
+     "title": "W3 publisher-App fanout: independently reviewed experiment protocol"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-stale-choice-fsem02-v1.md",
+     "title": "FSEM-02 — two-step cross-family stale Choice refusal (bounded v1)"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-frozen-targets.md",
+     "title": "W3 immutable frozen target trio — proposed source-only architecture"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-stale-prefix-fsem02-v1.md",
+     "title": "FSEM-02 — two-step cross-family stale-predecessor refusal (bounded v1)"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-paired-two-step-outcomes-fsem02-v1.md",
+     "title": "FSEM-02 — outcome-labeled paired two-step replay (bounded v1)"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-quarantine-tree-review.md",
+     "title": "W3 workflow-tree quarantine candidate — independent review packet"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-paired-source-family-envelope-fsem02-v1.md",
+     "title": "FSEM-02 — paired Ping/Choice source-family replay envelope (bounded v1)"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-executable-ref-trials.md",
+     "title": "W3 executable protected-ref denials — dormant source-only implementation"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-paired-ping-dual-loan-frame-fsem02-v1.md",
+     "title": "FSEM-02 — symmetric borrowed spectator frame for paired Ping (bounded v1)"
+    },
     {
      "path": "docs/phase-2/mhb-atc-w3-negative-commissioning.md",
      "title": "MHB-ATC W3 — bounded live negative commissioning: reviewed plan only"
@@ -40,26 +147,26 @@
      "title": "FSEM-02 — paired local Choice versus joint rendezvous (bounded v1)"
     }
    ],
-   "proofsAdded": 3,
-   "proofsChanged": 1,
+   "proofsAdded": 14,
+   "proofsChanged": 2,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "8587abc82f",
-     "subject": "FSEM-02: frame both borrowed Choice spectators in local/joint source replay"
+     "sha": "bec5fe037b",
+     "subject": "FSEM-02: prove two-step successor chaining and admission refusal boundaries"
     },
     {
-     "sha": "d9d1f7cd73",
-     "subject": "Merged: rocq refinement / derived observation disjointness"
+     "sha": "58eaba9a53",
+     "subject": "proof(fsem-02): reject second Choice stale predecessor without rolling back committed prefix"
     },
     {
-     "sha": "14eaa52d57",
-     "subject": "Merged: mhb / atc w3 negative readiness 20261120"
+     "sha": "9b54d1e439",
+     "subject": "Merged: mhb / atc w3 fanout activate d948536ad68f 20261120"
     },
     {
-     "sha": "74d652b1d4",
-     "subject": "Merged: mhb / atc w1id authenticated app 20261120"
+     "sha": "5e38370c3d",
+     "subject": "Merged: rocq refinement / observation class saturation"
     }
    ]
   },
@@ -1854,6 +1961,18 @@
   {
    "date": "2026-11-20",
    "commit": "d9d1f7cd73",
+   "files": 434,
+   "grammar": "64/64",
+   "ranClean": 57,
+   "accepted": 69,
+   "caught": 171,
+   "rejected": 301,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-21",
+   "commit": "338a128496",
    "files": 434,
    "grammar": "64/64",
    "ranClean": 57,
