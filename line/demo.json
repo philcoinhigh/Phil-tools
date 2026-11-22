@@ -3,6 +3,213 @@
  "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
  "matches": [
   {
+   "day": "2026-11-22",
+   "match": "ANL7wqocKESgFWNhLVwh3QHMF9JQF4JGEgg4wkvtcaar",
+   "opened": "cjbgq5LXQrakTUwjeKfYahgUGvg8UFKFymTJp7D4n527Lp4bDWwLDpYCJsQh73rMrandGt4NVScNW1K83cntR5W",
+   "joined": "5N4DcergHPDYniUXBZLRePthcQgdmn93YeQ8hJj4UyBUkMuyYHfXKVkFrfYFhUfGyRchgyNecfPwr5vepQRqCtuR",
+   "result": "b",
+   "how": "reached-end",
+   "history": [
+    [
+     11,
+     12
+    ],
+    [
+     9,
+     1
+    ],
+    [
+     4,
+     9
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     0,
+     4
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     3,
+     5
+    ],
+    [
+     7,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "rounds": [
+    {
+     "round": 1,
+     "commits": [
+      "59dZ2cHYRwcyb7xR4TZCvPYKf3svBgLMMfA135UQQsRw3vkpHzVxuKzSgg9WTxtXFXm56Z1rTkvgahBfeWXybKAg",
+      "4aGagLf6vsVPh5qcQ5fEUDztxEvWCRdBeQQy5mH69X7hUDxY6SzkvD2T3NsvQKjjtDzaj8Q9t7JXgRnak2WakhpN"
+     ],
+     "reveals": [
+      "2C1ofuD5uPX2Umq1gsq7CUGCTe4UuFX7iFHuCkiHMmmQpVoYcoehtytZtKaRQLG91nEZQ872erySPpbpT9Be9SfM",
+      "3WnDQ7veSj31jZTE7C9pGxf71sg1Yvm4yEy2tDDyzvZmFqGoneb7WwaNdgRfkBa2PHdkFZ3aUkiA61hKotWQpjoH"
+     ]
+    },
+    {
+     "round": 2,
+     "commits": [
+      "4xafCqciVXb7tcBhBWSZCnN3b6Fj5Q9LuttWKDXbvsT37u6y4jwaL8tms1SqYwYKGghghQ3ZfqqxTqrZK4MB2ffD",
+      "3Z2wZm428RHjVMaqv6jEEeFGWmvXQpUryfC1rbZEwPsBM3oD3W8LMqsYAeXJSXtNa46qpVLtjGcNcPMvVCkq8tzu"
+     ],
+     "reveals": [
+      "2McpgXpj1CnWs3MNXy8BUiD8urc2AcN9PNrUxgntoTGeAsux6HoEgzhKUcqUBTi2V17b2tLgPq6UNqBCgxcUXTJE",
+      "4NxAJmQ5fD5X1ABoxQs8RNyY63gQV47a8Vf3tiJT8QKNXVzZ4MBJm8ef9SD3JAeU8KG5ZWfGTFPqPwoT4FpUZ1cB"
+     ]
+    },
+    {
+     "round": 3,
+     "commits": [
+      "3Hgjt5tvFr5QhLeSmPeSMkHuEhM289K7JviENHEpDb3hozDagVLFyNRLNedh3QepBAGdGD17KELKNFVFMusjrR1d",
+      "412SyAn1rBiXsmuRRMx9dtJ1gKr9SSv87UmvQSVbEhnun9d21yW18qp631bmoQ6vvxXg2kfzN26kTQvMewRCaiii"
+     ],
+     "reveals": [
+      "3RLsDPzZ6Kk3yFmW3GuxM9F5VPv1JFeVRCdoUuPU6hGe5LZzmWBtHUbU6TbqHNSHAf3TxuocTUZT6Api5ofGgQVd",
+      "p88UHnrtZSHQyRQ1Xb8VV3o1Cg7SxR8mr2hScSqfBZuRoXuH7NaLqBCcJeX6Ewr9mebqLXJwo1qxWqvaFRWczpV"
+     ]
+    },
+    {
+     "round": 4,
+     "commits": [
+      "5rh93iACrYuFpXmMGHHTqsHNdrm2rsoh1NkFVYzy5EU4Ua7wV8nwXFriPR9bFkm7N1AW86jorhWZLJUAaBE6WM29",
+      "4254Cj9eQvvzeN3bZufkpioKDpk9UtfBrSLnSUtFCtLTfMT1Re8AKnqpAW749Kdn9Y56GtMBXSHYA9iFLaJU3Qe9"
+     ],
+     "reveals": [
+      "VJHC7bCGPRmZJ5jJR8dbqizDSxSdUEoThU1h6AzC2oNbi6SxSwGVapSeP1UnWT2DYNdzxmCJTTvCLWYPAkYENzC",
+      "3emNCXpLu7gbFPBTApumYuPHdxYkVkmkpFmdTXzQspsB3V6ksvU8TGiLdCy1sQgjPBZMRjRQhg3DHJUeaLCVNYa4"
+     ]
+    },
+    {
+     "round": 5,
+     "commits": [
+      "2T7fZcH3s19Vu1yfiBj3AKfJxJtLKV4U1ThKi1FGPdBHtYKprDwJVoWLzJ3QTWjw9o19XPCaVAzJwZyBavS5H52U",
+      "h17432yNFddJMuuv5JedmpffnXVyeVKZhTWmBKAT6KKm5Dcp7W9nRMsBQeEmWRHq4vD1dHkNiwr7ywLeqStwNs7"
+     ],
+     "reveals": [
+      "2EtAGoesnU4dhR89NSguokHcVkDyVgT4ULKosY2tdS71byozCbHCq5eHhzgp4ZztSPwJqdRNYb1YseM9NehwfN5X",
+      "29o1YNz9Ax9LGkCR1dxywhokxvFy9VUveco6R7UAHba9LZ3x2Wx4KXhBvH2V1x3hoq46St9UuQW1MbhSSYcGXxRc"
+     ]
+    },
+    {
+     "round": 6,
+     "commits": [
+      "uLgRNUg7CGAQ26qPiGbH7M6nqJVYG2QTdhYW1kLLzSTXnfSocudY9FzmhmPtQZyKDqb7KPCR1RXGuz9UpzYLyV2",
+      "5ot5vrfbP5tisc9wfjweCxe7AapomJYoP1iHwyxKbWkXrzsAGZdBuEhVUvhh6p2Pz94XgEjXrJUMmZxzvyxHnKMP"
+     ],
+     "reveals": [
+      "3XqiFFfoMgxrGEwP81MhySuf7TKGdn2qPTob9Ghhw1c4Xc5mizf6f2AwXY5QgehV2gErunJgav4aKtsRqFUqTYUc",
+      "2JCTpV2Y3TS1r4GHG7tTWYAJLzwWrAkws1xrj6tBGb4YuTTZy3QaPMNERvteaJ71anzvAsDDoBRPwUkDFKhw4f2Y"
+     ]
+    },
+    {
+     "round": 7,
+     "commits": [
+      "3vba1ZcLgtgzF2R7BkimQyKqDfQd8RzBK5vWqEdqCsY7cARqZvh9PiTRW22LA5GsMRMvVvEH4GbjhvuhSibawDSp",
+      "55FE1iMWTaX9jGoU1PqA2joK46b8UYCHxL6JEYG9gbHtrmPN1yJy6VLATJhXTDHvMgP97bNnriaAEk2hqyrEg1iu"
+     ],
+     "reveals": [
+      "3uXadG7hvM6EEiWYfy47GuQ5oi4VsDhAobq1fV3u3QZkkAbS6qMcoPrwRuM6mLXAqLLzQCN9q1B5YBfTT7hBQYE2",
+      "4WDhqCeqhsRsV8yunCQjgXW4cu6JRoqgxcb4tpqcXY6Y7sGJabK6ve3BfdkizPG7qPQNVeZLHjzfYfkhqxktvMYQ"
+     ]
+    },
+    {
+     "round": 8,
+     "commits": [
+      "2rp3YaPByBH2iXtyVxBeKdDmde256mz5u7YeE85z4A9Up6nmbpYLQSZjrwRZcBxxBRFR7ugScE7YmWVuMZwhV5bd",
+      "P7gwp44Qf1weeLYNSqzUcNZFD9CN8UVn1UPSoQYpjJbfoQjYUjHPAUddwvj16gqsp5xPVCAMx8KudTxPbAfuraE"
+     ],
+     "reveals": [
+      "3X7uNV8AQ7RzdAGMbJu34ZLMykJjot3VA36SvPAK17pU4iC4FmC6HffjgwP9ufuRp3KQPH7eXjtxZYfEP9PYq6KA",
+      "2AueLxNYMKeUcLbf4E4Dsbm8Vv3cTjEEuPrvZCZc9eWYaaN3RQSv5WVmLquoW1EG44sHgdkaREzkpSxawZ8NVqAo"
+     ]
+    },
+    {
+     "round": 9,
+     "commits": [
+      "3AyRxYn3YehrcnCsSNJXSCFPtN5pbH4tfntdqxLfvDiTW4rp7AMVC4sSgWk31bxHEuHMYQNuSF5CNL1DYYjVWbx3",
+      "2WzpKRuZFNMCM22gANM4gTNbjarmqeozNuzeuXNpSTnz5uzq2PiEoVyQUQF8p47wssFhNxTHhkmKnaV4tghpAuPe"
+     ],
+     "reveals": [
+      "4R12s9pAaswK36LPWcRz8Zk5URsXL43Ct7Rr38vnUhawzXC61vx8SzWsQKvtRMVS7qKu3kD6c8fSNwKBuwoDdHvc",
+      "5kYwNFRuqYWH4mTnXqPuis5VaL8kKehDDiTBKRiUaU34UvhQVc2yKtTn6kRGkHgHcTvmTQTYHRFAzcnr2HJCVetH"
+     ]
+    },
+    {
+     "round": 10,
+     "commits": [
+      "2Dp44ckQYZnPJHroEAH9Q57UAyg2gt8FgKf1Z5G31n2sSdEKsRXqn56n2jH28gbw4baQbBRG2c5hpkvjL3pLH3WV",
+      "rtKVEFNTzrYmzFkWtsHzexmHBHcyfmGFz5KWWHoCxETdyDBsmaanEGeJGe481fnDKZRBCTjRF98CLNEzBUhxj67"
+     ],
+     "reveals": [
+      "4uRcKALMagH98vdgmxbF4nwWZhpCsqaWPmhFjULuDifKJxXnjvQaYy8kctPXHBXDA37GDvKUcyB6YEEQQPHAdPpL",
+      "SNLhjseV1nFnUof1JE8jJVkoGr442QdEpL6MPqnkrnvvGrmmfabuRmJPnAUc8s9dxxLqdUrFCSckKtgSoz3WcuJ"
+     ]
+    },
+    {
+     "round": 11,
+     "commits": [
+      "aysMnyvk29MHWtLWvG7DknHxh4sq1t82ipcWxyoWqP8w2RbAndhi3DaNmzmiauqtp5tYjnXxXyg2KyHCjKnims7",
+      "4jeqVN7tdC4zCMxxXg3jWt2P2io2U5P2LRMUQpyYJniST4nRqegxM28SsQjDWi1ZsBuLYKtmV1hwF7m9hCATfF5y"
+     ],
+     "reveals": [
+      "2nvMFVZiTcU2NDu7zTyuXmtm3B4QgvkA6QSu7JCSmNc41vbmAK8z2bn3NktZPcgZEGt3Brqc3oj4pL4gFJADtZz5",
+      "56W8uRz7emHSkpoRaw37rNMb6SBRusp6aLup3PBwxvkBGDMJzKsLHPKCE1ccZjuSJbAJqZNJE8JoLv94z7MHyjbj"
+     ]
+    },
+    {
+     "round": 12,
+     "commits": [
+      "3bG9k7t7eQb5uCF6FLmTrrYmbemUcHkDjpERuHX2j3zA1FgBtr1HYaswRD2NiyTr5nLX2TNNKsfx6c1v7Y3fWHHy",
+      "5VTigStNMtbf1NLwNTPfko9NgUWNFCRSJGZ9oBnWw25HxoHXqggxoCWKQrSXG8YbJ9cBUUMUcChYd3FuRVrpJaEw"
+     ],
+     "reveals": [
+      "4HsdTfbiXPs1E17G84No8nMhXzHtsiq5x5NNYD3qgtY17WnEAVowbUvXRRLjz4WA8BGvVd6zB4Yp7yW6JzjE5eBU",
+      "5xgLxVz229FgPvywegH3QMSr2QwZwdpiP7sQDS5aAPWag7LA9mcVMyrBbbUsH6mBZ7QpM8mQrAnWiq3uFRQsfozs"
+     ]
+    },
+    {
+     "round": 13,
+     "commits": [
+      "2t3nVDeyvBdC4ftq7A1SfW2u2o5G1985hRjFnoqiRUpsnoAVg9VHnrTMnaZv71ZcF64S6JbhEk8q6uHPG7fZUDQb",
+      "cMVsVowmuxTbUrwLvSPXS32iPrLSG9wS4Ys1Si7FCfupmnUthkgBpyQXrAFmXJ7DBsV7NQueSmjYn3BAM7JR1cC"
+     ],
+     "reveals": [
+      "5VFeSP7PpNFYKR6zQPtW9eVzJgf4QAVgKUCGKiPz7rwinj6bWGRdKvJUK6Wkm5iE9e3Qkq47tJEPqJqk6QMwYQXC",
+      "241Jm8orRAcukwervoSjMAs5fbChFzG1Q4K7wer9EjEqxi2aqpXfHJzo6DyuToXDrB6VrPeYzwA3SrFbvmotFKgF"
+     ]
+    }
+   ]
+  },
+  {
    "day": "2026-11-21",
    "match": "BdouZbWbrEcuzAK9JTFJCdEfDR7MVNs9MkZevswqaAV8",
    "opened": "5KCNm7HrJjkRrcHsRbpJKTYWsW48m9Hxvjk1rV8LVDrwiDui9L2S3vwkm8o98mPatFqaSdJPhhSR2ob4yDLARmL",
