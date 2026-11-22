@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "338a128496",
-  "date": "2026-11-21",
-  "subject": "Merge pull request #1974 from abiggerhammer/hamster/rocq-refinement/observation-classifier-certificates"
+  "commit": "31f01b8441",
+  "date": "2026-11-22",
+  "subject": "Merge pull request #1988 from abiggerhammer/hamster/rocq-refinement/replay-fiber-transport"
  },
- "files": 434,
+ "files": 437,
  "grammar": {
   "accept": {
    "files": 28,
@@ -17,14 +17,14 @@
  },
  "behaviour": {
   "accept": {
-   "files": 69,
-   "ran": 57,
+   "files": 70,
+   "ran": 58,
    "parsedOnly": 8,
    "review": 4
   },
   "reject": {
-   "files": 301,
-   "caught": 171,
+   "files": 303,
+   "caught": 173,
    "missed": 130
   }
  },
@@ -530,6 +530,24 @@
    "grammar": false,
    "files": 3,
    "agree": 3,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-two-step-source-chain-v1",
+   "expect": "accept",
+   "grammar": false,
+   "files": 1,
+   "agree": 1,
+   "parsedOnly": 0,
+   "missed": 0
+  },
+  {
+   "name": "fsem02-two-step-source-chain-v1",
+   "expect": "reject",
+   "grammar": false,
+   "files": 2,
+   "agree": 2,
    "parsedOnly": 0,
    "missed": 0
   },

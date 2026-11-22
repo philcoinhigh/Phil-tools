@@ -1,24 +1,61 @@
 {
  "phil": {
-  "commit": "338a128496",
-  "date": "2026-11-21"
+  "commit": "31f01b8441",
+  "date": "2026-11-22"
  },
- "since": "2026-10-31",
+ "since": "2026-11-01",
  "days": [
   {
+   "date": "2026-11-22",
+   "commits": 0,
+   "merges": 1,
+   "streams": [],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [],
+   "proofsAdded": 1,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "31f01b8441",
+     "subject": "Merged: rocq refinement / replay fiber transport"
+    }
+   ]
+  },
+  {
    "date": "2026-11-21",
-   "commits": 3,
-   "merges": 2,
+   "commits": 4,
+   "merges": 12,
    "streams": [
     {
      "name": "FSEM-02",
      "about": "formal semantics: protocols and transfer",
-     "n": 3
+     "n": 4
     }
    ],
-   "programs": [],
+   "programs": [
+    {
+     "suite": "fsem02-two-step-source-chain-v1",
+     "accepted": 1,
+     "rejected": 2
+    }
+   ],
    "programsRemoved": 0,
    "notes": [
+    {
+     "path": "docs/phase-2/mhb-atc-w3-deletion-push-selector-positive-control-plan.md",
+     "title": "W3 branch-deletion push-filter positive control: disposable-repository protocol"
+    },
+    {
+     "path": "docs/phase-2/mhb-atc-w3-trigger-isolation-assurance-case.md",
+     "title": "W3 disposable-ref trigger isolation: scoped assurance case"
+    },
+    {
+     "path": "docs/phase-1/formal-semantics-two-step-source-binder-chain-fsem02-v1.md",
+     "title": "FSEM-02: source-derived two-step binder-chain replay (bounded v1)"
+    },
     {
      "path": "docs/phase-1/formal-semantics-successor-occupied-native-frame-fsem02-v1.md",
      "title": "FSEM-02: native two-step occupied-successor rejection frame"
@@ -32,26 +69,26 @@
      "title": "FSEM-02: native Core two-step protocol trace and conditional model frame"
     }
    ],
-   "proofsAdded": 5,
+   "proofsAdded": 12,
    "proofsChanged": 0,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "ca040cce08",
-     "subject": "FSEM-02: refuse occupied native two-step successor names without clobbering frame"
+     "sha": "9580ad7cd0",
+     "subject": "FSEM-02: complete-source two-step lexical binder chain and native Core replay"
     },
     {
-     "sha": "338a128496",
-     "subject": "Merged: rocq refinement / observation classifier certificates"
+     "sha": "092db87498",
+     "subject": "Merged: rocq refinement / observation admission replay"
     },
     {
-     "sha": "515ff5dbe8",
-     "subject": "FSEM-02: check native two-step spectator and borrowed-loan frames"
+     "sha": "2cc03bb30c",
+     "subject": "Merged: rocq refinement / certificate fiber partition laws"
     },
     {
-     "sha": "dda6a76738",
-     "subject": "Merged: rocq refinement / observation classifier"
+     "sha": "2f6824504a",
+     "subject": "Merged: rocq refinement / observation certificate coherence"
     }
    ]
   },
@@ -1979,6 +2016,18 @@
    "accepted": 69,
    "caught": 171,
    "rejected": 301,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-22",
+   "commit": "31f01b8441",
+   "files": 437,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 173,
+   "rejected": 303,
    "philcAccepts": 3,
    "philcTried": 11
   }

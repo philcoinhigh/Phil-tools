@@ -78,5 +78,13 @@
   "total": 13938,
   "compared": 8335,
   "findings": 3
+ },
+ {
+  "day": "2026-11-22",
+  "commit": "31f01b8441",
+  "seed": 20261122,
+  "total": 18381,
+  "compared": 11001,
+  "findings": 3
  }
 ]
