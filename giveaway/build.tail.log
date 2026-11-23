@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.ZCnrIrk8j4/phil.ll -o /tmp/tmp.ZCnrIrk8j4/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.ASG9bkXCXl/phil.ll -o /tmp/tmp.ASG9bkXCXl/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 31328 Nov 22 07:41 giveaway/out/phil_draw.so
+-rwxr-xr-x 1 runner runner 31328 Nov 23 08:02 giveaway/out/phil_draw.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -21,7 +21,7 @@ undefined symbols (these must all be Solana's own calls):
 ok   a tampered upload is rejected by Phil on chain 
 ok   and leaves the account empty 
 ok   an unsupported protocol version is refused 
-draw account 2oWC1voV41zDG88nPpSQ9CjJNnXoDAipxsVpZ5bcJ1mf; uploading 78 bytes (the list itself)
+draw account iCqBZYqLprcP9GewUjyYDo5NCWqQqhVReemfPoFnG6r; uploading 78 bytes (the list itself)
 locked at slot 12; target slot 32
 ok   Phil accepts the giveaway and it is drawn 
 ok   a finished giveaway can be read back from the chain alone 
@@ -35,8 +35,8 @@ ok   a byte changed in transit is rejected on chain, and the client ends in reje
 ok   the website can read the draw account 
 ok   wallet-free: Phil accepts the real list and confirms it is the locked one 
 ok   wallet-free: Phil rejects an edited list 
-{"ok":true,"lockUnits":5127,"drawUnits":1797,"checkUnits":2288,"winners":["@erin","@frank"]}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.27311664 SOL
+{"ok":true,"lockUnits":5127,"drawUnits":1797,"checkUnits":2288,"winners":["@dave","@grace"]}
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.25945568 SOL
 program GaCz52vrum4rZ1hrsdZ9CPY55YAzjVbXnBJC6HzgotjH is deployed and unchanged
-https://github.com/philcoinhigh/Phil-tools/actions/runs/44999384581
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45135551357
 nightly chain: asked for locker.yml
