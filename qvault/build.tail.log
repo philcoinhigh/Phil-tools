@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.phK6lFOAKB/phil.ll -o /tmp/tmp.phK6lFOAKB/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.oLb3GI5fpd/phil.ll -o /tmp/tmp.oLb3GI5fpd/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 39944 Nov 22 07:50 qvault/out/phil_qvault.so
+-rwxr-xr-x 1 runner runner 39944 Nov 23 08:11 qvault/out/phil_qvault.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -41,8 +41,8 @@ ok   the thief's withdrawal can never be completed, even after the wait
 ok   and the stolen phrase signs nothing the vault accepts 
 ok   the owner's withdrawal, signed with the new phrase, is paid by anyone once its time has passed 
 {"ok":true,"openUnits":4955,"spendUnits":610040,"tokenUnits":613662,"cancelUnits":609635,"finishUnits":4467,"hashSteps":2295}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.26676652 SOL
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.25308556 SOL
 program 72oBGfeCf9YZLv3J4xicdskhPb9KjeHyAUvSCNx1JM6J is deployed and unchanged
 locked copy: keeping the one there is
-demo: a vault opened, paid out twice under two one-time keys (477440, 543819 compute units) and closed
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45000060600
+demo: a vault opened, paid out twice under two one-time keys (610040, 610119 compute units) and closed
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45136691787

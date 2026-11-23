@@ -3,6 +3,26 @@
  "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
  "vaults": [
   {
+   "day": "2026-11-23",
+   "vault": "9CYa3iJKnjF5JnSg8MoAZbGu7zrMjXKRQ73j8gf5FnHZ",
+   "opened": "34omB8bjFX6PeULVNgaAY1GrGDajqu3nsC8wg85vayrQpyppX9o1nBMTunKJbN9FTHnRQY6zdMqhrfuzWdgbF1uH",
+   "feePayer": "GeBkPCWYoE4XyEfWTc8B7dtKhWGFp3V5oQieM1gRG9im",
+   "spends": [
+    {
+     "amount": "8000000",
+     "signature": "4AdfeT58RdgeoKpzmnUVhkkA58KmmUPVbbLZj3yu2EiN2zorP8YmHfYsWPgMV6ZAS8QrfLXZYLh8492g9hfZDC4i",
+     "units": 610040,
+     "hashSteps": 2295
+    },
+    {
+     "amount": "12000000",
+     "signature": "3XVPxSCubxQJbn8Hew25S84iP1DBjYdYFVUgKFwKynd7TmWzEwzMkWyez33chnTZPwRNUFZumaB5WLY6yPWB86Xm",
+     "units": 610119,
+     "hashSteps": 2295
+    }
+   ]
+  },
+  {
    "day": "2026-11-22",
    "vault": "8xBjkFzgx9N5EdMR2Hub5XY3VYm6NioTLWRp6r7CZhcr",
    "opened": "nB7ZJAEcQ5GbXmPQ3mGN6YzHeqU3EZyFcVSS7tE66mYvVGu2DoAGqhp8EDBRtNSPGMzsudvKGkr6R81GSS8jYhv",
