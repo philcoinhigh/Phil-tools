@@ -4,11 +4,11 @@
   "deployedSha256": "0f26afd84fab34539e602273e1f63afd90ffd32329c6d3da0da6967afaa8f6a5",
   "programBytes": 34168,
   "philCommit": "9344caeeea9b808a11a97c1571f1f63292e7b58e",
-  "checkedOn": "2026-11-22",
+  "checkedOn": "2026-11-23",
   "selftest": {
     "ok": true,
-    "lockUnits": 25746,
-    "releaseUnits": 24711
+    "lockUnits": 30246,
+    "releaseUnits": 27711
   },
   "deployedOn": "2026-11-14"
 }
