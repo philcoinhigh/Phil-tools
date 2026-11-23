@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "31f01b8441",
-  "date": "2026-11-22",
-  "subject": "Merge pull request #1988 from abiggerhammer/hamster/rocq-refinement/replay-fiber-transport"
+  "commit": "0da33a3731",
+  "date": "2026-11-23",
+  "subject": "Merge pull request #2001 from abiggerhammer/hamster/rocq-refinement/replay-path-decision"
  },
- "files": 437,
+ "files": 440,
  "grammar": {
   "accept": {
    "files": 28,
@@ -23,8 +23,8 @@
    "review": 4
   },
   "reject": {
-   "files": 303,
-   "caught": 173,
+   "files": 306,
+   "caught": 176,
    "missed": 130
   }
  },
@@ -546,8 +546,8 @@
    "name": "fsem02-two-step-source-chain-v1",
    "expect": "reject",
    "grammar": false,
-   "files": 2,
-   "agree": 2,
+   "files": 5,
+   "agree": 5,
    "parsedOnly": 0,
    "missed": 0
   },

@@ -1,12 +1,12 @@
 {
  "phil": {
-  "commit": "31f01b8441",
-  "date": "2026-11-22"
+  "commit": "0da33a3731",
+  "date": "2026-11-23"
  },
- "since": "2026-11-01",
+ "since": "2026-11-02",
  "days": [
   {
-   "date": "2026-11-22",
+   "date": "2026-11-23",
    "commits": 0,
    "merges": 1,
    "streams": [],
@@ -19,8 +19,58 @@
    "grammar": [],
    "headlines": [
     {
-     "sha": "31f01b8441",
-     "subject": "Merged: rocq refinement / replay fiber transport"
+     "sha": "0da33a3731",
+     "subject": "Merged: rocq refinement / replay path decision"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-22",
+   "commits": 4,
+   "merges": 7,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 3
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem02-two-step-source-chain-v1",
+     "accepted": 0,
+     "rejected": 3
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-production-two-step-component-fsem02-v1.md",
+     "title": "FSEM-02: bounded production two-step component checker (non-normative)"
+    }
+   ],
+   "proofsAdded": 7,
+   "proofsChanged": 3,
+   "modules": [
+    "Phil.Surface.GrammarV1.ComponentTwoStepChain"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "ca1c5279e2",
+     "subject": "FSEM-02: gate written Receive U8 annotations in bounded two-step source"
+    },
+    {
+     "sha": "e2ef345380",
+     "subject": "Merged: rocq refinement / replay path single step"
+    },
+    {
+     "sha": "1a2f93a2cc",
+     "subject": "W3: inert deletion-selector fixtures and source-only probe harness"
+    },
+    {
+     "sha": "576a3bd31b",
+     "subject": "Merged: rocq refinement / replay path classifier"
     }
    ]
   },
@@ -2028,6 +2078,18 @@
    "accepted": 70,
    "caught": 173,
    "rejected": 303,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-23",
+   "commit": "0da33a3731",
+   "files": 440,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 176,
+   "rejected": 306,
    "philcAccepts": 3,
    "philcTried": 11
   }

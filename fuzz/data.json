@@ -1,21 +1,21 @@
 {
  "phil": {
-  "commit": "31f01b8441",
-  "date": "2026-11-22"
+  "commit": "0da33a3731",
+  "date": "2026-11-23"
  },
- "seed": 20261122,
+ "seed": 20261123,
  "seconds": 120,
  "tried": {
-  "scalar": 11001,
-  "mutated": 7333,
+  "scalar": 8439,
+  "mutated": 5626,
   "stress": 47,
-  "total": 18381
+  "total": 14112
  },
- "accepted": 8335,
- "refused": 9364,
- "refusalKinds": 10,
- "compared": 11001,
- "simCompared": 7909,
+ "accepted": 6481,
+ "refused": 7090,
+ "refusalKinds": 9,
+ "compared": 8439,
+ "simCompared": 6092,
  "findings": {
   "crash": 1,
   "hang": 0,
