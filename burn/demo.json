@@ -126,12 +126,22 @@
    "burned": "1000000000000",
    "supply": "978000000000000",
    "units": 8417
+  },
+  {
+   "day": "2026-11-24",
+   "time": 1795506533,
+   "fees": "5smbfV7sYAFJdT4zy9x4z1iAzhn6q35WLQ4iTwWzvZcPNSiaDL9Kk3F5rKX1YgVTT7vi41cnuR6bJb3CSTPcBEHS",
+   "burn": "58ZkPGuuE6MUhWHLGWb28fdV4qUAdH9ExmUGgLfarHKkuKVtJKCYisBEtCPxr8uzGgrTYCptsaeZRz9wpLT9FkNJ",
+   "paid": "10000000",
+   "burned": "1000000000000",
+   "supply": "977000000000000",
+   "units": 8417
   }
  ],
  "totals": {
-  "burns": 22,
-  "burned": "22000000000000",
-  "paid": "220000000",
-  "supply": "978000000000000"
+  "burns": 23,
+  "burned": "23000000000000",
+  "paid": "230000000",
+  "supply": "977000000000000"
  }
 }
