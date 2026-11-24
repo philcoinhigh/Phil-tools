@@ -1,10 +1,10 @@
 {
  "phil": {
-  "commit": "0da33a3731",
-  "date": "2026-11-23",
-  "subject": "Merge pull request #2001 from abiggerhammer/hamster/rocq-refinement/replay-path-decision"
+  "commit": "f3b4810166",
+  "date": "2026-11-24",
+  "subject": "Merge pull request #2013 from abiggerhammer/hamster/rocq-refinement/replay-path-comparison-laws"
  },
- "files": 440,
+ "files": 446,
  "grammar": {
   "accept": {
    "files": 28,
@@ -23,9 +23,9 @@
    "review": 4
   },
   "reject": {
-   "files": 306,
+   "files": 312,
    "caught": 176,
-   "missed": 130
+   "missed": 136
   }
  },
  "suites": [
@@ -546,10 +546,10 @@
    "name": "fsem02-two-step-source-chain-v1",
    "expect": "reject",
    "grammar": false,
-   "files": 5,
+   "files": 11,
    "agree": 5,
    "parsedOnly": 0,
-   "missed": 0
+   "missed": 6
   },
   {
    "name": "Grammar: accepted",
@@ -1099,6 +1099,30 @@
   {
    "file": "test/fixtures/fsem02-source-offer-replay-v1/wrong-body.phil",
    "suite": "fsem02-source-offer-replay-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/receive-endpoint-client-role.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/receive-endpoint-u8.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/send-endpoint-server-role.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/send-endpoint-u8.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/send-first-u16.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
+  },
+  {
+   "file": "test/fixtures/fsem02-two-step-source-chain-v1/send-second-u16.phil",
+   "suite": "fsem02-two-step-source-chain-v1"
   }
  ]
 }

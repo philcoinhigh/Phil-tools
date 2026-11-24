@@ -1,26 +1,73 @@
 {
  "phil": {
-  "commit": "0da33a3731",
-  "date": "2026-11-23"
+  "commit": "f3b4810166",
+  "date": "2026-11-24"
  },
- "since": "2026-11-02",
+ "since": "2026-11-03",
  "days": [
   {
-   "date": "2026-11-23",
+   "date": "2026-11-24",
    "commits": 0,
-   "merges": 1,
+   "merges": 2,
    "streams": [],
    "programs": [],
    "programsRemoved": 0,
    "notes": [],
-   "proofsAdded": 1,
+   "proofsAdded": 2,
    "proofsChanged": 0,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "0da33a3731",
-     "subject": "Merged: rocq refinement / replay path decision"
+     "sha": "f3b4810166",
+     "subject": "Merged: rocq refinement / replay path comparison laws"
+    },
+    {
+     "sha": "4c0ea5e62b",
+     "subject": "Merged: rocq refinement / replay path comparison"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-23",
+   "commits": 3,
+   "merges": 6,
+   "streams": [
+    {
+     "name": "FSEM-02",
+     "about": "formal semantics: protocols and transfer",
+     "n": 1
+    }
+   ],
+   "programs": [
+    {
+     "suite": "fsem02-two-step-source-chain-v1",
+     "accepted": 0,
+     "rejected": 6
+    }
+   ],
+   "programsRemoved": 0,
+   "notes": [],
+   "proofsAdded": 6,
+   "proofsChanged": 3,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "1b9de19c3e",
+     "subject": "FSEM-02: Check DoublePing Send endpoint projection"
+    },
+    {
+     "sha": "2fc0c4abe9",
+     "subject": "Merged: rocq refinement / replay path two probe classifier"
+    },
+    {
+     "sha": "72181a3b3a",
+     "subject": "Merged: rocq refinement / replay path classifier extensionality"
+    },
+    {
+     "sha": "66825dccbc",
+     "subject": "Merged: rocq refinement / replay path classifier fibers"
     }
    ]
   },
@@ -2090,6 +2137,18 @@
    "accepted": 70,
    "caught": 176,
    "rejected": 306,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-24",
+   "commit": "f3b4810166",
+   "files": 446,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 176,
+   "rejected": 312,
    "philcAccepts": 3,
    "philcTried": 11
   }
