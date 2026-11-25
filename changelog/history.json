@@ -166,5 +166,17 @@
   "rejected": 312,
   "philcAccepts": 3,
   "philcTried": 11
+ },
+ {
+  "date": "2026-11-25",
+  "commit": "89ef6436a6",
+  "files": 446,
+  "grammar": "64/64",
+  "ranClean": 58,
+  "accepted": 70,
+  "caught": 176,
+  "rejected": 312,
+  "philcAccepts": 3,
+  "philcTried": 11
  }
 ]

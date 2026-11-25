@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "f3b4810166",
-  "date": "2026-11-24",
-  "subject": "Merge pull request #2013 from abiggerhammer/hamster/rocq-refinement/replay-path-comparison-laws"
+  "commit": "89ef6436a6",
+  "date": "2026-11-25",
+  "subject": "FSEM-05: bounded SteveGet selected-source event and origin semantics (#2017)"
  },
  "files": 446,
  "grammar": {

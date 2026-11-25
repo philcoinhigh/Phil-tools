@@ -1,30 +1,75 @@
 {
  "phil": {
-  "commit": "f3b4810166",
-  "date": "2026-11-24"
+  "commit": "89ef6436a6",
+  "date": "2026-11-25"
  },
- "since": "2026-11-03",
+ "since": "2026-11-04",
  "days": [
   {
-   "date": "2026-11-24",
-   "commits": 0,
-   "merges": 2,
+   "date": "2026-11-25",
+   "commits": 1,
+   "merges": 1,
    "streams": [],
    "programs": [],
    "programsRemoved": 0,
-   "notes": [],
+   "notes": [
+    {
+     "path": "docs/phase-1/fsem05-steveget-qualified-source-event-v1.md",
+     "title": "FSEM-05 selected SteveGet qualified original-source event semantics — proposed v1"
+    }
+   ],
    "proofsAdded": 2,
    "proofsChanged": 0,
-   "modules": [],
+   "modules": [
+    "Phil.Surface.SelectedSteveGetExecution"
+   ],
    "grammar": [],
    "headlines": [
     {
-     "sha": "f3b4810166",
-     "subject": "Merged: rocq refinement / replay path comparison laws"
+     "sha": "89ef6436a6",
+     "subject": "FSEM-05: bounded SteveGet selected-source event and origin semantics"
     },
     {
-     "sha": "4c0ea5e62b",
-     "subject": "Merged: rocq refinement / replay path comparison"
+     "sha": "88bfa8904f",
+     "subject": "Merged: rocq refinement / replay path classifier cache validation"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-24",
+   "commits": 1,
+   "merges": 6,
+   "streams": [],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/formal-semantics-doubleping-origin-candidate-fsem03-v1.md",
+     "title": "FSEM-03 DoublePing origin candidate"
+    }
+   ],
+   "proofsAdded": 5,
+   "proofsChanged": 0,
+   "modules": [
+    "Phil.Surface.GrammarV1.DoublePingOrigin"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "0ff22e8315",
+     "subject": "Merged: rocq refinement / replay path classifier value rows"
+    },
+    {
+     "sha": "adbeb57b69",
+     "subject": "Merged: rocq refinement / replay path classifier value comparison"
+    },
+    {
+     "sha": "706baf0263",
+     "subject": "Merged: docs / w3 private http diagnostics"
+    },
+    {
+     "sha": "cf19af6c49",
+     "subject": "Merged: rocq refinement / replay path direct comparison"
     }
    ]
   },
@@ -2143,6 +2188,18 @@
   {
    "date": "2026-11-24",
    "commit": "f3b4810166",
+   "files": 446,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 176,
+   "rejected": 312,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-25",
+   "commit": "89ef6436a6",
    "files": 446,
    "grammar": "64/64",
    "ranClean": 58,
