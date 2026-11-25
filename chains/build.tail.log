@@ -1,5 +1,52 @@
 warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
 Downloading platform-tools v1.57
-[2026-11-24T08:25:20.345488970Z ERROR cargo_build_sbf::toolchain] Failed to install platform-tools: Failed to parse Github response: error decoding response body
-No SBF clang found
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45355970848
+Installed platform-tools v1.57 at /home/runner/.cache/solana/v1.57/platform-tools
+warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+Phil's module did not compile for Solana as it stands:
+fatal error: error in backend: Unsupported dynamic stack allocation
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
+Stack dump:
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.nAL8lyRUFU/phil.ll -o /tmp/tmp.nAL8lyRUFU/phil.o
+1.	Code generation
+moved 11 stack slots to the top of their functions
+stack slots moved to function tops: true
+-rwxr-xr-x 1 runner runner 21800 Nov 25 08:05 chains/out/phil_chains.so
+undefined symbols (these must all be Solana's own calls):
+     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
+     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
+    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
+image: 6495 bytes, memory used up to 0x0000000000002a28
+image: 6495 bytes, memory used up to 0x0000000000002a28
+ok   EVM: the interpreter contract deploys with the image, within the contract size limit
+ok   EVM: the contract holds exactly the image that was built, by its SHA-256
+ok   an honest note is ACCEPTED: native, RISC-V and EVM agree (0)
+ok   one changed byte is REJECTED by Phil: the bytes no longer match their digest: native, RISC-V and EVM agree (1201)
+ok   an upload of another kind is refused by policy: native, RISC-V and EVM agree (1402)
+ok   a note that is too long is refused by policy before it is read: native, RISC-V and EVM agree (1401)
+ok   a cancelled upload ends as cancelled: native, RISC-V and EVM agree (1500)
+ok   a client speaking an unknown protocol version is turned away: native, RISC-V and EVM agree (1300)
+ok   fewer bytes than declared is an early end: native, RISC-V and EVM agree (1900)
+ok   an empty note is still a valid upload: native, RISC-V and EVM agree (0)
+ok   the longest note allowed is accepted: native, RISC-V and EVM agree (0)
+ok   no instruction at all: native, RISC-V and EVM agree (102)
+ok   an unknown instruction: native, RISC-V and EVM agree (103)
+ok   bytes that are not a frame: native, RISC-V and EVM agree (1652)
+ok   bytes left over after the upload: native, RISC-V and EVM agree (120)
+     the most a run cost on the EVM: 654261 gas for 1101 RISC-V instructions
+ok   the verdict is said in words
+ok   60 damaged uploads: the three machines never disagree
+ok   EVM: an accepted upload is counted and announced by a real transaction
+ok   EVM: a refused upload reverts the transaction, with Phil's reason
+     a submit cost 665690 gas; deploying cost 3124896 gas
+chains: all passed
+ok   Solana: the honest note is ACCEPTED 
+ok   Solana: the tampered note is REJECTED by Phil (1201) 
+program 2ndkfAjfKEN5AWsBwNuExKw3aLrm6JNMYKWzu7nVrEwx is deployed and unchanged
+ok   Solana: the honest note is ACCEPTED 
+ok   Solana: the tampered note is REJECTED by Phil (1201) 
+ok   Robinhood Chain testnet: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built 
+Robinhood Chain testnet: a real upload was accepted for 652740 gas
+ok   BNB Smart Chain testnet: the honest note is ACCEPTED, the tampered one is REJECTED (1201), and the contract holds the image that was built 
+BNB Smart Chain testnet: the real upload was not sent: insufficient funds for intrinsic transaction cost
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45573343647
