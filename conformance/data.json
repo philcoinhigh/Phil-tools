@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "89ef6436a6",
-  "date": "2026-11-25",
-  "subject": "FSEM-05: bounded SteveGet selected-source event and origin semantics (#2017)"
+  "commit": "0583b82282",
+  "date": "2026-11-26",
+  "subject": "Merge pull request #2035 from abiggerhammer/hamster/rocq-refinement/replay-path-cache-batch-indexed-append"
  },
  "files": 446,
  "grammar": {
