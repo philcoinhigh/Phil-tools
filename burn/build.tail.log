@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.dDjQgC9Cip/phil.ll -o /tmp/tmp.dDjQgC9Cip/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.0gBICJ47Vr/phil.ll -o /tmp/tmp.0gBICJ47Vr/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 34192 Nov 25 07:52 burn/out/phil_burn.so
+-rwxr-xr-x 1 runner runner 34192 Nov 26 07:51 burn/out/phil_burn.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -34,44 +34,9 @@ ok   the sender was paid the pot, less the network fee
 ok   the vault kept only its reserve and counted the burn 
 ok   the pot cannot be taken twice 
 {"ok":true,"openUnits":4508,"burnUnits":8417}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.23583804 SOL
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.03994244 SOL
 program HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq is deployed and unchanged
-demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 24
---- higher.fun devnet: a coin whose creator is a burn vault ---
-higher.fun devnet proof: starting
-ok   Raydium's SDK is loaded
-ok   open the vault and fund its creator address: 3KsD24d4iGDhsmXofbiMnXN81SPCo6APUaa7dmeKtHHsg3PC4cnPe65KhY6TJzTYQ4epfVU4E4wEqznNVSxGLn1s
-ok   launch the coin with the vault's address as creator: 5aGLAjeRy4Lfzksyzz4XeHnybeuBt4cZmAXzgq8Cka4nUWENYzVwg1DbK2TB6kvuxorME2ce97eZm5zsJ84qM2oq
-ok   LaunchLab records the vault's address as the coin's creator: 8niTzL8iAbEduhxt2KjVXPaKbqyPDVbZHTxghCEHWTRt
-ok   buy 0.15 SOL of the coin: GQS9R25HupvC9XJVHkKhv2RfqnmkX1fTur6u2NLDtE7ZDEYvkjjEhWbsYD7C2t3mtRBk12NmEabYDXgKRKZXWJe
-ok   creator fees waiting in LaunchLab's vault for that address: 375000 lamports
-ok   fund a stranger: 4N54mke464qEGyjAuokKamaNeQe75cFu2DQKMG52Hv47mK4LUPe32jprhAkJ1Nc9RBfU2h2hbkD9pNxBVXuNm6hR
-ok   roll the creator fees into the vault, sent by a stranger: 39qXk6Py7t9h5w9A6LyRhJy6zc1Mm46cKJP7LBMYc8Wc97vcMJEgQmrFmtV6rqgkL5eatWQSjuJZXrhSmHmsdKra
-ok   every lamport of the creator fees is in the vault: 375000
-ok   burn a million coins and take the pot: WKQm6LU4qjgcxwqmmKsMkTtFR6J17DPicVHi4mMDiKN2SnBKtQ9J93es45ahYUcfjgMm4zdB9ckN9VViTwfzrvZ
-ok   1000000 coins burned for a pot of 375000 lamports, all of it creator fees
-{
- "ok": true,
- "day": "2026-11-25",
- "network": "devnet",
- "program": "HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq",
- "launchlab": "DRay6fNdQ5J82H7xV6uq2aV3mNrUZ1J4PgSKsWgptcm6",
- "platform": "5YMKfjGk6sigE6baKyGGCHDQjJTEHHVLSF3cXNvLKKfJ",
- "vault": "GUWjy17viEc1Qd3Pj4EBMsEPswQQLs1HT4aihPqkDnF9",
- "creator": "8niTzL8iAbEduhxt2KjVXPaKbqyPDVbZHTxghCEHWTRt",
- "mint": "BZyetcorBRyFM2yD2X12E7RAy1SW9pkhcku6GoDDHu5B",
- "pool": "14SdgUnkFi4cxhQbS3wk1s79kvE5agcZ7UFk4tD9o66Z",
- "boughtLamports": "150000000",
- "feeLamports": "375000",
- "potLamports": "375000",
- "burnedUnits": "1000000000000",
- "signatures": {
-  "opened": "3KsD24d4iGDhsmXofbiMnXN81SPCo6APUaa7dmeKtHHsg3PC4cnPe65KhY6TJzTYQ4epfVU4E4wEqznNVSxGLn1s",
-  "launched": "5aGLAjeRy4Lfzksyzz4XeHnybeuBt4cZmAXzgq8Cka4nUWENYzVwg1DbK2TB6kvuxorME2ce97eZm5zsJ84qM2oq",
-  "bought": "GQS9R25HupvC9XJVHkKhv2RfqnmkX1fTur6u2NLDtE7ZDEYvkjjEhWbsYD7C2t3mtRBk12NmEabYDXgKRKZXWJe",
-  "rolled": "39qXk6Py7t9h5w9A6LyRhJy6zc1Mm46cKJP7LBMYc8Wc97vcMJEgQmrFmtV6rqgkL5eatWQSjuJZXrhSmHmsdKra",
-  "burned": "WKQm6LU4qjgcxwqmmKsMkTtFR6J17DPicVHi4mMDiKN2SnBKtQ9J93es45ahYUcfjgMm4zdB9ckN9VViTwfzrvZ"
- }
-}
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45571650253
+demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 25
+higher.fun devnet proof: last run 2026-11-25, skipping
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45778429224
 nightly chain: asked for giveaway.yml
