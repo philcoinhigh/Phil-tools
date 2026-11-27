@@ -3,10 +3,11 @@ solana-cli 4.4.1 (src:d0fa2d44; feat:9fd5a0b5, client:Agave)
 Fetching Solana's compiler toolchain
 warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
 Downloading platform-tools v1.57
-[2026-11-26T07:48:45.421978863Z ERROR cargo_build_sbf::toolchain] Failed to install platform-tools: Failed to parse Github response: error decoding response body
-LLVM: /home/runner/.cache/solana/manual/llvm/bin
-clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a8f6f80015a15cc519ad152779000fb8406be9c4)
--rwxr-xr-x 1 runner runner 2160 Nov 26 07:49 onchain/out/phil_first.so
+Installed platform-tools v1.57 at /home/runner/.cache/solana/v1.57/platform-tools
+warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
+LLVM: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin
+clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
+-rwxr-xr-x 1 runner runner 2160 Nov 27 07:48 onchain/out/phil_first.so
 
 onchain/out/phil_first.so:	file format elf64-sbf
 
@@ -32,11 +33,15 @@ Disassembly of section .text:
 00000000000001a0 <phil_main>:
      1a0:      	mov64 r0, 0x2a
      1a8:      	exit
-program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer ACCrqtHrXmVUzKkLSrz26ffQJyuiTWXzgqEaTP4My2hB has 500000000000000000 lamports
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer Cg76Xkn4J6SkYkh7NLpTKfL8fsExJdvfcuJDEDEFXbYg has 500000000000000000 lamports
 wallet-free call, local: {"ok":true,"returned":42,"units":217,"error":null}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.03994744 SOL
-program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB is deployed and unchanged
-program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 16039947440 lamports
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.02624648 SOL
+deploying because the program changed
+Program Id: 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB
+
+Signature: 3xgNQofvgeerUBoPyVidsey7ode8HfNquk6QtA5PqsxFNCpzCoPywKE6SZXUMfJa9xbtCo3YJfodo3F9zCxJ3U24
+
+program 4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB: owner BPFLoaderUpgradeab1e11111111111111111111111, executable true, 36 bytes; payer QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA has 16026216480 lamports
 wallet-free call, devnet: {"ok":true,"returned":42,"units":217,"cors":"https://philcoinhigh.github.io","error":null}
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45778261122
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45961020127
 nightly chain: asked for burn.yml
