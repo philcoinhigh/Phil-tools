@@ -1,41 +1,6 @@
 warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
 Downloading platform-tools v1.57
-Installed platform-tools v1.57 at /home/runner/.cache/solana/v1.57/platform-tools
-warning: This `cargo-build-sbf` was installed with the Solana CLI. Install the latest version with `cargo install cargo-build-sbf`, then either delete or rename `/home/runner/.local/share/solana/install/active_release/bin/cargo-build-sbf`, or place `/home/runner/.cargo/bin` before `/home/runner/.local/share/solana/install/active_release/bin` in your PATH.
-clang version 22.1.2-rust-dev (https://github.com/anza-xyz/llvm-project.git a4135d044fb7a19f2b7e7d04d0373cd2ba190e6e)
-Phil's module did not compile for Solana as it stands:
-fatal error: error in backend: Unsupported dynamic stack allocation
-PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
-Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.0O1nCt7k8k/phil.ll -o /tmp/tmp.0O1nCt7k8k/phil.o
-1.	Code generation
-moved 11 stack slots to the top of their functions
-stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 32712 Nov 26 07:57 line/out/phil_line.so
-undefined symbols (these must all be Solana's own calls):
-     0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
-     9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
-    30: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_sha256
-    33: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_get_clock_sysvar
-    55: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_64_
-ok   Phil accepts the opening and player A is seated 
-ok   the same key cannot sit on both sides 
-ok   player B joins and round 1 opens 
-ok   a key that is not a player cannot move 
-ok   a hidden move is committed 
-ok   nobody can reveal before both sides have committed 
-ok   when both have committed, reveals open 
-ok   a changed pull that claims the committed hash is rejected by Phil on chain 
-ok   a changed pull declared honestly is refused before any payload is read 
-ok   the committed move is opened by Phil's server 
-ok   the round is played by the rules: 12 beats 9, the node moves toward A, both pay 
-ok   a round cannot be timed out while it still has time 
-ok   a whole match: the program agrees with the page's rules after every round, and ends 
-ok   a finished match takes no more moves 
-ok   a side that committed and did not reveal in time forfeits, on anyone's call 
-{"ok":true,"commitUnits":3316,"revealUnits":4247}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.03615316 SOL
-program 68iQj4dhcyTvag2kAPutv2rZKg28165B2hRJ5kwXXshX is deployed and unchanged
-demo: a 15-round match. A won: the node was on their side after 15 rounds.
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45779547040
+[2026-11-27T07:52:53.310085008Z ERROR cargo_build_sbf::toolchain] Failed to install platform-tools: Failed to parse Github response: error decoding response body
+No SBF clang found
+https://github.com/philcoinhigh/Phil-tools/actions/runs/45961522190
 nightly chain: asked for qvault.yml
