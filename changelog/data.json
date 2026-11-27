@@ -1,26 +1,68 @@
 {
  "phil": {
-  "commit": "0583b82282",
-  "date": "2026-11-26"
+  "commit": "545f7f02e3",
+  "date": "2026-11-27"
  },
- "since": "2026-11-05",
+ "since": "2026-11-06",
  "days": [
   {
-   "date": "2026-11-26",
+   "date": "2026-11-27",
    "commits": 0,
-   "merges": 1,
+   "merges": 2,
    "streams": [],
    "programs": [],
    "programsRemoved": 0,
    "notes": [],
-   "proofsAdded": 1,
+   "proofsAdded": 2,
    "proofsChanged": 0,
    "modules": [],
    "grammar": [],
    "headlines": [
     {
-     "sha": "0583b82282",
-     "subject": "Merged: rocq refinement / replay path cache batch indexed append"
+     "sha": "545f7f02e3",
+     "subject": "Merged: rocq refinement / replay path cache batch canonical"
+    },
+    {
+     "sha": "5fe5105c9d",
+     "subject": "Merged: rocq refinement / replay path cache batch refresh all"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-26",
+   "commits": 1,
+   "merges": 7,
+   "streams": [],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [
+    {
+     "path": "docs/phase-1/fsem06-steveget-core-payload-execution-v1.md",
+     "title": "FSEM-06 selected SteveGet Core/payload reference semantics — proposed"
+    }
+   ],
+   "proofsAdded": 7,
+   "proofsChanged": 0,
+   "modules": [
+    "Phil.Compiler.SelectedSteveGetCoreExecution"
+   ],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "e8fc73d066",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed refresh"
+    },
+    {
+     "sha": "8d94454f78",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed splice"
+    },
+    {
+     "sha": "f3b896d25f",
+     "subject": "Merged: docs / liberapay funding"
+    },
+    {
+     "sha": "b0fb9ff506",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed deletion"
     }
    ]
   },
@@ -1898,7 +1940,7 @@
   {
    "date": "2026-11-06",
    "commits": 0,
-   "merges": 33,
+   "merges": 32,
    "streams": [],
    "programs": [],
    "programsRemoved": 0,
@@ -1952,783 +1994,6 @@
     {
      "sha": "667daed29d",
      "subject": "Merged: formal semantics / phase1 judgment inventory"
-    }
-   ]
-  },
-  {
-   "date": "2026-11-05",
-   "commits": 19,
-   "merges": 12,
-   "streams": [
-    {
-     "name": "Docs",
-     "about": "documentation",
-     "n": 9
-    },
-    {
-     "name": "Audit",
-     "about": "audits of the implementation",
-     "n": 4
-    }
-   ],
-   "programs": [
-    {
-     "suite": "grammar fixtures",
-     "accepted": 28,
-     "rejected": 36
-    }
-   ],
-   "programsRemoved": 0,
-   "notes": [
-    {
-     "path": "docs/phase-1/audit-native-final-instance-typed-correspondence-v1.md",
-     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — typed native final-instance intermediate"
-    },
-    {
-     "path": "docs/phase-1/audit-generic-actual-instance-binding-v1.md",
-     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — exact generic actual/instance correspondence"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-effect-set-recursive-grouping-v1.md",
-     "title": "Effect-set recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/audit-source-manifest-producer-binding-v1.md",
-     "title": "Source-to-manifest producer binding — bounded verification continuation"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-effect-expression-recursive-grouping-v1.md",
-     "title": "Effect-expression recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-term-arguments-recursive-grouping-v1.md",
-     "title": "Term-argument recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/audit-final-authority-native-adapter-v1.md",
-     "title": "D-ARTIFACT-MANIFEST-REFLECTION-01 — bounded native final-authority projection"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-expression-recursive-grouping-v1.md",
-     "title": "Expression recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-arithmetic-recursive-grouping-v1.md",
-     "title": "Arithmetic recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-primary-postfix-recursive-grouping-v1.md",
-     "title": "Primary and postfix recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/implementation-correspondence-inventory-v1.md",
-     "title": "Phase 1 implementation-correspondence inventory v1"
-    },
-    {
-     "path": "docs/phase-1/surface-parser-recursive-grouping-correspondence-v1.md",
-     "title": "Recursive grouping correspondence v1"
-    },
-    {
-     "path": "docs/phase-1/audit-steve-cas-cleanup-v1.md",
-     "title": "E-STEVE-CLEANUP-01 — CAS temporary-handle lifetime"
-    },
-    {
-     "path": "docs/assurance/rocq-proof-certification.md",
-     "title": "Rocq proof certification"
-    },
-    {
-     "path": "docs/implementation-status.md",
-     "title": "Phil Core implementation status"
-    },
-    {
-     "path": "docs/mhb-lint.md",
-     "title": "MHB lint rule registry"
-    },
-    {
-     "path": "docs/phase-0/README.md",
-     "title": "Phil — Phase 0 Groundwork"
-    },
-    {
-     "path": "docs/phase-0/accepted-response-abi-v1.md",
-     "title": "Phase 0 accepted-response ABI v1"
-    },
-    {
-     "path": "docs/phase-0/assurance-status.md",
-     "title": "Phase 0 assurance status"
-    },
-    {
-     "path": "docs/phase-0/begin-policy-choice-abi-v1.md",
-     "title": "Phase 0 BeginPolicy choice ABI v1"
-    },
-    {
-     "path": "docs/phase-0/begin-policy-session-choice-v1.md",
-     "title": "Phase 0 BeginPolicy semantic choice v1"
-    },
-    {
-     "path": "docs/phase-0/ci-baseline.md",
-     "title": "Phase 0 CI baseline"
-    },
-    {
-     "path": "docs/phase-0/ci-integrated-native.md",
-     "title": "Phase 0 integrated-native CI consolidation"
-    },
-    {
-     "path": "docs/phase-0/ci-llvm-boundary-proof-consolidation.md",
-     "title": "Phase 0 LLVM boundary proof consolidation"
-    },
-    {
-     "path": "docs/phase-0/ci-response-proof-chain.md",
-     "title": "Phase 0 response proof-chain consolidation"
-    },
-    {
-     "path": "docs/phase-0/ci-source-projection.md",
-     "title": "Phase 0 source-projection CI consolidation"
-    },
-    {
-     "path": "docs/phase-0/ci-test-evidence.md",
-     "title": "Phase 0 test-evidence CI consolidation"
-    },
-    {
-     "path": "docs/phase-0/ci-version-choice-proofs.md",
-     "title": "Phase 0 version-choice proof consolidation"
-    },
-    {
-     "path": "docs/phase-0/client-control-send-abi-v1.md",
-     "title": "Phase 0 client control-send ABI v1"
-    },
-    {
-     "path": "docs/phase-0/client-outbound-semantics-v1.md",
-     "title": "Phase 0 client outbound semantics v1"
-    },
-    {
-     "path": "docs/phase-0/control-codec-v1.md",
-     "title": "Phase 0 shared control codec v1"
-    },
-    {
-     "path": "docs/phase-0/digest-validation-abi-v1.md",
-     "title": "Phase 0 Digest-Validation ABI v1"
-    },
-    {
-     "path": "docs/phase-0/exact-send-abi-v1.md",
-     "title": "Phase 0 transport exact-send ABI v1"
-    },
-    {
-     "path": "docs/phase-0/final-response-receive-abi-v1.md",
-     "title": "Phase 0 final-response receive ABI v1"
-    },
-    {
-     "path": "docs/phase-0/hello-policy-validation-abi-v1.md",
-     "title": "Phase 0 HelloPolicy validation ABI v1"
-    },
-    {
-     "path": "docs/phase-0/hello-policy-validation-v1.md",
-     "title": "Phase 0 HelloPolicy validation semantics v1"
-    },
-    {
-     "path": "docs/phase-0/integrated-native-upload-v1.md",
-     "title": "Phase 0 integrated native upload v1"
-    },
-    {
-     "path": "docs/phase-0/local-runtime-choice-systems-v1.md",
-     "title": "Phase 0 local runtime choice — Systems v1"
-    },
-    {
-     "path": "docs/phase-0/payload-cancel-choice-abi-v1.md",
-     "title": "Phase 0 payload/cancel choice ABI v1"
-    },
-    {
-     "path": "docs/phase-0/payload-cancel-session-choice-v1.md",
-     "title": "Phase 0 payload/cancel semantic session choice v1"
-    },
-    {
-     "path": "docs/phase-0/phase-0-plan.md",
-     "title": "Phil Phase 0 Plan: Semantic Decisions and Repository Foundation"
-    },
-    {
-     "path": "docs/phase-0/recognition-failure-detail-v1.md",
-     "title": "Phase 0 recognition failure detail v1"
-    },
-    {
-     "path": "docs/phase-0/recognized-record-abi-v1-runtime-symbol-amendment.md",
-     "title": "Recognized-record ABI v1: runtime symbol identity amendment"
-    },
-    {
-     "path": "docs/phase-0/recognized-record-abi-v1.md",
-     "title": "Phase 0 Recognized-Record ABI v1"
-    },
-    {
-     "path": "docs/phase-0/rejected-response-abi-v1.md",
-     "title": "Phase 0 rejected-response ABI v1"
-    },
-    {
-     "path": "docs/phase-0/semantics/core-judgments.md",
-     "title": "Phase 0 Phil Core Judgments"
-    },
-    {
-     "path": "docs/phase-0/server-framed-ingress-v1.md",
-     "title": "Phase 0 server framed ingress and recognition-failure ABI v1"
-    },
-    {
-     "path": "docs/phase-0/session-choice-systems-v1.md",
-     "title": "Phase 0 Systems session-choice representation v1"
-    },
-    {
-     "path": "docs/phase-0/source-to-systems-projection-v1.md",
-     "title": "Phase 0 source-to-Systems projection v1"
-    },
-    {
-     "path": "docs/phase-0/storage-abi-v1.md",
-     "title": "Phase 0 storage ABI v1"
-    },
-    {
-     "path": "docs/phase-0/storage-failure-detail-abi-v1.md",
-     "title": "Phase 0 storage failure detail ABI v1"
-    },
-    {
-     "path": "docs/phase-0/storage-failure-detail-v1.md",
-     "title": "Phase 0 storage failure detail — v1"
-    },
-    {
-     "path": "docs/phase-0/tcb.md",
-     "title": "Phil: Initial Trusted Computing Base Statement"
-    },
-    {
-     "path": "docs/phase-0/transport-exact-receive-abi-v1.md",
-     "title": "Phase 0 Transport Exact-Receive ABI v1"
-    },
-    {
-     "path": "docs/phase-0/version-session-choice-abi-v1.md",
-     "title": "Phase 0 version/unsupported choice ABI v1"
-    },
-    {
-     "path": "docs/phase-0/version-session-choice-v1.md",
-     "title": "Phase 0 version/unsupported session choice — Systems v1"
-    },
-    {
-     "path": "docs/phase-1/README.md",
-     "title": "Phase 1 implementation notes"
-    },
-    {
-     "path": "docs/phase-1/architecture-definition-replacement-v1.md",
-     "title": "Phase 1 architecture definition replacement v1"
-    },
-    {
-     "path": "docs/phase-1/architecture-identity-implementation-refinement-v1.md",
-     "title": "Architecture Identity Implementation Refinement v1"
-    },
-    {
-     "path": "docs/phase-1/architecture-identity-proof-v1.md",
-     "title": "Phase 1 architecture identity proof v1"
-    }
-   ],
-   "proofsAdded": 935,
-   "proofsChanged": 98,
-   "modules": [
-    "Phil.Verification.NativeFinalInstanceCorrespondence",
-    "Phil.Verification.SourceManifestBinding",
-    "Phil.Verification.FinalAuthorityAdapter",
-    "Phil.Assurance",
-    "Phil.Assurance.ArchitectureIdentity",
-    "Phil.Assurance.ControlCodecTestEvidence",
-    "Phil.Assurance.DeploymentAuthority",
-    "Phil.Assurance.DeploymentAuthorityCertification",
-    "Phil.Assurance.DeploymentQualification",
-    "Phil.Assurance.DeploymentQualificationCertification",
-    "Phil.Assurance.EvidenceAuthorityKernelBridge",
-    "Phil.Assurance.EvidenceFactAuthority",
-    "Phil.Assurance.Handoff",
-    "Phil.Assurance.IntegratedNativeUploadTestEvidence",
-    "Phil.Assurance.Phase0",
-    "Phil.Assurance.Phase0ClosureCertification",
-    "Phil.Assurance.ProtocolGuard",
-    "Phil.Assurance.RemainingRuntimeTestEvidenceProfiles",
-    "Phil.Assurance.Rocq",
-    "Phil.Assurance.RocqAssuranceFoundations",
-    "Phil.Assurance.RocqBundle",
-    "Phil.Assurance.RocqCoreControlAssurance",
-    "Phil.Assurance.RocqCoreFoundations",
-    "Phil.Assurance.RocqDigestValidation",
-    "Phil.Assurance.RocqExactReceive",
-    "Phil.Assurance.RocqFocusingFoundations",
-    "Phil.Assurance.RocqLLVMFoundations",
-    "Phil.Assurance.RocqLedgerExtension",
-    "Phil.Assurance.RocqLineageAuthority",
-    "Phil.Assurance.RocqRecognitionBundles",
-    "Phil.Assurance.RocqRecognitionGates",
-    "Phil.Assurance.RocqRecognizedRecord",
-    "Phil.Assurance.RocqStorage",
-    "Phil.Assurance.RocqSurfaceFoundations",
-    "Phil.Assurance.RocqSystemsFoundations",
-    "Phil.Assurance.RocqValidityScope",
-    "Phil.Assurance.TestEvidenceCertification",
-    "Phil.Assurance.TestEvidenceProfiles",
-    "Phil.Assurance.Types",
-    "Phil.Assurance.Verify",
-    "Phil.Compiler",
-    "Phil.Compiler.CallableAuthorityPossession",
-    "Phil.Compiler.CallableInvocation",
-    "Phil.Compiler.CallableInvocationContext",
-    "Phil.Compiler.CallableInvocationLifecycle",
-    "Phil.Compiler.CallableInvocationSemantics",
-    "Phil.Compiler.CallableOutcomeBranchFacts",
-    "Phil.Compiler.CallableOutcomeBranchResidue",
-    "Phil.Compiler.CallableOutcomeBranchResourceApply",
-    "Phil.Compiler.CallableOutcomeBranchResourceInstall",
-    "Phil.Compiler.CallableOutcomeBranchResources",
-    "Phil.Compiler.CallableOutcomeBranchSemantics",
-    "Phil.Compiler.CallableOutcomeContinuation",
-    "Phil.Compiler.CallableOutcomeDispatch",
-    "Phil.Compiler.CallableSurfaceSemantics",
-    "Phil.Compiler.RuntimeChoiceABI",
-    "Phil.Compiler.RuntimeChoiceLLVM",
-    "Phil.Compiler.RuntimeChoicePayload",
-    "Phil.Compiler.RuntimeChoiceSystems",
-    "Phil.Compiler.RuntimeChoiceTargets",
-    "Phil.Compiler.SourceArchitecture",
-    "Phil.Compiler.SourceBundle",
-    "Phil.Compiler.SourceCore",
-    "Phil.Compiler.SourceCorePolicy",
-    "Phil.Compiler.SourceSystems",
-    "Phil.Compiler.SteveCAS",
-    "Phil.Core.Authority",
-    "Phil.Core.AuthorityAttenuation",
-    "Phil.Core.AuthorityConfinement",
-    "Phil.Core.BoundaryDirection",
-    "Phil.Core.BoundaryMapping",
-    "Phil.Core.BoundaryProgression",
-    "Phil.Core.BoundaryRecognition",
-    "Phil.Core.BoundarySerialization",
-    "Phil.Core.Callable",
-    "Phil.Core.Callable.ModeDeclaration",
-    "Phil.Core.CallableModeStrengtheningKernelBridge",
-    "Phil.Core.CallableOutcome",
-    "Phil.Core.CallableOutcomeKernelBridge",
-    "Phil.Core.CallableQualification",
-    "Phil.Core.CallableQualification.Bound",
-    "Phil.Core.CallableRecursion",
-    "Phil.Core.CallableRecursion.Bound",
-    "Phil.Core.CallableRefinement",
-    "Phil.Core.CallableScope",
-    "Phil.Core.CallableSemanticContract",
-    "Phil.Core.CheckedBindingMode",
-    "Phil.Core.CheckedUIntArithmetic",
-    "Phil.Core.Checker",
-    "Phil.Core.ConcurrencyActivationCertification",
-    "Phil.Core.ConcurrencyRendezvousCertification",
-    "Phil.Core.ConcurrencyTerminalCertification",
-    "Phil.Core.Context",
-    "Phil.Core.DataBorrow",
-    "Phil.Core.DataDestruction",
-    "Phil.Core.DataEliminationKernelBridge",
-    "Phil.Core.DataIdentity",
-    "Phil.Core.DataMode",
-    "Phil.Core.DataModeKernelBridge",
-    "Phil.Core.DataOperationContract",
-    "Phil.Core.DataProductKernelBridge",
-    "Phil.Core.DataSubjectTransport",
-    "Phil.Core.DataSum",
-    "Phil.Core.DataSumKernelBridge",
-    "Phil.Core.Decision",
-    "Phil.Core.Discharge",
-    "Phil.Core.Effect",
-    "Phil.Core.EffectPolymorphism",
-    "Phil.Core.EncodingCanonicality",
-    "Phil.Core.EnvironmentObservation",
-    "Phil.Core.FloatArithmetic",
-    "Phil.Core.Focusing",
-    "Phil.Core.Generic",
-    "Phil.Core.Generic.RequirementCategory",
-    "Phil.Core.Generic.StaticActual",
-    "Phil.Core.GenericRequirementCategoryKernelBridge",
-    "Phil.Core.GenericStaticKindKernelBridge",
-    "Phil.Core.IntegerDivision",
-    "Phil.Core.IntegerShift",
-    "Phil.Core.NominalDataMode",
-    "Phil.Core.NumericConversion",
-    "Phil.Core.NumericPropositionCompetence",
-    "Phil.Core.Process",
-    "Phil.Core.ProcessActivation",
-    "Phil.Core.ProcessCausality",
-    "Phil.Core.ProcessEndpointClosure",
-    "Phil.Core.ProcessLifecycle",
-    "Phil.Core.ProcessParticipants",
-    "Phil.Core.ProcessRendezvous",
-    "Phil.Core.Protocol",
-    "Phil.Core.Protocol.Family",
-    "Phil.Core.Protocol.Generic",
-    "Phil.Core.Protocol.MessageAdmissibility",
-    "Phil.Core.ProviderAuthorityQualification",
-    "Phil.Core.ProviderEvidenceQualification",
-    "Phil.Core.ProviderLawQualification",
-    "Phil.Core.ProviderLifecycleQualification",
-    "Phil.Core.ProviderQualification",
-    "Phil.Core.ProviderQualificationApplicability",
-    "Phil.Core.ProviderQualificationDependency",
-    "Phil.Core.ProviderQualificationIdentity",
-    "Phil.Core.ProviderQualificationTargetReuse",
-    "Phil.Core.ProviderReplacementQualification",
-    "Phil.Core.ProviderStateQualification",
-    "Phil.Core.QualifiedEncoding",
-    "Phil.Core.Recognition",
-    "Phil.Core.Refinement",
-    "Phil.Core.SIntArithmetic",
-    "Phil.Core.Scalar",
-    "Phil.Core.Session",
-    "Phil.Core.SortCheck",
-    "Phil.Core.Static",
-    "Phil.Core.Syntax",
-    "Phil.Core.TextEncoding",
-    "Phil.Core.UIntArithmetic",
-    "Phil.Core.UnicodeChar",
-    "Phil.Core.UnicodeString",
-    "Phil.Core.UnicodeTextPolicy",
-    "Phil.Core.Value",
-    "Phil.Examples.Phase1.AssumptionDependencyWitnesses",
-    "Phil.Examples.Phase1.AuthorityEffectWitnesses",
-    "Phil.Examples.Phase1.BoundaryCommitWitnesses",
-    "Phil.Examples.Phase1.BranchResourceWitnesses",
-    "Phil.Examples.Phase1.ControlStateWitnesses",
-    "Phil.Examples.Phase1.CostAttributionWitnesses",
-    "Phil.Examples.Phase1.EvidenceErasureWitnesses",
-    "Phil.Examples.Phase1.EvidenceTransferWitnesses",
-    "Phil.Examples.Phase1.NextStageRequirementWitnesses",
-    "Phil.Examples.Phase1.ProtocolStateWitnesses",
-    "Phil.Examples.Phase1.ProviderCallWitnesses",
-    "Phil.Examples.Phase1.RuntimeClaimWitnesses",
-    "Phil.Examples.Phase1.RuntimePrimitiveWitnesses",
-    "Phil.Examples.Phase1.StageClosureWitnesses",
-    "Phil.Examples.Phase1.StagingEffectWitnesses",
-    "Phil.Examples.Phase1.SubjectWitnesses",
-    "Phil.Examples.Phase1.SystemsWitnesses",
-    "Phil.Examples.Phase1.TargetStrengtheningWitnesses",
-    "Phil.Examples.Steve.ApplicationShell",
-    "Phil.Examples.Steve.ProviderQualifications",
-    "Phil.Handoff.Phase1AssuranceClosure",
-    "Phil.Handoff.Phase1AssuranceInputs",
-    "Phil.Handoff.Phase1CheckedArchitecture",
-    "Phil.Handoff.Phase1Manifest",
-    "Phil.Handoff.Phase1RuntimeBuild",
-    "Phil.Handoff.Phase1VerificationBundle",
-    "Phil.Handoff.Phase1WholeSourceVerification",
-    "Phil.Handoff.Phase1WitnessSourceBundle",
-    "Phil.IO.Bytes",
-    "Phil.IO.Console",
-    "Phil.IO.FileSystem",
-    "Phil.IO.SignalCancellation",
-    "Phil.IO.UTF8",
-    "Phil.LLVM",
-    "Phil.LLVM.AcceptedResponse",
-    "Phil.LLVM.AcceptedResponseCertification",
-    "Phil.LLVM.BeginPolicyChoice",
-    "Phil.LLVM.BeginPolicyChoiceCertification",
-    "Phil.LLVM.BeginPolicyChoiceProofCertification",
-    "Phil.LLVM.ClientControlSend",
-    "Phil.LLVM.ClientControlSendProofCertification",
-    "Phil.LLVM.ControlCodec",
-    "Phil.LLVM.ControlCodecProofCertification",
-    "Phil.LLVM.DigestValidation",
-    "Phil.LLVM.DigestValidationCertification",
-    "Phil.LLVM.DigestValidationProofCertification",
-    "Phil.LLVM.ExactReceive",
-    "Phil.LLVM.ExactReceiveCertification",
-    "Phil.LLVM.ExactReceiveProofCertification",
-    "Phil.LLVM.ExactSend",
-    "Phil.LLVM.ExactSendCertification",
-    "Phil.LLVM.ExactSendProofCertification",
-    "Phil.LLVM.HelloPolicyValidation",
-    "Phil.LLVM.HelloPolicyValidationCertification",
-    "Phil.LLVM.HelloPolicyValidationProofCertification",
-    "Phil.LLVM.IR",
-    "Phil.LLVM.LocalRuntimeChoiceProofCertification",
-    "Phil.LLVM.Lower",
-    "Phil.LLVM.PayloadCancelChoice",
-    "Phil.LLVM.PayloadCancelChoiceCertification",
-    "Phil.LLVM.PayloadCancelChoiceProofCertification",
-    "Phil.LLVM.Phase0",
-    "Phil.LLVM.RecognizedRecord",
-    "Phil.LLVM.RecognizedRecordCertification",
-    "Phil.LLVM.RecognizedRecordProofCertification",
-    "Phil.LLVM.RejectedResponse",
-    "Phil.LLVM.RejectedResponseCertification",
-    "Phil.LLVM.ServerFramedIngress",
-    "Phil.LLVM.ServerFramedIngressProofCertification",
-    "Phil.LLVM.SessionOffer",
-    "Phil.LLVM.SessionOfferCertification",
-    "Phil.LLVM.Storage",
-    "Phil.LLVM.StorageCertification",
-    "Phil.LLVM.StorageFailureDetail",
-    "Phil.LLVM.StorageFailureDetailProofCertification",
-    "Phil.LLVM.StorageProofCertification",
-    "Phil.LLVM.Verify",
-    "Phil.LLVM.VersionSessionChoice",
-    "Phil.LLVM.VersionSessionChoiceCertification",
-    "Phil.LLVM.VersionSessionChoiceLoweringProofCertification",
-    "Phil.LLVM.VersionSessionChoiceLoweringProofCheck",
-    "Phil.LLVM.VersionSessionChoiceProofBoundCertification",
-    "Phil.LLVM.VersionSessionChoiceProofCertification",
-    "Phil.Surface.Check",
-    "Phil.Surface.Check.DigestSubjectCertification",
-    "Phil.Surface.Check.Engine",
-    "Phil.Surface.Check.LoopControl",
-    "Phil.Surface.Check.OmittedElse",
-    "Phil.Surface.Check.Preflight",
-    "Phil.Surface.Check.Support",
-    "Phil.Surface.Check.Types",
-    "Phil.Surface.Elaborate",
-    "Phil.Surface.GrammarRevisionCertification",
-    "Phil.Surface.GrammarV1.ArchitectureComponentActivation",
-    "Phil.Surface.GrammarV1.ArchitectureComponentProvisioning",
-    "Phil.Surface.GrammarV1.ArchitectureSurface",
-    "Phil.Surface.GrammarV1.BinderScope",
-    "Phil.Surface.GrammarV1.BorrowViewScope",
-    "Phil.Surface.GrammarV1.BoundBytesType",
-    "Phil.Surface.GrammarV1.BoundClaimApplication",
-    "Phil.Surface.GrammarV1.BoundProofType",
-    "Phil.Surface.GrammarV1.BoundProposition",
-    "Phil.Surface.GrammarV1.BoundRef",
-    "Phil.Surface.GrammarV1.BoundRefExpression",
-    "Phil.Surface.GrammarV1.BoundRefinementType",
-    "Phil.Surface.GrammarV1.BoundRelation",
-    "Phil.Surface.GrammarV1.BoundType",
-    "Phil.Surface.GrammarV1.BoundaryCanonicality",
-    "Phil.Surface.GrammarV1.BoundaryCodecReferences",
-    "Phil.Surface.GrammarV1.BoundaryDirection",
-    "Phil.Surface.GrammarV1.BoundaryFailureTypes",
-    "Phil.Surface.GrammarV1.BoundaryPropositions",
-    "Phil.Surface.GrammarV1.BoundaryValueType",
-    "Phil.Surface.GrammarV1.BoundedPingLoopSource",
-    "Phil.Surface.GrammarV1.BoundedPingRuntime",
-    "Phil.Surface.GrammarV1.BoundedPingSourceValues",
-    "Phil.Surface.GrammarV1.CallableAuthority",
-    "Phil.Surface.GrammarV1.CallableCalleeTransition",
-    "Phil.Surface.GrammarV1.CallableCost",
-    "Phil.Surface.GrammarV1.CallableEffects",
-    "Phil.Surface.GrammarV1.CallableOutcomePropositions",
-    "Phil.Surface.GrammarV1.CallableOutcomeState",
-    "Phil.Surface.GrammarV1.CallableOutcomes",
-    "Phil.Surface.GrammarV1.CallablePropositions",
-    "Phil.Surface.GrammarV1.CallableResources",
-    "Phil.Surface.GrammarV1.CallableSignature",
-    "Phil.Surface.GrammarV1.CapabilityContract",
-    "Phil.Surface.GrammarV1.CaseArmScope",
-    "Phil.Surface.GrammarV1.CheckedClaimApplication",
-    "Phil.Surface.GrammarV1.CheckedProofType",
-    "Phil.Surface.GrammarV1.CheckedProposition",
-    "Phil.Surface.GrammarV1.CheckedRefinementType",
-    "Phil.Surface.GrammarV1.CheckedType",
-    "Phil.Surface.GrammarV1.ClaimDeclaration",
-    "Phil.Surface.GrammarV1.ClosedBodySurface",
-    "Phil.Surface.GrammarV1.ComponentBodySurface",
-    "Phil.Surface.GrammarV1.ComponentReceiveClose",
-    "Phil.Surface.GrammarV1.ComponentReceiveProvisioning",
-    "Phil.Surface.GrammarV1.ComponentRequestReplyOutput",
-    "Phil.Surface.GrammarV1.ComponentRequestReplyRuntime",
-    "Phil.Surface.GrammarV1.ComponentSendClose",
-    "Phil.Surface.GrammarV1.ComponentSendProvisioning",
-    "Phil.Surface.GrammarV1.ComponentSurface",
-    "Phil.Surface.GrammarV1.ComponentUnrestrictedRendezvous",
-    "Phil.Surface.GrammarV1.DataVariants",
-    "Phil.Surface.GrammarV1.Elaborate",
-    "Phil.Surface.GrammarV1.FloatArithmetic",
-    "Phil.Surface.GrammarV1.FunctionBodySurface",
-    "Phil.Surface.GrammarV1.GenericBinderScope",
-    "Phil.Surface.GrammarV1.GenericDischarge",
-    "Phil.Surface.GrammarV1.GenericProviderImplementationSurface",
-    "Phil.Surface.GrammarV1.GenericRequirementCore",
-    "Phil.Surface.GrammarV1.GenericTermScope",
-    "Phil.Surface.GrammarV1.IntegerDivision",
-    "Phil.Surface.GrammarV1.InterruptiblePingRuntime",
-    "Phil.Surface.GrammarV1.InterruptiblePingSource",
-    "Phil.Surface.GrammarV1.IntrinsicFrameType",
-    "Phil.Surface.GrammarV1.IntrinsicNamedType",
-    "Phil.Surface.GrammarV1.IntrinsicProofType",
-    "Phil.Surface.GrammarV1.IntrinsicProposition",
-    "Phil.Surface.GrammarV1.IntrinsicRefinementType",
-    "Phil.Surface.GrammarV1.IntrinsicType",
-    "Phil.Surface.GrammarV1.IntrinsicValidatedType",
-    "Phil.Surface.GrammarV1.JoinStateScope",
-    "Phil.Surface.GrammarV1.LetPatternScope",
-    "Phil.Surface.GrammarV1.Lexer",
-    "Phil.Surface.GrammarV1.LexicalReferenceScope",
-    "Phil.Surface.GrammarV1.LoopStateScope",
-    "Phil.Surface.GrammarV1.NumericConversion",
-    "Phil.Surface.GrammarV1.ParameterBodyScope",
-    "Phil.Surface.GrammarV1.ParameterizedProtocolFamily",
-    "Phil.Surface.GrammarV1.Parser",
-    "Phil.Surface.GrammarV1.PatternBinderScope",
-    "Phil.Surface.GrammarV1.ProgramSurface",
-    "Phil.Surface.GrammarV1.ProtocolBinderScope",
-    "Phil.Surface.GrammarV1.ProtocolBoundaryAnnotations",
-    "Phil.Surface.GrammarV1.ProtocolBoundaryComposition",
-    "Phil.Surface.GrammarV1.ProtocolEndpointType",
-    "Phil.Surface.GrammarV1.ProtocolGuardAnnotations",
-    "Phil.Surface.GrammarV1.ProtocolGuardBoundaryComposition",
-    "Phil.Surface.GrammarV1.ProtocolGuardChecking",
-    "Phil.Surface.GrammarV1.ProtocolMessageTemplates",
-    "Phil.Surface.GrammarV1.ProtocolRoles",
-    "Phil.Surface.GrammarV1.ProtocolSessionParameterReferences",
-    "Phil.Surface.GrammarV1.ProtocolSpecializedSessionReferences",
-    "Phil.Surface.GrammarV1.ProtocolStaticSessionReferences",
-    "Phil.Surface.GrammarV1.ProviderContractSurface",
-    "Phil.Surface.GrammarV1.ProviderImplementationSurface",
-    "Phil.Surface.GrammarV1.RecordFields",
-    "Phil.Surface.GrammarV1.ReferenceAstArchitectureProgram",
-    "Phil.Surface.GrammarV1.ReferenceAstBlockCommands",
-    "Phil.Surface.GrammarV1.ReferenceAstBlockStructure",
-    "Phil.Surface.GrammarV1.ReferenceAstCallableContract",
-    "Phil.Surface.GrammarV1.ReferenceAstCapabilityBoundary",
-    "Phil.Surface.GrammarV1.ReferenceAstCommandClosure",
-    "Phil.Surface.GrammarV1.ReferenceAstDeclarationCommon",
-    "Phil.Surface.GrammarV1.ReferenceAstEffects",
-    "Phil.Surface.GrammarV1.ReferenceAstExpressionCore",
-    "Phil.Surface.GrammarV1.ReferenceAstFixedCommandHelpers",
-    "Phil.Surface.GrammarV1.ReferenceAstFixedCommands",
-    "Phil.Surface.GrammarV1.ReferenceAstFunctionComponent",
-    "Phil.Surface.GrammarV1.ReferenceAstGenericParams",
-    "Phil.Surface.GrammarV1.ReferenceAstGenericRequirements",
-    "Phil.Surface.GrammarV1.ReferenceAstProposition",
-    "Phil.Surface.GrammarV1.ReferenceAstProtocolDeclaration",
-    "Phil.Surface.GrammarV1.ReferenceAstProviderDeclarations",
-    "Phil.Surface.GrammarV1.ReferenceAstRecordData",
-    "Phil.Surface.GrammarV1.ReferenceAstRecordDataRepresentationBridge",
-    "Phil.Surface.GrammarV1.ReferenceAstRepresentationBridge",
-    "Phil.Surface.GrammarV1.ReferenceAstSessions",
-    "Phil.Surface.GrammarV1.ReferenceAstSpine",
-    "Phil.Surface.GrammarV1.ReferenceAstStaticArgumentClosure",
-    "Phil.Surface.GrammarV1.ReferenceAstStaticReference",
-    "Phil.Surface.GrammarV1.ReferenceAstStaticValue",
-    "Phil.Surface.GrammarV1.ReferenceAstTermParams",
-    "Phil.Surface.GrammarV1.ReferenceAstTopLevel",
-    "Phil.Surface.GrammarV1.ReferenceAstTopLevelRepresentationBridge",
-    "Phil.Surface.GrammarV1.ReferenceAstTypeAlias",
-    "Phil.Surface.GrammarV1.ReferenceAstTypeClaimDeclarations",
-    "Phil.Surface.GrammarV1.ReferenceAstTypePayload",
-    "Phil.Surface.GrammarV1.ReferenceAstWholeSource",
-    "Phil.Surface.GrammarV1.ReferenceKernelBridge",
-    "Phil.Surface.GrammarV1.ReferenceToken",
-    "Phil.Surface.GrammarV1.ResolvedAggregateMode",
-    "Phil.Surface.GrammarV1.RuntimeScalar",
-    "Phil.Surface.GrammarV1.SIntArithmetic",
-    "Phil.Surface.GrammarV1.SemanticBindingState",
-    "Phil.Surface.GrammarV1.SemanticCallableOutcomePropositions",
-    "Phil.Surface.GrammarV1.SemanticCallableOutcomeState",
-    "Phil.Surface.GrammarV1.SemanticCallablePropositions",
-    "Phil.Surface.GrammarV1.SemanticCallableSignature",
-    "Phil.Surface.GrammarV1.SemanticCheckedType",
-    "Phil.Surface.GrammarV1.SemanticClaimDeclaration",
-    "Phil.Surface.GrammarV1.SemanticComponentHeader",
-    "Phil.Surface.GrammarV1.SemanticEffectPolymorphism",
-    "Phil.Surface.GrammarV1.SemanticEffectSubjects",
-    "Phil.Surface.GrammarV1.SemanticFunctionHeader",
-    "Phil.Surface.GrammarV1.SemanticProtocolRoles",
-    "Phil.Surface.GrammarV1.SemanticRefinementType",
-    "Phil.Surface.GrammarV1.SemanticSessionSemantics",
-    "Phil.Surface.GrammarV1.SequentialExecution",
-    "Phil.Surface.GrammarV1.SessionSemantics",
-    "Phil.Surface.GrammarV1.SpecializedStaticReference",
-    "Phil.Surface.GrammarV1.TextLiteral",
-    "Phil.Surface.GrammarV1.TypeAlias",
-    "Phil.Surface.GrammarV1.UIntArithmetic",
-    "Phil.Surface.GrammarV1.UnboundedPingRuntime",
-    "Phil.Surface.GrammarV1.UnboundedPingSource",
-    "Phil.Surface.Lineage",
-    "Phil.Surface.Parser",
-    "Phil.Surface.Phase0",
-    "Phil.Surface.Syntax",
-    "Phil.Systems",
-    "Phil.Systems.AcceptedResponse",
-    "Phil.Systems.AssumptionDependency",
-    "Phil.Systems.AuthorityEffectCorrespondence",
-    "Phil.Systems.BeginPolicySessionChoice",
-    "Phil.Systems.BoundaryCommitCorrespondence",
-    "Phil.Systems.BoundaryTargetRelation",
-    "Phil.Systems.BranchResourceFailure",
-    "Phil.Systems.CallableLowering",
-    "Phil.Systems.ClientOutbound",
-    "Phil.Systems.ClientOutboundProofCertification",
-    "Phil.Systems.ControlStateInvariant",
-    "Phil.Systems.ControlStateProjection",
-    "Phil.Systems.CostAttribution",
-    "Phil.Systems.Dataflow",
-    "Phil.Systems.DigestValidation",
-    "Phil.Systems.EvidenceErasure",
-    "Phil.Systems.EvidenceSubjectTransfer",
-    "Phil.Systems.FieldProjection",
-    "Phil.Systems.GenericLowering",
-    "Phil.Systems.HelloPolicyValidation",
-    "Phil.Systems.IR",
-    "Phil.Systems.LocalRuntimeChoice",
-    "Phil.Systems.NextStageRequirement",
-    "Phil.Systems.PayloadCancelChoice",
-    "Phil.Systems.Phase0",
-    "Phil.Systems.Phase1Stage",
-    "Phil.Systems.ProcessRealization",
-    "Phil.Systems.ProcessRealizationCertification",
-    "Phil.Systems.ProtocolStateCorrespondence",
-    "Phil.Systems.ProviderCallCorrespondence",
-    "Phil.Systems.RecognitionFailure",
-    "Phil.Systems.RecognitionFailureProofCertification",
-    "Phil.Systems.RecognizedRecord",
-    "Phil.Systems.RejectedResponse",
-    "Phil.Systems.RuntimeCarrierBinding",
-    "Phil.Systems.RuntimeCarrierCertification",
-    "Phil.Systems.RuntimeCarrierCoverage",
-    "Phil.Systems.RuntimeClaimBinding",
-    "Phil.Systems.RuntimePartialityRelation",
-    "Phil.Systems.RuntimePrimitiveIdentityCertification",
-    "Phil.Systems.RuntimePrimitiveReuse",
-    "Phil.Systems.SemanticInitialization",
-    "Phil.Systems.SequentialTrace",
-    "Phil.Systems.SessionChoice",
-    "Phil.Systems.StageClosure",
-    "Phil.Systems.StagingEffect",
-    "Phil.Systems.Storage",
-    "Phil.Systems.StorageAllocationFailureCertification",
-    "Phil.Systems.StorageCostAttributionCertification",
-    "Phil.Systems.StorageFailure",
-    "Phil.Systems.StorageFailureProofCertification",
-    "Phil.Systems.StorageRealizationCertification",
-    "Phil.Systems.StorageTerminalClosureCertification",
-    "Phil.Systems.StructuralDiscard",
-    "Phil.Systems.SubjectCorrespondence",
-    "Phil.Systems.TargetStrengthening",
-    "Phil.Systems.Verify",
-    "Phil.Systems.VersionChoiceOperands",
-    "Phil.Systems.VersionSessionChoice",
-    "Phil.Systems.VersionSessionChoiceProofCheck",
-    "Phil.Verification",
-    "Phil.Verification.ArtifactClosure",
-    "Phil.Verification.Bundle",
-    "Phil.Verification.CertifiedRelease",
-    "Phil.Verification.DistributionRelease",
-    "Phil.Verification.EvidenceLineage",
-    "Phil.Verification.GenericAssurance",
-    "Phil.Verification.GrammarV1WholeSource",
-    "Phil.Verification.ManifestClosure",
-    "Phil.Verification.ProofEvidence",
-    "Phil.Verification.ReleasePackage"
-   ],
-   "grammar": [
-    "grammar/README.md",
-    "grammar/phase1-surface-determinacy.json",
-    "grammar/phase1-surface.ebnf"
-   ],
-   "headlines": [
-    {
-     "sha": "39edd8e0c6",
-     "subject": "audit: bind generic static arguments to canonical architecture instance"
-    },
-    {
-     "sha": "6a4e9ffd82",
-     "subject": "docs(audit): record #1579 checked producer binding and remaining representation premises"
-    },
-    {
-     "sha": "ce630833e4",
-     "subject": "Merged: impl audit / native final instance coordinates"
-    },
-    {
-     "sha": "46cfd1c2b0",
-     "subject": "Merged: rocq refinement / effect set recursive grouping"
     }
    ]
   }
@@ -2917,6 +2182,18 @@
   {
    "date": "2026-11-26",
    "commit": "0583b82282",
+   "files": 446,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 176,
+   "rejected": 312,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-27",
+   "commit": "545f7f02e3",
    "files": 446,
    "grammar": "64/64",
    "ranClean": 58,

@@ -1,8 +1,8 @@
 {
  "phil": {
-  "commit": "0583b82282",
-  "date": "2026-11-26",
-  "subject": "Merge pull request #2035 from abiggerhammer/hamster/rocq-refinement/replay-path-cache-batch-indexed-append"
+  "commit": "545f7f02e3",
+  "date": "2026-11-27",
+  "subject": "Merge pull request #2052 from abiggerhammer/hamster/rocq-refinement/replay-path-cache-batch-canonical"
  },
  "files": 446,
  "grammar": {
