@@ -1,13 +1,13 @@
 {
- "day": "2026-11-27",
- "philCommit": "545f7f02e306b81d069b45be1b266b528b280248",
- "solana": "solana-cli 4.4.1 (src:d0fa2d44; feat:9fd5a0b5, client:Agave)",
+ "day": "2026-11-28",
+ "philCommit": "a5faa95524676e233cfc548e0ede74100a96dfea",
+ "solana": "solana-cli 4.4.2 (src:1def29ed; feat:9fd5a0b5, client:Agave)",
  "programBytes": 2160,
  "programSha256": "2539c6c6ef793de7da88bad40f8b35292d9dfe16d3aaf466513973ca24b38686",
  "local": {
   "ok": true,
   "run": {
-   "signature": "3L15uF2SoC1wCjDjzs7nRA1SmABQpi2CkJbeh1iUx9aXHVFujKpePVqTLUCdknrkXgMQP2y4vkdSEDvrGzn62m7c",
+   "signature": "rDz3FTYfKPYAex7n4ggZPzayuXPuPBm7sZU4UA7AeDXXcadVHtARFL6iEHhHSqJ4QiZ4Hpc31m8gDcMTzwZgWpx",
    "slot": 10,
    "returned": 42,
    "unitsConsumed": 217,
@@ -25,8 +25,8 @@
   "programId": "4evxuwRd6dPobgr6s2qEFrRxsiJah8hwpyZ7HC8fXdLB",
   "wallet": "QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA",
   "run": {
-   "signature": "UqDZ4ydttesvKvt6X6BwA7kTssNQ338iBy6cLJdLcFqSUePttek1x7CCSp5wE82ztPmiJvAikRxbxmY6pnxiZUp",
-   "slot": 526798055,
+   "signature": "3eMWukhcVxpzDAzcpP3mSbABW4eVrRBfTEAwgffxcUEHy5Sfm1vn2942WeXYrmUL2Vb51xMDdj3SkA6bxm1eB8HC",
+   "slot": 527155756,
    "returned": 42,
    "unitsConsumed": 217,
    "logs": [
@@ -38,7 +38,7 @@
    ],
    "network": "devnet"
   },
-  "runDay": "2026-11-27",
+  "runDay": "2026-11-28",
   "deployedSha256": "2539c6c6ef793de7da88bad40f8b35292d9dfe16d3aaf466513973ca24b38686",
   "deployedOn": "2026-11-27",
   "deployedPhil": "545f7f02e306b81d069b45be1b266b528b280248",
