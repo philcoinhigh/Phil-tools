@@ -1,12 +1,12 @@
 {
  "phil": {
-  "commit": "545f7f02e3",
-  "date": "2026-11-27"
+  "commit": "a5faa95524",
+  "date": "2026-11-28"
  },
- "since": "2026-11-06",
+ "since": "2026-11-07",
  "days": [
   {
-   "date": "2026-11-27",
+   "date": "2026-11-28",
    "commits": 0,
    "merges": 2,
    "streams": [],
@@ -19,12 +19,43 @@
    "grammar": [],
    "headlines": [
     {
-     "sha": "545f7f02e3",
-     "subject": "Merged: rocq refinement / replay path cache batch canonical"
+     "sha": "a5faa95524",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison replacement"
     },
     {
-     "sha": "5fe5105c9d",
-     "subject": "Merged: rocq refinement / replay path cache batch refresh all"
+     "sha": "9eb802f35c",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison append"
+    }
+   ]
+  },
+  {
+   "date": "2026-11-27",
+   "commits": 0,
+   "merges": 6,
+   "streams": [],
+   "programs": [],
+   "programsRemoved": 0,
+   "notes": [],
+   "proofsAdded": 6,
+   "proofsChanged": 0,
+   "modules": [],
+   "grammar": [],
+   "headlines": [
+    {
+     "sha": "9c81a670d0",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison coverage"
+    },
+    {
+     "sha": "d4eecf9eb3",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison diagnostics"
+    },
+    {
+     "sha": "a0ef80242e",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison laws"
+    },
+    {
+     "sha": "4a0311b734",
+     "subject": "Merged: rocq refinement / replay path cache batch indexed comparison"
     }
    ]
   },
@@ -1936,66 +1967,6 @@
      "subject": "Merged: impl audit / reconcile 1654 typed stage revisions"
     }
    ]
-  },
-  {
-   "date": "2026-11-06",
-   "commits": 0,
-   "merges": 32,
-   "streams": [],
-   "programs": [],
-   "programsRemoved": 0,
-   "notes": [
-    {
-     "path": "docs/phase-1/formal-semantics-borrow-scope-fsem01-v0.md",
-     "title": "FSEM-01 — Phase 1 borrow-scope judgment boundary and executable controls"
-    },
-    {
-     "path": "docs/phase-1/formal-semantics-judgment-inventory-v0.md",
-     "title": "Phase 1 formal semantics: judgment and correspondence inventory (FSEM-00)"
-    },
-    {
-     "path": "docs/phase-1/typing-and-semantics-reader-guide-v1.md",
-     "title": "Phil Phase 1 typing and semantics: a reader's guide (draft v1)"
-    },
-    {
-     "path": "docs/phase-1/typing-rules-worked-examples-draft-v1.md",
-     "title": "Phase 1 typing judgments: three worked rule families (review draft)"
-    },
-    {
-     "path": "docs/assets/mascots/README.md",
-     "title": "Phil mascot artwork — asset provenance"
-    },
-    {
-     "path": "docs/brand/mascots.md",
-     "title": "Phil mascot gallery"
-    },
-    {
-     "path": "docs/mhb-atc.md",
-     "title": "Mecha Hamster Ball — Air Traffic Control (MHB-ATC)"
-    }
-   ],
-   "proofsAdded": 0,
-   "proofsChanged": 12,
-   "modules": [],
-   "grammar": [],
-   "headlines": [
-    {
-     "sha": "55d7ef9e0d",
-     "subject": "Merged: impl audit / retain exact certified release final witness"
-    },
-    {
-     "sha": "99405d423a",
-     "subject": "Merged: impl audit / reconcile exact stage closure 1619"
-    },
-    {
-     "sha": "23103f2399",
-     "subject": "Merged: formal semantics / fsem01 borrow scope controls"
-    },
-    {
-     "sha": "667daed29d",
-     "subject": "Merged: formal semantics / phase1 judgment inventory"
-    }
-   ]
   }
  ],
  "history": [
@@ -2194,6 +2165,18 @@
   {
    "date": "2026-11-27",
    "commit": "545f7f02e3",
+   "files": 446,
+   "grammar": "64/64",
+   "ranClean": 58,
+   "accepted": 70,
+   "caught": 176,
+   "rejected": 312,
+   "philcAccepts": 3,
+   "philcTried": 11
+  },
+  {
+   "date": "2026-11-28",
+   "commit": "a5faa95524",
    "files": 446,
    "grammar": "64/64",
    "ranClean": 58,
