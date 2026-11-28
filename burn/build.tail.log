@@ -7,11 +7,11 @@ Phil's module did not compile for Solana as it stands:
 fatal error: error in backend: Unsupported dynamic stack allocation
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace, preprocessed source, and associated run script.
 Stack dump:
-0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.sDIFzrzwb1/phil.ll -o /tmp/tmp.sDIFzrzwb1/phil.o
+0.	Program arguments: /home/runner/.cache/solana/v1.57/platform-tools/llvm/bin/clang -O2 -target sbf -fPIC -Wno-override-module -c /tmp/tmp.sdP4OSuDOv/phil.ll -o /tmp/tmp.sdP4OSuDOv/phil.o
 1.	Code generation
 moved 11 stack slots to the top of their functions
 stack slots moved to function tops: true
--rwxr-xr-x 1 runner runner 34192 Nov 27 07:50 burn/out/phil_burn.so
+-rwxr-xr-x 1 runner runner 34192 Nov 28 07:42 burn/out/phil_burn.so
 undefined symbols (these must all be Solana's own calls):
      0: 0000000000000000     0 NOTYPE  LOCAL  DEFAULT   UND 
      9: 0000000000000000     0 NOTYPE  GLOBAL DEFAULT   UND sol_log_
@@ -34,9 +34,9 @@ ok   the sender was paid the pot, less the network fee
 ok   the vault kept only its reserve and counted the burn 
 ok   the pot cannot be taken twice 
 {"ok":true,"openUnits":4508,"burnUnits":8417}
-devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.02621148 SOL
+devnet wallet QjySo3L33gPqJsBcEjx4pchjkmtN9DoMeyQrx1W5TnA holds 16.01890064 SOL
 program HnBrhasgMUQU9fUrQHsKnPdxSzLCHXvSzwEviYfn2ecq is deployed and unchanged
-demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 26
+demo: sent 0.01 SOL of stand-in fees, burned 1000000 coins, paid 0.01 SOL; burn 27
 higher.fun devnet proof: last run 2026-11-25, skipping
-https://github.com/philcoinhigh/Phil-tools/actions/runs/45961232470
+https://github.com/philcoinhigh/Phil-tools/actions/runs/46122440111
 nightly chain: asked for giveaway.yml
